@@ -2,6 +2,12 @@
 
 Et felles prosjekt for spill som lærer med nevrale nettverk. Bilspillet og labyrintspillet har hver sin motor og visning. Hvert nytt spill får sin egen mappe, egne spilleregler, observasjoner, poengberegning, visning og modellfiler.
 
+## Bilspillet i aksjon
+
+[![Opptak fra bilspillets trening med biler og sensorer](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4)
+
+18 sekunders utdrag fra treningsopptaket. [Se eller last ned hele opptaket (1 minutt og 40 sekunder)](docs/media/bilspill-training.mp4).
+
 ## Flytt til Mac Studio
 
 Se [installasjon, GPU-oppstart og videre trening](MAC_STUDIO.md). Alle lagrede modeller og treningsrapporter følger repoet; lokale Python-miljøer og cache ignoreres.
