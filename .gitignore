@@ -14,6 +14,8 @@ htmlcov/
 *.egg-info/
 build/
 dist/
+ai_engine/build/
+*.egg-info/
 
 # Local configuration and credentials
 .env
@@ -36,5 +38,8 @@ dist/
 
 # Atomic checkpoint writes use extensionless tmp* files beside the models.
 **/models/**/tmp*
+
+# Service registry, per-run checkpoints and process state.
+.ai-service/
 
 # Keep model checkpoints (*.json, *.safetensors), backups and reports in Git.

@@ -257,7 +257,12 @@ class Trainer:
             self.status.update(success=success)
         return success
 
-    def run(self, generations):
+    def run(self, generations, *, stop_event=None, progress_callback=None):
+        """Train for ``generations`` and return False when stopped at a safe boundary.
+
+        The optional hooks are deliberately generic so an external service can own
+        job management without moving maze rules into the service layer.
+        """
         if generations < 1:
             raise ValueError('Generations must be positive')
         target = self.network.generation + generations
@@ -265,6 +270,12 @@ class Trainer:
             self.status.update(phase='training', target=target)
         try:
             while self.network.generation < target:
+                if stop_event is not None and stop_event.is_set():
+                    self._metadata()
+                    self.network.save(self.model)
+                    with self.lock:
+                        self.status['phase'] = 'stopped'
+                    return False
                 def new_generation(generation):
                     self.training_set = [self.fresh_maze('training') for _ in range(self.config.train_mazes)]
                 self._metadata()
@@ -272,6 +283,8 @@ class Trainer:
                 def candidate(generation, index):
                     with self.lock:
                         self.status.update(generation=generation, candidate=index, phase='training')
+                    if progress_callback:
+                        progress_callback(self.payload())
 
                 def result(network):
                     with self.lock:
@@ -286,6 +299,8 @@ class Trainer:
                         self.rollout(self.training_set[0], network.weights, record=True)
                     self._metadata()
                     network.save(self.model)
+                    if progress_callback:
+                        progress_callback(self.payload())
 
                 self.network.train(self.evaluate, min(self.config.check_every, target-self.network.generation),
                     population_size=self.config.population, elite_count=min(6, self.config.population),
@@ -299,8 +314,13 @@ class Trainer:
                 self.grow_if_ready()
                 self._metadata()
                 self.network.save(self.model)
+                if progress_callback:
+                    progress_callback(self.payload())
             self.apply_planned_growth()
             self.replay()
+            if progress_callback:
+                progress_callback(self.payload())
+            return True
         except Exception as error:
             with self.lock:
                 self.status.update(phase='error', error=str(error))
