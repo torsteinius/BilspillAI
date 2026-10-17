@@ -1,12 +1,40 @@
 """Small dependency-free client for another Mac (use through an SSH tunnel)."""
 import json
-from urllib.request import Request, urlopen
+import http.client
+import threading
+from urllib.parse import urlsplit
 
 class Client:
-    def __init__(self, base_url='http://127.0.0.1:8780'): self.base_url=base_url.rstrip('/')
+    def __init__(self, base_url='http://127.0.0.1:8780', timeout=30):
+        self.base_url=base_url.rstrip('/')
+        url=urlsplit(self.base_url)
+        if url.scheme not in ('http','https'):
+            raise ValueError('Expected an HTTP(S) service URL')
+        cls=http.client.HTTPSConnection if url.scheme=='https' else http.client.HTTPConnection
+        self._connection=cls(url.hostname,url.port,timeout=timeout)
+        self._prefix=url.path.rstrip('/')
+        self._lock=threading.Lock()
+
+    def close(self):
+        with self._lock:
+            self._connection.close()
+
     def _request(self, method, path, payload=None):
-        data=None if payload is None else json.dumps(payload).encode()
-        with urlopen(Request(self.base_url+path, data=data, method=method, headers={'Content-Type':'application/json'})) as r: return json.load(r)
+        data=None if payload is None else json.dumps(payload,separators=(',',':'),allow_nan=False).encode()
+        with self._lock:
+            try:
+                self._connection.request(method,self._prefix+path,body=data,
+                                         headers={'Content-Type':'application/json'})
+                response=self._connection.getresponse()
+                body=response.read()
+                value=json.loads(body)
+                if response.status>=400:
+                    raise RuntimeError(f'HTTP {response.status}: {value}')
+                return value
+            except Exception:
+                # Never retry a write automatically: it may already have committed.
+                self._connection.close()
+                raise
     def import_maze(self, network_id='maze-history-v1'): return self._request('POST','/networks',{'network_id':network_id})
     def train(self, generations, request_id, network_id='maze-history-v1'): return self._request('POST','/training-runs',{'network_id':network_id,'additional_generations':generations,'request_id':request_id})
     def status(self, run_id): return self._request('GET',f'/training-runs/{run_id}')

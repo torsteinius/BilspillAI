@@ -44,3 +44,19 @@ client.import_legacy('maze-history-api-v1', '/absolutt/studio/sti/checkpoint.jso
 ```
 
 Dette brukes bare for å opprette en separat modellgren. `maze-history-v1` og det gamle `/training-runs`-API-et beholdes for samlet kjøring på Studio. Den første fjernkjøringsversjonen låser arkitekturen gjennom økten; labyrintvekst som endrer inputbredde må starte en ny økt.
+
+## Lokal labyrintapp på MacBook
+
+Start fra prosjektmappen med SSH-tunnelen og Studio-tjenesten aktive:
+
+```sh
+python3 -m games.maze.remote_ai_app --network-id maze-history-api-v1 --port 8776
+```
+
+Åpne http://127.0.0.1:8776/. Standard er en kort integrasjonstest: to generasjoner, fire kandidater og to felles labyrinter. Nye starter oppretter en ny økt og trener modellgrenen videre. Dette er ikke bare avspilling.
+
+Simulering, sensorer, deterministisk historikk, fryst detektor og belønning kjører lokalt. Kandidatnett og fitness-oppdatering bruker Studio-API-et. Nettverksberegningene krever bekreftet `mlx-gpu`; klienten bytter ikke til lokal inferens ved feil. Gjeldende generelle serverkode muterer fortsatt vekter i Python på Studio-CPU.
+
+Appen viser lokale opptak ved første generasjon, hver 100. generasjon og siste generasjon. Generasjonsnummeret gjelder den aktuelle økten. Labyrintstørrelsen er låst; reglene lastes fra `--model`, som må samsvare med Studio-modellens observasjonsformat. Arkitekturen kontrolleres automatisk. Validering på separate nye labyrinter og automatisk størrelsesvekst er ikke implementert i denne klienten.
+
+`GET /api/state` på visningsporten gir `timing_ms`: `studio_compute` er serverens rapporterte synkroniserte beregningsveggtid, `ai_roundtrip` er tid brukt på kandidat-predict-forespørsler, `local_simulation` er lokal observasjon og miljøoppdatering, og `total` er hele generasjonen inkludert ask/tell. Forskjellen mellom rundtur og beregning inkluderer både serverarbeid og kommunikasjon, ikke bare nettverkslatens.
