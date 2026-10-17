@@ -1,0 +1,40 @@
+# Python environments and generated caches
+.venv/
+.venv-*/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# macOS, editors and runtime files
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
+*.pid
+*.tmp
+*.temp
+
+# Atomic checkpoint writes use extensionless tmp* files beside the models.
+**/models/**/tmp*
+
+# Keep model checkpoints (*.json, *.safetensors), backups and reports in Git.

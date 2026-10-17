@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI-spill · Bilspill</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101820;color:#e9eff4;font:16px system-ui,sans-serif}main{max-width:1100px;margin:40px auto;padding:0 24px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:32px;margin:0}p{color:#a9bac7;line-height:1.6}.tag{color:#72e4b0;border:1px solid #325648;padding:8px 14px;border-radius:30px}.stats{display:flex;gap:16px;margin:24px 0}.stat{background:#1b2935;padding:16px 22px;border-radius:12px;flex:1}.stat span{display:block;color:#a9bac7;font-size:13px}.stat strong{font-size:24px;font-variant-numeric:tabular-nums}#lap{display:grid;grid-template-rows:repeat(2,1.3em);line-height:1.3;min-width:7ch}#lap b{display:block;white-space:nowrap;font:inherit}#lap b:first-child{color:#72e4b0}#lap b:last-child{color:#6fb9ff}svg{width:100%;background:#14242c;border:1px solid #30424e;border-radius:18px}.note{font-size:14px}a{color:#72e4b0}
+.recording-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:16px 0;min-height:44px}.recording-controls button{background:#72e4b0;color:#101820;border:0;border-radius:8px;padding:11px 16px;font:600 15px system-ui;cursor:pointer}.recording-controls button:disabled{opacity:.5;cursor:default}.recording-controls button[data-recording="true"]{background:#ff865f}#recordStatus{font-variant-numeric:tabular-nums;color:#a9bac7}#recordDownload[hidden]{display:none}
+</style><main><header><h1>AI-spill <small>Bilspill</small></h1><div class="tag" id="connection">Kobler til Python</div></header>
+<p>To like biler · motsatt kjøreretning · sju sensorstråler og radar · felles nettverk: <span id="architecture">—</span>.</p>
+<div class="stats"><div class="stat"><span>Generasjon</span><strong id="gen">0 / 100</strong></div><div class="stat"><span>Beste poeng hittil</span><strong id="score">—</strong></div><div class="stat"><span>Runde · grønn / blå</span><strong id="lap"><b>0.0 %</b><b>0.0 %</b></strong></div></div>
+<p><strong id="candidate">Starter trening …</strong><br><span id="attempt"></span></p>
+<label>Visningshastighet <select id="speed"><option value="1" selected>1×</option><option value="3">3×</option><option value="10">10×</option><option value="30">30×</option></select></label><p id="speedError"></p>
+<section aria-label="Førerplass i 3D" style="margin:24px 0">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px"><strong>Fra førersetet · 3D</strong><label>Følg <select id="driver"><option value="0">Grønn bil</option><option value="1">Blå bil</option></select></label></div>
+<canvas id="cockpit" width="1200" height="650" style="display:block;width:100%;border-radius:18px;border:1px solid #30424e;background:#172c35" aria-label="Live perspektiv fra førersetet i valgt bil"></canvas>
+<p class="note">Samme kjøring som i kartet nedenfor. Velg 1× for rolig avspilling. Rattet viser endring i bilens kjøreretning.</p>
+</section>
+<div class="recording-controls"><button id="recordButton" type="button" disabled>Ta opp banevideo</button><span id="recordStatus" role="status">Laster banen …</span><a id="recordDownload" hidden>Last ned video</a></div>
+<video id="recordPreview" controls playsinline hidden style="width:100%;max-height:360px;margin:12px 0" aria-label="Forhåndsvisning av videoopptak"></video>
+<p class="note">Kun banefeltet tas opp, med biler og sensorer. 1600 × 1080, uten lyd. Hold fanen synlig under opptaket.</p>
+<svg id="trackView" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 540" aria-label="Bil som kjører på en oval bane sett ovenfra">
+<path class="track" d="" fill="none" stroke="#8b9ca7" stroke-width="80"/>
+<path class="track" d="" fill="none" stroke="#344550" stroke-width="76"/>
+<path class="track" d="" fill="none" stroke="#70828b" stroke-dasharray="9 13" stroke-width="1.5"/>
+<path d="M400 372 V448" stroke="white" stroke-width="3" stroke-dasharray="5 5"/>
+<text x="400" y="262" fill="#a9bac7" text-anchor="middle" font-size="20">PYTHON KJØRER</text><text id="mode" x="400" y="290" fill="#72e4b0" text-anchor="middle" font-size="14">Treningen starter …</text>
+<g id="radars"></g><g id="rays" stroke="#f3c969" stroke-width="2" opacity=".85"></g>
+<g id="car0"><circle r="7" fill="#72e4b0"/><path d="M7 0 L-3 -4 L-3 4 Z" fill="white"/></g><g id="car1"><circle r="7" fill="#6fb9ff"/><path d="M7 0 L-3 -4 L-3 4 Z" fill="white"/></g></svg>
+<p class="note">Bilene starter midt i S-svingen på nedre langside og kjører fra hverandre. Neste møte blir omtrent etter en halv runde hver. Grønn kjører med klokka, blå mot klokka. Sensorene ser både veggen og den andre bilen i −90°, −60°, −30°, 0°, 30°, 60° og 90°. Ved veggkontakt starter bare den berørte bilen på nytt. Ved bilkollisjon starter begge på nytt. Den andre bilen fortsetter mens en bil venter på ledig startplass. Ny kandidat starter etter 650 steg. Visningen spiller av et faktisk treningsforsøk, inkludert feil, i valgt visningshastighet. Treningen fortsetter uavhengig. Mellom opptakene velges det nyeste ferdige forsøket. Begge bilene bruker den samme kandidaten. Radaren er en rund boble med radius 90, sentrert 90 lengdeenheter foran bilen. Ringen blir oransje når den andre bilen kommer inn i boblen. Nettverket får de sju stråleavstandene samt radarens nærhet og retning. Radaren har ingen skjerming fra banekanter; den måler den andre bilen i boblen. Kun nærhet til vegg eller bil og kollisjoner gir straff. Kollisjonsstraffen er nå −50 poeng; nærhetsstraffen er uendret. Ingen sporregel eller belønning for runder. Fast fart; rundetelling er kun visning. Beste modell lagres etter hver generasjon.</p><p id="validation" class="note"></p></main>
+<script>
+const $=id=>document.getElementById(id);
+let cockpitState=null, road=[];
+async function update(){
+ try{
+  const r=await fetch('/api/state');if(!r.ok)throw Error(r.status);const s=await r.json();cockpitState=s;drawCockpit();$('architecture').textContent=s.architecture.join(' → ');
+  $('connection').textContent=s.fast?'Trener raskt · rolig avspilling':'Python tilkoblet';$('speed').disabled=false;$('gen').textContent=s.generation+' / '+s.generations;
+  $('score').textContent=s.best_score ?? '—';$('candidate').textContent=s.phase==='training'?'Viser generasjon '+(s.display_generation ?? '—')+', kandidat '+(s.display_candidate ?? '—')+' · Trener kandidat '+s.candidate+' / '+s.population:s.phase==='validation'?'Kontrollerer andre startplasseringer':'Avspilling av beste nettverk';$('attempt').textContent='Steg '+s.step+' / 650 · Poeng: '+s.current_score+' · Omstarter: '+s.cars.map(c=>c.restarts).join(' / ');$('speed').value=String(s.speed);s.cars.forEach((c,i)=>{$('lap').children[i].textContent=Number(c.lap).toFixed(1)+' %';});
+  $('mode').textContent=s.reason || (s.training?'Opptak fra treningen':'Avspilling · trening ferdig');
+  let rays='',radars='';s.cars.forEach((c,i)=>{
+   const r=c.radar, color=r.detected?'#ff865f':(i?'#6fb9ff':'#72e4b0');
+   if(!c.crashed)radars+=`<circle cx="${r.center_x}" cy="${r.center_y}" r="${r.radius}" fill="${color}" fill-opacity="${r.detected?.16:.035}" stroke="${color}" stroke-opacity=".65" stroke-width="1.5"/>`;
+   $('car'+i).setAttribute('opacity',c.crashed?'0.25':'1');
+   $('car'+i).setAttribute('transform',`translate(${c.x} ${c.y}) rotate(${c.heading*180/Math.PI})`);
+   rays+=c.sensors.map((d,k)=>`<line stroke="${i?'#6fb9ff':'#f3c969'}" x1="${c.x}" y1="${c.y}" x2="${c.x+Math.cos(c.heading+s.angles[k])*d}" y2="${c.y+Math.sin(c.heading+s.angles[k])*d}"/>`).join('');
+  });$('rays').innerHTML=rays;$('radars').innerHTML=radars;
+  if(s.validation)$('validation').textContent='Kontroll med tre startplasseringer: '+s.validation.map(v=>Math.round(v[1]*100)+' % · '+(v[2]||'tidsgrense')).join(' | ');
+ }catch(e){$('connection').textContent='Venter på Python …';}setTimeout(update,70);
+}$('speed').onchange=async e=>{try{const r=await fetch('/api/speed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({speed:Number(e.target.value)})});if(!r.ok)throw Error();$('speedError').textContent='';}catch{$('speedError').textContent='Kunne ikke endre hastigheten.'}};
+fetch('/api/track').then(r=>r.json()).then(t=>{document.querySelectorAll('.track').forEach(p=>p.setAttribute('d',t.path));buildRoad(t);drawCockpit();videoReady();}).catch(()=>{$('recordStatus').textContent='Kunne ikke laste banen.';});
+
+// Small software 3D renderer: world coordinates come from the Python track.
+// Clip polygons at the camera plane before projecting, then draw far to near.
+function buildRoad(t){
+ const path=document.querySelector('.track'), length=path.getTotalLength();
+ const count=Math.ceil(length/4);
+ road=Array.from({length:count},(_,i)=>{
+  const d=i*length/count,p=path.getPointAtLength(d);
+  const a=path.getPointAtLength((d-1+length)%length),b=path.getPointAtLength((d+1)%length);
+  const l=Math.hypot(b.x-a.x,b.y-a.y);
+  return {x:p.x,y:p.y,nx:-(b.y-a.y)/l,ny:(b.x-a.x)/l,half:t.width/2};
+ });
+}
+const cockpitContext=$('cockpit').getContext('2d');
+let previousHeading=null, previousDriver=null, wheelAngle=0;
+$('driver').onchange=()=>{previousHeading=null;drawCockpit();};
+function drawCockpit(){
+ const ctx=cockpitContext,W=1200,H=650;
+ if(!cockpitState||!road.length){ctx.fillStyle='#bacbd4';ctx.font='22px system-ui';ctx.fillText('Venter på banen og Python …',40,70);return;}
+ const id=Number($('driver').value),car=cockpitState.cars[id];
+ const sky=ctx.createLinearGradient(0,0,0,340);sky.addColorStop(0,'#54839b');sky.addColorStop(1,'#d6e7e8');
+ ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);ctx.fillStyle='#466a51';ctx.fillRect(0,286,W,H);
+ const cos=Math.cos(car.heading),sin=Math.sin(car.heading),faces=[];
+ function camera(p){const dx=p[0]-car.x,dy=p[1]-car.y;return [-sin*dx+cos*dy,p[2]-9,cos*dx+sin*dy];}
+ function polygon(points,color){
+  let input=points.map(camera),output=[];
+  for(let i=0;i<input.length;i++){
+   const a=input[i],b=input[(i+1)%input.length],inside=a[2]>=1,other=b[2]>=1;
+   if(inside)output.push(a);
+   if(inside!==other){const t=(1-a[2])/(b[2]-a[2]);output.push(a.map((v,j)=>v+t*(b[j]-v)));}
+  }
+  if(output.length<3)return;
+  faces.push({points:output,color,depth:input.reduce((sum,p)=>sum+p[2],0)/input.length});
+ }
+ function edge(p,d,z=0){return [p.x+p.nx*d,p.y+p.ny*d,z];}
+ road.forEach((a,i)=>{
+  const b=road[(i+1)%road.length],h=a.half;
+  polygon([edge(a,-h),edge(b,-h),edge(b,h),edge(a,h)],'#37434a');
+  for(const side of [-1,1]){
+   polygon([edge(a,side*(h-1)),edge(b,side*(h-1)),edge(b,side*h),edge(a,side*h)],i%6<3?'#e3e8de':'#cc6a52');
+   // Walls rise well above the driver's eye height (9 world units).
+   const wallHeight=26;
+   polygon([edge(a,side*(h+1)),edge(b,side*(h+1)),edge(b,side*(h+1),wallHeight),edge(a,side*(h+1),wallHeight)],i%6<3?'#a4b4b5':'#91a3a5');
+   polygon([edge(a,side*(h+1),wallHeight),edge(b,side*(h+1),wallHeight),edge(b,side*(h+3),wallHeight),edge(a,side*(h+3),wallHeight)],'#cfdbd9');
+  }
+  if(i%6<3)polygon([edge(a,-.35,.05),edge(b,-.35,.05),edge(b,.35,.05),edge(a,.35,.05)],'#cbd0b4');
+ });
+ cockpitState.cars.forEach((other,j)=>{
+  if(j===id||other.crashed)return;
+  const co=Math.cos(other.heading),si=Math.sin(other.heading);
+  const point=(x,y,z)=>[other.x+x*co-y*si,other.y+x*si+y*co,z];
+  const box=(x1,x2,y1,y2,z1,z2,color)=>{
+   polygon([point(x1,y1,z2),point(x2,y1,z2),point(x2,y2,z2),point(x1,y2,z2)],color);
+   polygon([point(x1,y1,z1),point(x2,y1,z1),point(x2,y1,z2),point(x1,y1,z2)],color);
+   polygon([point(x1,y2,z1),point(x2,y2,z1),point(x2,y2,z2),point(x1,y2,z2)],color);
+   for(const x of [x1,x2])polygon([point(x,y1,z1),point(x,y2,z1),point(x,y2,z2),point(x,y1,z2)],color);
+  };
+  box(-6,6,-4,4,1,4,j?'#6fb9ff':'#72e4b0');box(-3,3,-3.4,3.4,4,7,'#223943');
+ });
+ faces.sort((a,b)=>b.depth-a.depth).forEach(f=>{
+  ctx.beginPath();f.points.forEach((p,i)=>{const x=600+700*p[0]/p[2],y=286-700*p[1]/p[2];i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();ctx.fillStyle=f.color;ctx.fill();
+ });
+ // Interior stays fixed to the camera.
+ ctx.fillStyle='#142029';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(1200,0);ctx.lineTo(1150,32);ctx.lineTo(50,32);ctx.closePath();ctx.fill();
+ for(const flip of [false,true]){ctx.save();if(flip){ctx.translate(W,0);ctx.scale(-1,1);}ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(48,0);ctx.lineTo(150,470);ctx.lineTo(0,550);ctx.closePath();ctx.fill();ctx.restore();}
+ ctx.fillStyle='#1c2b34';ctx.beginPath();ctx.moveTo(0,493);ctx.quadraticCurveTo(600,400,1200,493);ctx.lineTo(1200,650);ctx.lineTo(0,650);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#71858e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,493);ctx.quadraticCurveTo(600,400,1200,493);ctx.stroke();
+ if(previousDriver===id&&previousHeading!==null){const delta=Math.atan2(Math.sin(car.heading-previousHeading),Math.cos(car.heading-previousHeading));wheelAngle=Math.max(-.7,Math.min(.7,delta*7));}
+ previousHeading=car.heading;previousDriver=id;
+ ctx.fillStyle='#0c161d';ctx.fillRect(510,475,300,70);ctx.fillStyle=id?'#6fb9ff':'#72e4b0';ctx.font='18px system-ui';ctx.fillText(id?'BLÅ BIL · AI KJØRER':'GRØNN BIL · AI KJØRER',530,504);
+ ctx.fillStyle='#b5c7cd';ctx.font='15px system-ui';ctx.fillText(car.crashed?'Venter på ny start':`Runde ${Number(car.lap).toFixed(1)} % · ${cockpitState.speed}×`,530,531);
+ ctx.save();ctx.translate(380,592);ctx.rotate(wheelAngle);ctx.strokeStyle='#090f14';ctx.lineWidth=23;ctx.beginPath();ctx.arc(0,0,101,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#4a5c66';ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(-90,-15);ctx.lineTo(0,12);ctx.lineTo(90,-15);ctx.moveTo(0,12);ctx.lineTo(0,96);ctx.stroke();ctx.fillStyle='#253640';ctx.beginPath();ctx.arc(0,10,29,0,Math.PI*2);ctx.fill();ctx.restore();
+ if(car.crashed){ctx.fillStyle='rgba(15,25,34,.65)';ctx.fillRect(180,180,840,75);ctx.fillStyle='#fff';ctx.font='24px system-ui';ctx.textAlign='center';ctx.fillText('Venter på ledig startplass',600,226);ctx.textAlign='left';}
+}
+drawCockpit();
+
+// Capture only the SVG field; no screen capture or microphone permission needed.
+const videoCanvas=document.createElement('canvas');videoCanvas.width=1600;videoCanvas.height=1080;
+const videoContext=videoCanvas.getContext('2d');
+let recorder=null, videoStream=null, videoChunks=[], videoUrl=null, videoFrame=null, videoClock=null;
+let painting=false, startedAt=0, recordingError='';
+function videoReady(){
+ if(!window.MediaRecorder || !videoCanvas.captureStream){$('recordStatus').textContent='Videoopptak støttes ikke her. Åpne demoen i Chrome eller Edge.';return;}
+ $('recordButton').disabled=false;$('recordStatus').textContent='Klar for opptak';
+}
+async function paintVideoFrame(){
+ if(painting)return;
+ painting=true;
+ let url;
+ try{
+  const svg=$('trackView').cloneNode(true);
+  svg.setAttribute('width','1600');svg.setAttribute('height','1080');svg.setAttribute('font-family','Arial, sans-serif');
+  // CSS outside the SVG is not part of the exported picture.
+  url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)],{type:'image/svg+xml;charset=utf-8'}));
+  const frame=new Image();
+  await new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=()=>reject(new Error('Kunne ikke tegne videobildet.'));frame.src=url;});
+  videoContext.fillStyle='#14242c';videoContext.fillRect(0,0,1600,1080);
+  videoContext.drawImage(frame,0,0,1600,1080);
+ }finally{if(url)URL.revokeObjectURL(url);painting=false;}
+}
+function stopVideo(){
+ clearInterval(videoFrame);clearInterval(videoClock);
+ if(recorder && recorder.state!=='inactive')recorder.stop();
+ $('recordButton').disabled=true;$('recordStatus').textContent='Gjør videoen klar …';
+}
+$('recordButton').onclick=async()=>{
+ if(recorder && recorder.state==='recording'){stopVideo();return;}
+ $('recordButton').disabled=true;recordingError='';
+ try{
+  await paintVideoFrame();
+  const mime=['video/mp4;codecs=avc1.42E01E','video/webm;codecs=vp9','video/webm;codecs=vp8','video/mp4','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+  if(!mime)throw new Error('Ingen støttet videoformat i denne nettleseren.');
+  videoStream=videoCanvas.captureStream(30);
+  recorder=new MediaRecorder(videoStream,{mimeType:mime,videoBitsPerSecond:8000000});videoChunks=[];
+  recorder.ondataavailable=e=>{if(e.data.size)videoChunks.push(e.data);};
+  recorder.onerror=()=>{recordingError='Opptaket ble avbrutt. Eventuell delvideo kan lastes ned.';stopVideo();};
+  recorder.onstop=()=>{
+   clearInterval(videoFrame);clearInterval(videoClock);videoStream.getTracks().forEach(t=>t.stop());
+   if(videoChunks.length){
+    const blob=new Blob(videoChunks,{type:recorder.mimeType});
+    if(videoUrl)URL.revokeObjectURL(videoUrl);videoUrl=URL.createObjectURL(blob);
+    const ext=recorder.mimeType.includes('mp4')?'mp4':'webm';
+    const link=$('recordDownload');link.href=videoUrl;link.download='bilspillai-'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+ext;
+    $('recordPreview').src=videoUrl;$('recordPreview').hidden=false;
+    link.textContent='Last ned video ('+ext.toUpperCase()+', '+(blob.size/1048576).toFixed(1)+' MB)';link.hidden=false;
+   }
+   $('recordStatus').textContent=recordingError || (videoChunks.length?'Videoen er klar':'Ingen videobilder ble lagret.');
+   $('recordButton').textContent='Ta opp ny video';$('recordButton').dataset.recording='false';$('recordButton').disabled=false;
+  };
+  recorder.start(1000);startedAt=Date.now();
+  $('recordButton').disabled=false;$('recordButton').textContent='Stopp opptak';$('recordButton').dataset.recording='true';
+  $('recordStatus').textContent='Tar opp · 00:00';
+  videoFrame=setInterval(()=>paintVideoFrame().catch(e=>{recordingError=e.message;stopVideo();}),1000/30);
+  videoClock=setInterval(()=>{const sec=Math.floor((Date.now()-startedAt)/1000);$('recordStatus').textContent='Tar opp · '+String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');},250);
+ }catch(e){
+  if(videoStream)videoStream.getTracks().forEach(t=>t.stop());
+  $('recordStatus').textContent='Kunne ikke starte opptak: '+e.message;$('recordButton').disabled=false;
+ }
+};
+window.addEventListener('beforeunload',e=>{if(recorder?.state==='recording'){e.preventDefault();e.returnValue='';}});
+update();
+</script></html>

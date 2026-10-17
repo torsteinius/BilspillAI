@@ -1,0 +1,318 @@
+{
+  "experiment": "modular_lstm_v1",
+  "hidden_size": 256,
+  "memory_state_values": 512,
+  "backend": "Apple Metal / MLX",
+  "event_definition": "every movement observation",
+  "goal": "find exit and explore unseen cells",
+  "phase": "complete",
+  "seed": 42,
+  "perception": {
+    "open_accuracy": 0.997265636920929,
+    "length_mae": 0.018432321026921272,
+    "samples": 1280
+  },
+  "memory_curriculum": [
+    {
+      "length": 5,
+      "accuracy": 1.0,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 1.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "samples": 256,
+      "seconds": 1.6740351249463856
+    },
+    {
+      "length": 10,
+      "accuracy": 1.0,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 1.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "6": 1.0,
+        "10": 1.0
+      },
+      "samples": 256,
+      "seconds": 2.808472250122577
+    },
+    {
+      "length": 20,
+      "accuracy": 1.0,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 1.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "11": 1.0,
+        "20": 1.0
+      },
+      "samples": 256,
+      "seconds": 5.658557165879756
+    },
+    {
+      "length": 40,
+      "accuracy": 0.816601574420929,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 0.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "21": 0.40234375,
+        "40": 1.0
+      },
+      "samples": 256,
+      "seconds": 13.959371292032301
+    },
+    {
+      "length": 67,
+      "accuracy": 0.6736240386962891,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 0.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "34": 0.53515625,
+        "67": 1.0
+      },
+      "samples": 256,
+      "seconds": 33.09285454219207
+    }
+  ],
+  "memory_final_tests": [
+    {
+      "length": 5,
+      "accuracy": 1.0,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 1.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0
+      },
+      "samples": 256
+    },
+    {
+      "length": 10,
+      "accuracy": 1.0,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 1.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "6": 1.0,
+        "10": 1.0
+      },
+      "samples": 256
+    },
+    {
+      "length": 20,
+      "accuracy": 0.999804675579071,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 0.99609375,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "11": 1.0,
+        "20": 1.0
+      },
+      "samples": 256
+    },
+    {
+      "length": 40,
+      "accuracy": 0.8467773795127869,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 0.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "21": 0.5625,
+        "40": 0.98828125
+      },
+      "samples": 256
+    },
+    {
+      "length": 67,
+      "accuracy": 0.6736240386962891,
+      "chance": 0.25,
+      "exact_sequence_accuracy": 0.0,
+      "queried_positions": {
+        "1": 1.0,
+        "3": 1.0,
+        "34": 0.53515625,
+        "67": 1.0
+      },
+      "samples": 256
+    }
+  ],
+  "decision_training": [
+    {
+      "iteration": 10,
+      "size": 5,
+      "training_escape_rate": 0.9375,
+      "mean_visited": 6.15625,
+      "loss": -0.055202122777700424
+    },
+    {
+      "iteration": 20,
+      "size": 5,
+      "training_escape_rate": 0.9375,
+      "mean_visited": 6.3125,
+      "loss": -0.08779828995466232
+    },
+    {
+      "iteration": 30,
+      "size": 5,
+      "training_escape_rate": 1.0,
+      "mean_visited": 6.34375,
+      "loss": -0.32330650091171265
+    },
+    {
+      "iteration": 40,
+      "size": 5,
+      "training_escape_rate": 1.0,
+      "mean_visited": 6.125,
+      "loss": -0.18163728713989258
+    },
+    {
+      "iteration": 50,
+      "size": 5,
+      "training_escape_rate": 1.0,
+      "mean_visited": 6.3125,
+      "loss": -0.17732656002044678
+    },
+    {
+      "iteration": 60,
+      "size": 5,
+      "training_escape_rate": 1.0,
+      "mean_visited": 5.875,
+      "loss": -0.18528549373149872
+    },
+    {
+      "iteration": 70,
+      "size": 9,
+      "training_escape_rate": 0.28125,
+      "mean_visited": 11.6875,
+      "loss": -0.0072831520810723305
+    },
+    {
+      "iteration": 80,
+      "size": 9,
+      "training_escape_rate": 0.6875,
+      "mean_visited": 17.78125,
+      "loss": 0.003052456071600318
+    },
+    {
+      "iteration": 90,
+      "size": 9,
+      "training_escape_rate": 0.875,
+      "mean_visited": 20.125,
+      "loss": -0.030576642602682114
+    },
+    {
+      "iteration": 100,
+      "size": 9,
+      "training_escape_rate": 0.9375,
+      "mean_visited": 20.875,
+      "loss": -0.006281109526753426
+    },
+    {
+      "iteration": 110,
+      "size": 9,
+      "training_escape_rate": 0.96875,
+      "mean_visited": 19.46875,
+      "loss": -0.0219122227281332
+    },
+    {
+      "iteration": 120,
+      "size": 9,
+      "training_escape_rate": 0.96875,
+      "mean_visited": 19.40625,
+      "loss": -0.016750743612647057
+    },
+    {
+      "iteration": 130,
+      "size": 15,
+      "training_escape_rate": 0.40625,
+      "mean_visited": 51.625,
+      "loss": -0.035731520503759384
+    },
+    {
+      "iteration": 140,
+      "size": 15,
+      "training_escape_rate": 0.5,
+      "mean_visited": 51.15625,
+      "loss": -0.034086983650922775
+    },
+    {
+      "iteration": 150,
+      "size": 15,
+      "training_escape_rate": 0.6875,
+      "mean_visited": 49.84375,
+      "loss": -0.03295072913169861
+    },
+    {
+      "iteration": 160,
+      "size": 15,
+      "training_escape_rate": 0.625,
+      "mean_visited": 51.03125,
+      "loss": -0.028613567352294922
+    },
+    {
+      "iteration": 170,
+      "size": 15,
+      "training_escape_rate": 0.59375,
+      "mean_visited": 52.40625,
+      "loss": -0.03538958728313446
+    },
+    {
+      "iteration": 180,
+      "size": 15,
+      "training_escape_rate": 0.75,
+      "mean_visited": 51.9375,
+      "loss": -0.024033892899751663
+    }
+  ],
+  "navigation_tests": {
+    "5x5_memory": {
+      "samples": 40,
+      "escape_rate": 1.0,
+      "mean_visited": 6.35,
+      "mean_collisions": 0.0
+    },
+    "5x5_memory_zeroed": {
+      "samples": 40,
+      "escape_rate": 1.0,
+      "mean_visited": 6.35,
+      "mean_collisions": 0.0
+    },
+    "9x9_memory": {
+      "samples": 40,
+      "escape_rate": 0.95,
+      "mean_visited": 18.9,
+      "mean_collisions": 0.425
+    },
+    "9x9_memory_zeroed": {
+      "samples": 40,
+      "escape_rate": 0.925,
+      "mean_visited": 19.275,
+      "mean_collisions": 0.0
+    },
+    "15x15_memory": {
+      "samples": 40,
+      "escape_rate": 0.625,
+      "mean_visited": 54.675,
+      "mean_collisions": 1.375
+    },
+    "15x15_memory_zeroed": {
+      "samples": 40,
+      "escape_rate": 0.65,
+      "mean_visited": 53.3,
+      "mean_collisions": 0.0
+    }
+  }
+}

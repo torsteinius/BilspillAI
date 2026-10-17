@@ -1,0 +1,93 @@
+{
+  "experiment": "junction_detector_v1",
+  "walker_generation": 3000,
+  "walker_weights_sha256": "5e2fc24e1da7b4c0303286a30f6a3769be65188b1a1de5258b6230305b164b40",
+  "architecture": [
+    8,
+    32,
+    16,
+    1
+  ],
+  "backend": "Apple Metal GPU",
+  "definition": "branches (3+ open neighbours) and corners (2 non-opposite neighbours)",
+  "rewards": {
+    "correct_stop": 1,
+    "false_stop": -1,
+    "no_stop": 0
+  },
+  "phase": "complete",
+  "training": [
+    {
+      "round": 20,
+      "observations_seen": 2392,
+      "expected_reward": 0.22657930850982666
+    },
+    {
+      "round": 40,
+      "observations_seen": 4806,
+      "expected_reward": 0.16399122774600983
+    },
+    {
+      "round": 60,
+      "observations_seen": 7130,
+      "expected_reward": 0.3046222925186157
+    },
+    {
+      "round": 80,
+      "observations_seen": 9254,
+      "expected_reward": 0.29682570695877075
+    },
+    {
+      "round": 100,
+      "observations_seen": 11306,
+      "expected_reward": 0.2968299388885498
+    },
+    {
+      "round": 120,
+      "observations_seen": 13938,
+      "expected_reward": 0.3671421408653259
+    },
+    {
+      "round": 140,
+      "observations_seen": 16274,
+      "expected_reward": 0.2109174132347107
+    },
+    {
+      "round": 160,
+      "observations_seen": 18622,
+      "expected_reward": 0.24216969311237335
+    }
+  ],
+  "test": {
+    "mazes": 300,
+    "observations": 4166,
+    "true_stops": 1271,
+    "false_stops": 144,
+    "missed_landmarks": 0,
+    "correct_silence": 2751,
+    "precision": 0.8982332155477032,
+    "recall": 1.0,
+    "mean_reward": 0.2705232837253961,
+    "by_kind": {
+      "blindvei": {
+        "observations": 360,
+        "signals": 144
+      },
+      "rett korridor": {
+        "observations": 2535,
+        "signals": 0
+      },
+      "forgrening": {
+        "observations": 282,
+        "signals": 282
+      },
+      "hjørne": {
+        "observations": 989,
+        "signals": 989
+      }
+    }
+  },
+  "training_mazes": 1280,
+  "observations_seen": 18622,
+  "walker_unchanged": true
+}

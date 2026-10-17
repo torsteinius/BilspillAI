@@ -1,0 +1,330 @@
+{
+  "experiment": "teleport_place_memory",
+  "phase": "complete",
+  "hidden": 256,
+  "seed": 72,
+  "pose": "fixed east",
+  "inputs": "8 ray distances only; no coordinates or movement",
+  "read_before_write": true,
+  "rewards": {
+    "correct": 1,
+    "incorrect": -1
+  },
+  "optimizer": "Adam / binary cross entropy",
+  "maze_size": 21,
+  "sampling": "balanced random seen/unseen when available",
+  "training_mazes": 256,
+  "history": [
+    {
+      "update": 100,
+      "length": 10,
+      "loss": 0.6300827860832214
+    },
+    {
+      "update": 200,
+      "length": 10,
+      "loss": 0.6281042695045471
+    },
+    {
+      "update": 300,
+      "length": 10,
+      "loss": 0.6279650926589966
+    },
+    {
+      "update": 400,
+      "length": 10,
+      "loss": 0.6335879564285278
+    },
+    {
+      "update": 500,
+      "length": 10,
+      "loss": 0.6252963542938232
+    },
+    {
+      "update": 600,
+      "length": 10,
+      "loss": 0.6269451975822449
+    },
+    {
+      "update": 700,
+      "length": 20,
+      "loss": 0.6582695841789246
+    },
+    {
+      "update": 800,
+      "length": 20,
+      "loss": 0.6591194868087769
+    },
+    {
+      "update": 900,
+      "length": 20,
+      "loss": 0.6566376686096191
+    },
+    {
+      "update": 1000,
+      "length": 20,
+      "loss": 0.661674439907074
+    },
+    {
+      "update": 1100,
+      "length": 20,
+      "loss": 0.6598168611526489
+    },
+    {
+      "update": 1200,
+      "length": 20,
+      "loss": 0.6668109893798828
+    },
+    {
+      "update": 1300,
+      "length": 40,
+      "loss": 0.6762815713882446
+    },
+    {
+      "update": 1400,
+      "length": 40,
+      "loss": 0.6766104698181152
+    },
+    {
+      "update": 1500,
+      "length": 40,
+      "loss": 0.6778525710105896
+    },
+    {
+      "update": 1600,
+      "length": 40,
+      "loss": 0.6773645877838135
+    },
+    {
+      "update": 1700,
+      "length": 40,
+      "loss": 0.6833250522613525
+    },
+    {
+      "update": 1800,
+      "length": 40,
+      "loss": 0.6765095591545105
+    },
+    {
+      "update": 1900,
+      "length": 67,
+      "loss": 0.6832631826400757
+    },
+    {
+      "update": 2000,
+      "length": 67,
+      "loss": 0.6831377148628235
+    },
+    {
+      "update": 2100,
+      "length": 67,
+      "loss": 0.6832177639007568
+    },
+    {
+      "update": 2200,
+      "length": 67,
+      "loss": 0.6826556921005249
+    },
+    {
+      "update": 2300,
+      "length": 67,
+      "loss": 0.6826772093772888
+    },
+    {
+      "update": 2400,
+      "length": 67,
+      "loss": 0.6843117475509644
+    }
+  ],
+  "test": {
+    "by_length": {
+      "10": {
+        "normal": {
+          "accuracy": 0.53984375,
+          "balanced_accuracy": 0.5893849206349207,
+          "seen_recall": 0.9857142857142858,
+          "unseen_recall": 0.19305555555555556,
+          "seen_precision": 0.4872021182700794,
+          "tp": 552,
+          "fp": 581,
+          "fn": 8,
+          "tn": 139,
+          "mean_reward": 0.0796875,
+          "always_new_accuracy": 0.5625,
+          "always_seen_accuracy": 0.4375
+        },
+        "memory_reset": {
+          "accuracy": 0.5625,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 560,
+          "tn": 720,
+          "mean_reward": 0.125,
+          "always_new_accuracy": 0.5625,
+          "always_seen_accuracy": 0.4375
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.5375,
+          "balanced_accuracy": 0.5875,
+          "seen_recall": 0.9875,
+          "unseen_recall": 0.1875,
+          "seen_precision": 0.4859402460456942,
+          "tp": 553,
+          "fp": 585,
+          "fn": 7,
+          "tn": 135,
+          "mean_reward": 0.075,
+          "always_new_accuracy": 0.5625,
+          "always_seen_accuracy": 0.4375
+        },
+        "samples": 128,
+        "events": 10
+      },
+      "20": {
+        "normal": {
+          "accuracy": 0.528125,
+          "balanced_accuracy": 0.5488133104966968,
+          "seen_recall": 0.9901639344262295,
+          "unseen_recall": 0.10746268656716418,
+          "seen_precision": 0.502495840266223,
+          "tp": 1208,
+          "fp": 1196,
+          "fn": 12,
+          "tn": 144,
+          "mean_reward": 0.05625,
+          "always_new_accuracy": 0.5234375,
+          "always_seen_accuracy": 0.4765625
+        },
+        "memory_reset": {
+          "accuracy": 0.5234375,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1220,
+          "tn": 1340,
+          "mean_reward": 0.046875,
+          "always_new_accuracy": 0.5234375,
+          "always_seen_accuracy": 0.4765625
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.5265625,
+          "balanced_accuracy": 0.547320773183264,
+          "seen_recall": 0.9901639344262295,
+          "unseen_recall": 0.1044776119402985,
+          "seen_precision": 0.5016611295681063,
+          "tp": 1208,
+          "fp": 1200,
+          "fn": 12,
+          "tn": 140,
+          "mean_reward": 0.053125,
+          "always_new_accuracy": 0.5234375,
+          "always_seen_accuracy": 0.4765625
+        },
+        "samples": 128,
+        "events": 20
+      },
+      "40": {
+        "normal": {
+          "accuracy": 0.5134765625,
+          "balanced_accuracy": 0.5229876951183472,
+          "seen_recall": 0.9912280701754386,
+          "unseen_recall": 0.054747320061255746,
+          "seen_precision": 0.501715438950555,
+          "tp": 2486,
+          "fp": 2469,
+          "fn": 22,
+          "tn": 143,
+          "mean_reward": 0.026953125,
+          "always_new_accuracy": 0.51015625,
+          "always_seen_accuracy": 0.48984375
+        },
+        "memory_reset": {
+          "accuracy": 0.51015625,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 2508,
+          "tn": 2612,
+          "mean_reward": 0.0203125,
+          "always_new_accuracy": 0.51015625,
+          "always_seen_accuracy": 0.48984375
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.5138671875,
+          "balanced_accuracy": 0.5233784813558329,
+          "seen_recall": 0.9916267942583732,
+          "unseen_recall": 0.055130168453292494,
+          "seen_precision": 0.5019172552976792,
+          "tp": 2487,
+          "fp": 2468,
+          "fn": 21,
+          "tn": 144,
+          "mean_reward": 0.027734375,
+          "always_new_accuracy": 0.51015625,
+          "always_seen_accuracy": 0.48984375
+        },
+        "samples": 128,
+        "events": 40
+      },
+      "67": {
+        "normal": {
+          "accuracy": 0.5143423507462687,
+          "balanced_accuracy": 0.5138965029938661,
+          "seen_recall": 0.9918452935694315,
+          "unseen_recall": 0.03594771241830065,
+          "seen_precision": 0.5075712412066293,
+          "tp": 4257,
+          "fp": 4130,
+          "fn": 35,
+          "tn": 154,
+          "mean_reward": 0.028684701492537313,
+          "always_new_accuracy": 0.49953358208955223,
+          "always_seen_accuracy": 0.5004664179104478
+        },
+        "memory_reset": {
+          "accuracy": 0.49953358208955223,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 4292,
+          "tn": 4284,
+          "mean_reward": -0.0009328358208955224,
+          "always_new_accuracy": 0.49953358208955223,
+          "always_seen_accuracy": 0.5004664179104478
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.5142257462686567,
+          "balanced_accuracy": 0.5137782668208631,
+          "seen_recall": 0.9934762348555451,
+          "unseen_recall": 0.034080298786181136,
+          "seen_precision": 0.5074982147107832,
+          "tp": 4264,
+          "fp": 4138,
+          "fn": 28,
+          "tn": 146,
+          "mean_reward": 0.02845149253731343,
+          "always_new_accuracy": 0.49953358208955223,
+          "always_seen_accuracy": 0.5004664179104478
+        },
+        "samples": 128,
+        "events": 67
+      }
+    },
+    "indistinguishable_locations": 4094,
+    "total_locations": 7199,
+    "detector_write_rate": 1.0
+  }
+}

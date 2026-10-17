@@ -1,0 +1,334 @@
+{
+  "experiment": "teleport_place_memory",
+  "phase": "complete",
+  "hidden": 256,
+  "seed": 73,
+  "pose": "independent random cardinal heading at every placement",
+  "inputs": "8 ray distances only; no coordinates or movement",
+  "read_before_write": true,
+  "rewards": {
+    "correct": 1,
+    "incorrect": -1
+  },
+  "optimizer": "Adam / binary cross entropy",
+  "maze_size": 21,
+  "sampling": "balanced",
+  "training_mazes": 256,
+  "history": [
+    {
+      "update": 100,
+      "length": 10,
+      "loss": 0.6305716037750244
+    },
+    {
+      "update": 200,
+      "length": 10,
+      "loss": 0.6268140077590942
+    },
+    {
+      "update": 300,
+      "length": 10,
+      "loss": 0.6315662264823914
+    },
+    {
+      "update": 400,
+      "length": 10,
+      "loss": 0.6247673034667969
+    },
+    {
+      "update": 500,
+      "length": 10,
+      "loss": 0.6231846213340759
+    },
+    {
+      "update": 600,
+      "length": 10,
+      "loss": 0.6220216155052185
+    },
+    {
+      "update": 700,
+      "length": 20,
+      "loss": 0.6597393155097961
+    },
+    {
+      "update": 800,
+      "length": 20,
+      "loss": 0.6597307920455933
+    },
+    {
+      "update": 900,
+      "length": 20,
+      "loss": 0.6567302346229553
+    },
+    {
+      "update": 1000,
+      "length": 20,
+      "loss": 0.6587719917297363
+    },
+    {
+      "update": 1100,
+      "length": 20,
+      "loss": 0.659416139125824
+    },
+    {
+      "update": 1200,
+      "length": 20,
+      "loss": 0.6589990854263306
+    },
+    {
+      "update": 1300,
+      "length": 40,
+      "loss": 0.6762511730194092
+    },
+    {
+      "update": 1400,
+      "length": 40,
+      "loss": 0.6766747236251831
+    },
+    {
+      "update": 1500,
+      "length": 40,
+      "loss": 0.6766589879989624
+    },
+    {
+      "update": 1600,
+      "length": 40,
+      "loss": 0.6755973696708679
+    },
+    {
+      "update": 1700,
+      "length": 40,
+      "loss": 0.676397442817688
+    },
+    {
+      "update": 1800,
+      "length": 40,
+      "loss": 0.6775161027908325
+    },
+    {
+      "update": 1900,
+      "length": 67,
+      "loss": 0.683059573173523
+    },
+    {
+      "update": 2000,
+      "length": 67,
+      "loss": 0.6826755404472351
+    },
+    {
+      "update": 2100,
+      "length": 67,
+      "loss": 0.6829056143760681
+    },
+    {
+      "update": 2200,
+      "length": 67,
+      "loss": 0.6829221248626709
+    },
+    {
+      "update": 2300,
+      "length": 67,
+      "loss": 0.6831640005111694
+    },
+    {
+      "update": 2400,
+      "length": 67,
+      "loss": 0.6837170720100403
+    }
+  ],
+  "previous_updates": 2400,
+  "total_updates": 4800,
+  "resumed_from": "games/maze/models/place_memory_v2",
+  "optimizer_state": "fresh Adam; trained network weights retained",
+  "test": {
+    "by_length": {
+      "10": {
+        "normal": {
+          "accuracy": 0.55546875,
+          "balanced_accuracy": 0.499653821807248,
+          "seen_recall": 0.0035211267605633804,
+          "unseen_recall": 0.9957865168539326,
+          "seen_precision": 0.4,
+          "tp": 2,
+          "fp": 3,
+          "fn": 566,
+          "tn": 709,
+          "mean_reward": 0.1109375,
+          "always_new_accuracy": 0.55625,
+          "always_seen_accuracy": 0.44375
+        },
+        "memory_reset": {
+          "accuracy": 0.55625,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 568,
+          "tn": 712,
+          "mean_reward": 0.1125,
+          "always_new_accuracy": 0.55625,
+          "always_seen_accuracy": 0.44375
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.5578125,
+          "balanced_accuracy": 0.502116632378541,
+          "seen_recall": 0.007042253521126761,
+          "unseen_recall": 0.9971910112359551,
+          "seen_precision": 0.6666666666666666,
+          "tp": 4,
+          "fp": 2,
+          "fn": 564,
+          "tn": 710,
+          "mean_reward": 0.115625,
+          "always_new_accuracy": 0.55625,
+          "always_seen_accuracy": 0.44375
+        },
+        "samples": 128,
+        "events": 10
+      },
+      "20": {
+        "normal": {
+          "accuracy": 0.52890625,
+          "balanced_accuracy": 0.4986228156802972,
+          "seen_recall": 0.0016638935108153079,
+          "unseen_recall": 0.9955817378497791,
+          "seen_precision": 0.25,
+          "tp": 2,
+          "fp": 6,
+          "fn": 1200,
+          "tn": 1352,
+          "mean_reward": 0.0578125,
+          "always_new_accuracy": 0.53046875,
+          "always_seen_accuracy": 0.46953125
+        },
+        "memory_reset": {
+          "accuracy": 0.53046875,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1202,
+          "tn": 1358,
+          "mean_reward": 0.0609375,
+          "always_new_accuracy": 0.53046875,
+          "always_seen_accuracy": 0.46953125
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.52890625,
+          "balanced_accuracy": 0.49871838541066804,
+          "seen_recall": 0.0033277870216306157,
+          "unseen_recall": 0.9941089837997055,
+          "seen_precision": 0.3333333333333333,
+          "tp": 4,
+          "fp": 8,
+          "fn": 1198,
+          "tn": 1350,
+          "mean_reward": 0.0578125,
+          "always_new_accuracy": 0.53046875,
+          "always_seen_accuracy": 0.46953125
+        },
+        "samples": 128,
+        "events": 20
+      },
+      "40": {
+        "normal": {
+          "accuracy": 0.5138671875,
+          "balanced_accuracy": 0.4994531258113011,
+          "seen_recall": 0.0008045052292839903,
+          "unseen_recall": 0.9981017463933182,
+          "seen_precision": 0.2857142857142857,
+          "tp": 2,
+          "fp": 5,
+          "fn": 2484,
+          "tn": 2629,
+          "mean_reward": 0.027734375,
+          "always_new_accuracy": 0.514453125,
+          "always_seen_accuracy": 0.485546875
+        },
+        "memory_reset": {
+          "accuracy": 0.514453125,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 2486,
+          "tn": 2634,
+          "mean_reward": 0.02890625,
+          "always_new_accuracy": 0.514453125,
+          "always_seen_accuracy": 0.485546875
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.5142578125,
+          "balanced_accuracy": 0.49984407747929027,
+          "seen_recall": 0.0012067578439259854,
+          "unseen_recall": 0.9984813971146546,
+          "seen_precision": 0.42857142857142855,
+          "tp": 3,
+          "fp": 4,
+          "fn": 2483,
+          "tn": 2630,
+          "mean_reward": 0.028515625,
+          "always_new_accuracy": 0.514453125,
+          "always_seen_accuracy": 0.485546875
+        },
+        "samples": 128,
+        "events": 40
+      },
+      "67": {
+        "normal": {
+          "accuracy": 0.5097947761194029,
+          "balanced_accuracy": 0.4997900927705078,
+          "seen_recall": 0.0009519276534983341,
+          "unseen_recall": 0.9986282578875172,
+          "seen_precision": 0.4,
+          "tp": 4,
+          "fp": 6,
+          "fn": 4198,
+          "tn": 4368,
+          "mean_reward": 0.01958955223880597,
+          "always_new_accuracy": 0.5100279850746269,
+          "always_seen_accuracy": 0.4899720149253731
+        },
+        "memory_reset": {
+          "accuracy": 0.5100279850746269,
+          "balanced_accuracy": 0.5,
+          "seen_recall": 0.0,
+          "unseen_recall": 1.0,
+          "seen_precision": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 4202,
+          "tn": 4374,
+          "mean_reward": 0.02005597014925373,
+          "always_new_accuracy": 0.5100279850746269,
+          "always_seen_accuracy": 0.4899720149253731
+        },
+        "history_from_other_trial": {
+          "accuracy": 0.5102611940298507,
+          "balanced_accuracy": 0.500266056597257,
+          "seen_recall": 0.0019038553069966682,
+          "unseen_recall": 0.9986282578875172,
+          "seen_precision": 0.5714285714285714,
+          "tp": 8,
+          "fp": 6,
+          "fn": 4194,
+          "tn": 4368,
+          "mean_reward": 0.020522388059701493,
+          "always_new_accuracy": 0.5100279850746269,
+          "always_seen_accuracy": 0.4899720149253731
+        },
+        "samples": 128,
+        "events": 67
+      }
+    },
+    "indistinguishable_locations": 5414,
+    "total_locations": 7115,
+    "detector_write_rate": 1.0
+  }
+}

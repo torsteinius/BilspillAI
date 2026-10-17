@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BilspillAI · Python-demo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101820;color:#e9eff4;font:16px system-ui,sans-serif}main{max-width:1100px;margin:40px auto;padding:0 24px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:32px;margin:0}p{color:#a9bac7;line-height:1.6}.tag{color:#72e4b0;border:1px solid #325648;padding:8px 14px;border-radius:30px}.stats{display:flex;gap:16px;margin:24px 0}.stat{background:#1b2935;padding:16px 22px;border-radius:12px;flex:1}.stat span{display:block;color:#a9bac7;font-size:13px}.stat strong{font-size:24px}svg{width:100%;background:#14242c;border:1px solid #30424e;border-radius:18px}.note{font-size:14px}a{color:#72e4b0}
+</style><main><header><h1>BilspillAI</h1><div class="tag" id="connection">Kobler til Python</div></header>
+<p>Fire avstandssensorer. Ett lite nevralt nettverk. Læring ved utvalg og mutasjon.</p>
+<div class="stats"><div class="stat"><span>Generasjon</span><strong id="gen">0 / 60</strong></div><div class="stat"><span>Beste treningspoeng</span><strong id="score">—</strong></div><div class="stat"><span>Denne runden</span><strong id="lap">0 %</strong></div></div>
+<svg viewBox="0 0 800 540" aria-label="Bil som kjører på en oval bane sett ovenfra">
+<path d="M260 130 H540 A140 140 0 0 1 540 410 H260 A140 140 0 0 1 260 130" fill="none" stroke="#8b9ca7" stroke-width="80"/>
+<path d="M260 130 H540 A140 140 0 0 1 540 410 H260 A140 140 0 0 1 260 130" fill="none" stroke="#344550" stroke-width="76"/>
+<path d="M260 130 H540 A140 140 0 0 1 540 410 H260 A140 140 0 0 1 260 130" fill="none" stroke="#70828b" stroke-dasharray="9 13" stroke-width="1.5"/>
+<path d="M260 94 V166" stroke="white" stroke-width="3" stroke-dasharray="5 5"/>
+<text x="400" y="262" fill="#a9bac7" text-anchor="middle" font-size="20">PYTHON KJØRER</text><text id="mode" x="400" y="290" fill="#72e4b0" text-anchor="middle" font-size="14">Treningen starter …</text>
+<g id="rays" stroke="#f3c969" stroke-width="2" opacity=".85"></g>
+<g id="car"><circle r="7" fill="#72e4b0"/><path d="M10 0 L0 -4 L0 4 Z" fill="white"/></g></svg>
+<p class="note">Gule linjer viser sensorene. Kontakt med kanten avslutter forsøket. Ved neste start brukes det beste nettverket så langt. Banen er en fast testoval; tilfeldig banegenerering er ikke implementert i denne demoen. Visningen bruker enkel SVG, og all fysikk og læring kjører i Python.</p></main>
+<script>
+const $=id=>document.getElementById(id);
+async function update(){try{const r=await fetch('/api/state');if(!r.ok)throw Error(r.status);const s=await r.json();$('connection').textContent='Python tilkoblet';$('gen').textContent=s.generation+' / 60';$('score').textContent=s.score;$('lap').textContent=s.lap+' %';$('mode').textContent=s.crashed?'Kollisjon · nytt forsøk straks':s.training?'Trener og viser beste nettverk':'Trening ferdig · viser beste nettverk';$('car').setAttribute('transform',`translate(${s.x} ${s.y}) rotate(${s.heading*180/Math.PI})`);$('rays').innerHTML=s.sensors.map((d,i)=>`<line x1="${s.x}" y1="${s.y}" x2="${s.x+Math.cos(s.heading+s.angles[i])*d}" y2="${s.y+Math.sin(s.heading+s.angles[i])*d}"/>`).join('');}catch(e){$('connection').textContent='Venter på Python …';}setTimeout(update,70)}update();
+</script></html>

@@ -1,0 +1,2 @@
+# Optional Apple Silicon GPU backend; tested with Python 3.12 on macOS 26.
+mlx==0.32.4
