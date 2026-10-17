@@ -2,6 +2,12 @@
 
 Et felles prosjekt for spill som lærer med nevrale nettverk. Bilspillet og labyrintspillet har hver sin motor og visning. Hvert nytt spill får sin egen mappe, egne spilleregler, observasjoner, poengberegning, visning og modellfiler.
 
+## To forskjellige læringsforsøk
+
+**Bilspillet undersøker valg ut fra øyeblikkstilstanden.** Nettverket får aktuelle sensorverdier og velger styring direkte, uten historikk over tidligere observasjoner eller handlinger. Det er en form for innlært, «intuitiv» reaksjon på situasjonen her og nå. Erfaring fra treningen ligger i vektene, men bilen har ikke et eget minne om turen den kjører.
+
+**Labyrintspillet undersøker læring med historikk.** Målet er å bruke informasjon om tidligere besøkte steder og valg til å lære rutevalg, utforske labyrinten og finne veien ut. Prosjektet har prøvd både nevrale hukommelsesmekanismer og deterministisk lagret historikk. I det nåværende forsøket får beslutningsnettet dagens sensorverdier sammen med lagrede målinger fra tidligere registrerte hjørner og forgreninger. Dette er et forsøk på å lære å bruke historikken, ikke en påstand om at nettet allerede har lært pålitelig ruteplanlegging.
+
 ## Bilspillet i aksjon
 
 [![Opptak fra bilspillets trening med biler og sensorer](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4)
