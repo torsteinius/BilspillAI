@@ -72,12 +72,44 @@ class GenericAPI:
         source=Path(source_path); checkpoint=DenseTanhCheckpoint.load(source)
         target=self.home/'generic-models'/network_id; target.mkdir(parents=True,exist_ok=True)
         saved=target/'checkpoint.json'; shutil.copy2(source,saved); checkpoint_id=_hash(saved)
-        metadata={'network_type':'dense_tanh','architecture':list(checkpoint.architecture),'dtype':'float32','input_schema':'application-defined vector','output_schema':'application-defined vector','training_methods':['evolution'],'source_sha256':_hash(source)}
+        metadata={'network_type':'dense_tanh','architecture':list(checkpoint.architecture),'dtype':'float32','input_schema':'application-defined vector','output_schema':'application-defined vector','training_methods':['evolution'],'source_sha256':_hash(source),'normalization':checkpoint.payload.get('normalization')}
         with self.connect() as db:
             db.execute('INSERT OR REPLACE INTO models VALUES (?,?,?,?,?,?)',(network_id,app_id,checkpoint_id,str(saved),json.dumps(metadata),_now()))
         return self.describe(network_id)
     def describe(self, network_id):
         r=self.model(network_id); return {'network_id':r['network_id'],'app_id':r['app_id'],'checkpoint_id':r['checkpoint_id'],'metadata':json.loads(r['metadata'])}
+    @serialized
+    def export_checkpoint(self, network_id):
+        model = self.model(network_id)
+        return dict(checkpoint_id=model['checkpoint_id'],
+                    checkpoint=json.loads(Path(model['checkpoint']).read_text()))
+
+    @serialized
+    def replace_checkpoint(self, network_id, body):
+        """Replace at an application-owned curriculum boundary, retaining the old file."""
+        model = self.model(network_id)
+        if body.get('expected_checkpoint_id') != model['checkpoint_id']:
+            raise ValueError('Checkpoint changed before replacement')
+        checkpoint = DenseTanhCheckpoint(body['checkpoint'])
+        old = DenseTanhCheckpoint.load(model['checkpoint'])
+        if checkpoint.payload.get('generation') != old.payload.get('generation'):
+            raise ValueError('Replacement must preserve generation')
+        active = checkpoint.payload.get('mutation_active_inputs')
+        if active is not None:
+            self.active_inputs(active, checkpoint.architecture[0])
+        target = Path(model['checkpoint']).with_name(f'checkpoint-transition-{uuid.uuid4().hex}.json')
+        checkpoint.save(target)
+        metadata = json.loads(model['metadata'])
+        metadata.update(architecture=list(checkpoint.architecture), normalization=checkpoint.payload.get('normalization'))
+        with self.connect() as db:
+            db.execute('UPDATE models SET checkpoint=?,checkpoint_id=?,metadata=? WHERE network_id=?',
+                       (str(target),_hash(target),json.dumps(metadata),network_id))
+            # Old sessions use the old input shape and must never write over the transition.
+            db.execute('DELETE FROM sessions WHERE network_id=?',(network_id,))
+        self._sessions.clear()
+        self._prepared.clear()
+        return self.describe(network_id)
+
     @serialized
     def predict(self, network_id, body):
         started=time.perf_counter(); r=self.model(network_id); inputs=body.get('inputs')
@@ -92,13 +124,30 @@ class GenericAPI:
             layers,_=self._layers(key,checkpoint.architecture,[checkpoint.weights])
         if not isinstance(inputs,list) or not inputs: raise ValueError('inputs must be a non-empty batch')
         if any(not isinstance(row,list) or len(row)!=architecture[0] or any(type(x) not in (int,float) or x!=x or abs(x)==float('inf') for x in row) for row in inputs): raise ValueError(f'each input must contain {architecture[0]} finite numbers')
-        outputs, compute=self.backend.predict_prepared(layers,[inputs])
+        outputs, compute=self.backend.predict_prepared(layers,[inputs],normalization=json.loads(r['metadata']).get('normalization'))
         return {'network_id':network_id,'checkpoint_id':r['checkpoint_id'],'request_id':body.get('request_id'),'backend':self.backend.name,'outputs':outputs[0],'timing_ms':{'queue_wait':0,'model_compute_wall':compute,'total':(time.perf_counter()-started)*1000},'batch_size':len(inputs),'weights_cache_hit':hit}
+    @staticmethod
+    def active_inputs(value, width):
+        if not isinstance(value, list) or len(value) != width or any(type(v) is not bool for v in value):
+            raise ValueError('mutation_active_inputs must contain one boolean per input')
+        return value[:]
+
+    @staticmethod
+    def mutation_mask(data):
+        active = data.get('mutation_active_inputs')
+        if active is None:
+            return None
+        width, neurons = data['architecture'][:2]
+        first = (active + [True]) * neurons
+        return first + [True] * (len(data['champion']) - len(first))
+
     @serialized
     def create_session(self, body):
         m=self.model(body.get('network_id')); size=body.get('population_size',36); elite=body.get('elite_count',6); sigma=body.get('mutation_sigma',.12); seed=body.get('seed',42)
         if not isinstance(size,int) or not isinstance(elite,int) or not isinstance(sigma,(int,float)) or not isinstance(seed,int): raise ValueError('invalid evolution session settings')
-        c=DenseTanhCheckpoint.load(m['checkpoint']); session_id=str(uuid.uuid4()); data={'request_ids':{},'checkpoint':m['checkpoint'],'checkpoint_id':m['checkpoint_id'],'architecture':list(c.architecture),'champion':c.weights,'population_size':size,'elite_count':elite,'mutation_sigma':sigma,'seed':seed,'generation':0,'candidates':None,'asked':None}
+        c=DenseTanhCheckpoint.load(m['checkpoint']); session_id=str(uuid.uuid4()); data={'request_ids':{},'checkpoint':m['checkpoint'],'checkpoint_id':m['checkpoint_id'],'architecture':list(c.architecture),'champion':c.weights,'normalization':c.payload.get('normalization'),'population_size':size,'elite_count':elite,'mutation_sigma':sigma,'seed':seed,'generation':0,'mutation_generation_start':c.payload.get('generation',0),'candidates':None,'asked':None}
+        if 'mutation_active_inputs' in c.payload:
+            data['mutation_active_inputs'] = self.active_inputs(c.payload['mutation_active_inputs'], c.architecture[0])
         with self.connect() as db: db.execute('INSERT INTO sessions VALUES (?,?,?,?,?)',(session_id,m['network_id'],json.dumps(data),'active',_now()))
         return {'session_id':session_id,'network_id':m['network_id'],'checkpoint_id':m['checkpoint_id'],'settings':{'population_size':size,'elite_count':elite,'mutation_sigma':sigma,'seed':seed}}
     def _session(self, session_id):
@@ -118,7 +167,7 @@ class GenericAPI:
         row,d=self._session(session_id); rid=body.get('request_id')
         if rid and rid in d['request_ids']: return d['request_ids'][rid]
         if d['asked']: return d['asked']
-        e=EvolutionSession(d['champion'],population_size=d['population_size'],elite_count=d['elite_count'],mutation_sigma=d['mutation_sigma'],seed=d['seed'],generation=d['generation']); candidates=e.ask(); d['candidates']=candidates; generation_id=f"generation-{d['generation']+1}"; d['asked']={'generation_id':generation_id,'champion_candidate_id':'candidate-0','candidate_ids':[f'candidate-{i}' for i in range(len(candidates))]}; d['request_ids'][rid]=d['asked']; self._save(session_id,d); return d['asked']
+        e=EvolutionSession(d['champion'],population_size=d['population_size'],elite_count=d['elite_count'],mutation_sigma=d['mutation_sigma'],seed=d['seed'],generation=d['generation'] + d.get('mutation_generation_start',0),mutation_mask=self.mutation_mask(d)); candidates=e.ask(); d['candidates']=candidates; generation_id=f"generation-{d['generation']+1}"; d['asked']={'generation_id':generation_id,'champion_candidate_id':'candidate-0','candidate_ids':[f'candidate-{i}' for i in range(len(candidates))]}; d['request_ids'][rid]=d['asked']; self._save(session_id,d); return d['asked']
     @serialized
     def candidate_predict(self, session_id, body):
         started=time.perf_counter()
@@ -138,7 +187,7 @@ class GenericAPI:
         before_prepare=time.perf_counter()
         layers,hit=self._layers(('session',session_id,body['generation_id']),d['architecture'],d['candidates'])
         prepared=time.perf_counter()
-        out,ms=self.backend.predict_indexed(layers,indexes,inputs)
+        out,ms=self.backend.predict_indexed(layers,indexes,inputs,normalization=d.get('normalization'))
         return {'generation_id':body['generation_id'],'backend':self.backend.name,'weights_cache_hit':hit,'session_cache_hit':session_hit,'timing_ms':{'session_load':(loaded-started)*1000,'prepare':(prepared-before_prepare)*1000,'model_compute_wall':ms},'items':[{'candidate_id':item['candidate_id'],'sample_id':item.get('sample_id'),'output':out[i]} for i,item in enumerate(items)]}
     @serialized
     def tell(self, session_id, body):
@@ -147,7 +196,15 @@ class GenericAPI:
         if body.get('generation_id') != (d['asked'] or {}).get('generation_id'): raise ValueError('stale or unknown generation_id')
         scores=body.get('fitness'); expected=len(d['candidates'])
         if not isinstance(scores,list) or len(scores)!=expected: raise ValueError(f'fitness must contain exactly {expected} scores')
+        active = d.get('mutation_active_inputs')
+        if active is not None:
+            used = self.active_inputs(body.get('used_inputs'), d['architecture'][0])
+            active = [a or u for a,u in zip(active, used)]
         e=EvolutionSession(d['champion'],population_size=d['population_size'],elite_count=d['elite_count'],mutation_sigma=d['mutation_sigma'],seed=d['seed'],generation=d['generation']); e.candidates=d['candidates']; score,w=e.tell(scores)
-        model=self.model(row_network := self._session(session_id)[0]['network_id']); old=DenseTanhCheckpoint.load(model['checkpoint']); new=old.with_weights(w,generation=old.payload.get('generation',0)+1,score=score); target=Path(model['checkpoint']).with_name(f'checkpoint-g{new.payload["generation"]}.json'); new.save(target); cid=_hash(target)
+        model=self.model(row_network := self._session(session_id)[0]['network_id']); old=DenseTanhCheckpoint.load(model['checkpoint']); new=old.with_weights(w,generation=old.payload.get('generation',0)+1,score=score)
+        if active is not None:
+            new.payload['mutation_active_inputs'] = active
+            d['mutation_active_inputs'] = active
+        target=Path(model['checkpoint']).with_name(f'checkpoint-g{new.payload["generation"]}.json'); new.save(target); cid=_hash(target)
         with self.connect() as db: db.execute('UPDATE models SET checkpoint=?, checkpoint_id=? WHERE network_id=?',(str(target),cid,row_network))
         d.update(champion=w,generation=e.generation,candidates=None,asked=None,checkpoint=str(target),checkpoint_id=cid); result={'checkpoint_id':cid,'generation':e.generation,'selected_candidate':'candidate-'+str(max(range(expected),key=lambda i:scores[i])),'score':score}; d['request_ids'][rid]=result; self._save(session_id,d); return result

@@ -5,6 +5,8 @@ from pathlib import Path
 class DenseTanhCheckpoint:
     """The portable JSON layout also used by the legacy NeuralNetwork class."""
     def __init__(self, payload):
+        if payload.get("normalization") not in (None, "layernorm_hidden_v1"):
+            raise ValueError("Unsupported normalization")
         self.payload = dict(payload)
         self.architecture = tuple(payload['architecture'])
         self.weights = list(payload['weights'])

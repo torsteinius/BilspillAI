@@ -27,6 +27,8 @@ class Rules:
     memory_steps: int = 50
     progress_reward: float = .25
     path_reward: float = .2
+    exploration_reward: float = .2
+    landmark_reward: float = 1.
     backtrack_penalty: float = .05
     forward_reward: float = 1.
     wall_penalty: float = 5.

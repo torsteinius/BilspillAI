@@ -46,7 +46,11 @@ def main():
                 raise ValueError('Model already exists. Use --resume, --replay or a new --model filename')
             if config_values.get('deterministic_history'):
                 config_values.setdefault('start_in_field', False)
-                rule_values.setdefault('revisit_penalty', .05)
+                # Strict rules: a wall or a repeated state ends the attempt at once,
+                # so oscillating backward is never safer than trying to explore.
+                rule_values.setdefault('revisit_penalty', .3)
+                rule_values.setdefault('wall_penalty', 2.)
+                rule_values.setdefault('min_steps', 0)
                 rule_values.setdefault('until_failure', True)
             if config_values.get('learned_memory'):
                 config_values.setdefault('start_in_field', False)

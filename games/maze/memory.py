@@ -58,6 +58,9 @@ class MemoryEpisode(Episode):
             self.memory.append(-1 if values[5] < -1/3 else 1 if values[5] > 1/3 else 0)
         return self.step(MOVES[max(range(4), key=lambda i: values[i])])
 
+    def first_visit_reward(self, point):
+        return self.rules.path_reward if point in self.path_set else 0.
+
     def step(self, action):
         if action not in MOVES or self.done:
             raise ValueError('Invalid move or episode has ended')
@@ -79,16 +82,17 @@ class MemoryEpisode(Episode):
             distance = self.distances[point]
             if distance > self.distances[old]:
                 reward -= self.rules.backtrack_penalty
-            if distance < self.best_distance:
-                reward += self.rules.progress_reward * (self.best_distance - distance)
-                self.best_distance = distance
-            if not self.visits[point] and point in self.path_set:
-                reward += self.rules.path_reward
-            if self.visits[point]:
+            first_visit = not self.visits[point]
+            if first_visit:
+                if distance < self.best_distance:
+                    reward += self.rules.progress_reward * (self.best_distance - distance)
+                    self.best_distance = distance
+                reward += self.first_visit_reward(point)
+            else:
                 reward -= self.rules.revisit_penalty
             self.x, self.y = point
             self.visits[point] += 1
-            self.event = 'Ny rute på stien' if point in self.path_set else 'Utforsker'
+            self.event = ('Ny rute på stien' if point in self.path_set else 'Utforsker') if first_visit else 'Gjenbesøk'
             if self.maze.cell(*point) == 'E':
                 reward += self.rules.exit_reward
                 self.done = self.escaped = True

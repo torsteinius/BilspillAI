@@ -1,6 +1,16 @@
 # Labyrint i AI-spill
 
+Gjeldende regler for forsøket med deterministisk historikk er dokumentert i [Straff, belønning og historikk](../../docs/MAZE_REWARDS.md). Denne beskrivelsen erstatter de eldre forsøksbeskrivelsene nedenfor når det gjelder landemerkedeteksjon, bonus og avslutningsregler.
+
 En mann lærer å finne ut av tilfeldige labyrinter ved hjelp av den felles klassen `NeuralNetwork`. Labyrintmotor, regler, evaluering og visning er uavhengige av bilspillet. Python beregner alt; nettleseren viser opptak fra faktiske forsøk.
+
+## Oversikt over gjennomførte forsøk
+
+[Forsøksloggen](../../docs/FORSOKSLOGG.md) samler nettstørrelse, minnevarianter, normalisering, belønningsendringer, kontroll av avspilling og målte resultater. Den skiller gjennomførte forsøk fra forslag og sammenligner prinsippet bak assistert læring med AlphaStar.
+
+## Foreslått neste læringsopplegg
+
+[Assistert læring fra kjente ruter](../../docs/ASSISTERT_LARING.md) beskriver trening på tilfeldige punkter langs kjente løsninger, med den faktiske historikken ved hvert punkt. Forslaget lar nettet øve på hele ruten uten først å mestre veien frem til hvert treningspunkt. Dette er dokumentert design og er ikke implementert i dagens trener.
 
 ## Start
 

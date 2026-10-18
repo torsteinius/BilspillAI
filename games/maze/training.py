@@ -6,13 +6,19 @@ import json
 from ai.network import NeuralNetwork
 from .generator import generate, generate_field, next_size
 from .memory import MemoryEpisode, VERSION as MEMORY_VERSION
-from .history import HistoryEpisode, VERSION as HISTORY_VERSION, architecture as history_architecture, widen_network
+from .history import HistoryEpisode, VERSION as HISTORY_VERSION, VERSION_V2 as HISTORY_VERSION_V2, architecture as history_architecture, widen_network
 from .world import Episode, OBSERVATION_VERSION, Rules, decode_outputs
 
 
 @dataclass
 class Config:
     deterministic_history: bool = False
+    history_hidden_layers: int = 3
+    history_output_encoding: str = 'argmax4'
+    history_sensor_count: int = 8
+    history_memory_decay: float = 1.
+    history_memory_floor: float = 1.
+    history_newest_first: bool = False
     learned_memory: bool = False
     start_in_field: bool = True
     field_size: int = 30
@@ -32,6 +38,16 @@ class Config:
     rules: Rules = field(default_factory=Rules)
 
     def __post_init__(self):
+        if self.history_sensor_count not in (4, 8):
+            raise ValueError('history_sensor_count must be four or eight')
+        if not 0 < self.history_memory_decay <= 1 or not 0 <= self.history_memory_floor <= 1:
+            raise ValueError('Invalid history memory attenuation')
+        if type(self.history_newest_first) is not bool:
+            raise ValueError('history_newest_first must be a boolean')
+        if self.history_output_encoding not in ('argmax4', 'bits2'):
+            raise ValueError('Unknown history output encoding')
+        if type(self.history_hidden_layers) is not int or self.history_hidden_layers < 1:
+            raise ValueError("history_hidden_layers must be a positive integer")
         if self.deterministic_history and (self.learned_memory or self.start_in_field):
             raise ValueError("Deterministic history requires maze mode without learned memory")
         generate_field(self.field_size, self.field_stones, seed=self.seed)
@@ -47,6 +63,11 @@ class Config:
             raise ValueError('Use at least two training mazes to avoid repeated layouts')
 
 
+def history_version(config):
+    return HISTORY_VERSION if (config.history_sensor_count == 8 and config.history_memory_decay == 1
+        and config.history_memory_floor == 1 and not config.history_newest_first) else HISTORY_VERSION_V2
+
+
 class Trainer:
     def __init__(self, config, model):
         self.backend = "python"
@@ -54,7 +75,7 @@ class Trainer:
         self.network = NeuralNetwork([8 + 2 * config.rules.memory_steps if config.learned_memory else config.rules.input_count,
                                       *config.hidden, 6 if config.learned_memory else 2], seed=config.seed)
         if config.deterministic_history:
-            self.network = NeuralNetwork(history_architecture(config.width, config.height), seed=config.seed)
+            self.network = NeuralNetwork(history_architecture(config.width, config.height, config.history_hidden_layers, config.history_output_encoding, config.history_sensor_count), seed=config.seed)
         self.field_stones = config.field_stones
         self.stage = -1 if config.start_in_field else 0
         self.width, self.height = (config.field_size, config.field_size) if config.start_in_field else (config.width, config.height)
@@ -78,7 +99,7 @@ class Trainer:
     def load(cls, model):
         network = NeuralNetwork.load(model)
         meta = network.metadata
-        if meta.get('game') != 'maze' or meta.get('observation_version') not in (OBSERVATION_VERSION, MEMORY_VERSION, HISTORY_VERSION):
+        if meta.get('game') != 'maze' or meta.get('observation_version') not in (OBSERVATION_VERSION, MEMORY_VERSION, HISTORY_VERSION, HISTORY_VERSION_V2):
             raise ValueError('This is not a compatible maze checkpoint')
         values = dict(meta['config'])
         values.setdefault('start_in_field', False)
@@ -87,12 +108,18 @@ class Trainer:
         values.pop('growth_checks', None)
         values['rules'] = Rules(**values['rules'])
         trainer = cls(Config(**values), model)
-        expected = HISTORY_VERSION if trainer.config.deterministic_history else MEMORY_VERSION if trainer.config.learned_memory else OBSERVATION_VERSION
+        expected = history_version(trainer.config) if trainer.config.deterministic_history else MEMORY_VERSION if trainer.config.learned_memory else OBSERVATION_VERSION
         if meta['observation_version'] != expected:
             raise ValueError('Observation version does not match mode')
         if trainer.config.deterministic_history:
             state = meta['curriculum']
-            trainer.network = NeuralNetwork(history_architecture(state['width'], state['height']), seed=network.seed)
+            sizes = history_architecture(state['width'], state['height'], trainer.config.history_hidden_layers, trainer.config.history_output_encoding, trainer.config.history_sensor_count)
+            if 'history_hidden_widths' in meta:
+                hidden = meta['history_hidden_widths']
+                if len(hidden) != trainer.config.history_hidden_layers:
+                    raise ValueError('Stored hidden layer count differs from config')
+                sizes = [sizes[0], *hidden, sizes[-1]]
+            trainer.network = NeuralNetwork(sizes, seed=network.seed)
         if network.architecture != trainer.network.architecture:
             raise ValueError('Saved architecture does not match the episode memory')
         trainer.network = network
@@ -117,7 +144,7 @@ class Trainer:
         return trainer
 
     def _metadata(self):
-        self.network.metadata.update(game='maze', success_criterion='exit_without_collision_or_stall_v1', progression_version=2, observation_version=HISTORY_VERSION if self.config.deterministic_history else MEMORY_VERSION if self.config.learned_memory else OBSERVATION_VERSION,
+        self.network.metadata.update(game='maze', success_criterion='exit_without_collision_or_stall_v1', progression_version=2, observation_version=history_version(self.config) if self.config.deterministic_history else MEMORY_VERSION if self.config.learned_memory else OBSERVATION_VERSION,
             config=asdict(self.config), curriculum=dict(stage=self.stage, width=self.width,
                 height=self.height, field_stones=self.field_stones, check_index=self.check_index, streak=self.streak,
                 sequence=self.sequence, recent=self.recent, streak_model=self.streak_model),
@@ -169,7 +196,16 @@ class Trainer:
             self.width, self.height = (self.config.width, self.config.height) if self.stage < 0 else next_size(self.width, self.height)
             self.stage += 1
         if self.config.deterministic_history:
-            self.network = widen_network(self.network, history_architecture(self.width, self.height))
+            sizes = history_architecture(self.width, self.height, self.config.history_hidden_layers, self.config.history_output_encoding, self.config.history_sensor_count)
+            old_width = self.network.architecture[0]
+            if self.network.metadata.get('normalization') == 'layernorm_hidden_v1':
+                # Enlarging normalized hidden layers changes even the old predictions.
+                # Add only zero-connected memory inputs, retaining learned hidden layers.
+                sizes = [sizes[0], *self.network.architecture[1:]]
+                self.network.metadata['history_hidden_widths'] = list(sizes[1:-1])
+            self.network = widen_network(self.network, sizes)
+            if 'mutation_active_inputs' in self.network.metadata:
+                self.network.metadata['mutation_active_inputs'] = self.network.metadata['mutation_active_inputs'] + [False] * (sizes[0] - old_width)
             with self.lock:
                 self.status["architecture"] = list(self.network.architecture)
         self.network.score = None
@@ -179,8 +215,15 @@ class Trainer:
             self.status.update(score=None, success=None)
         return True
 
+    def make_episode(self, maze):
+        if self.config.deterministic_history:
+            return HistoryEpisode(maze, self.config.rules, output_encoding=self.config.history_output_encoding,
+                sensor_count=self.config.history_sensor_count, memory_decay=self.config.history_memory_decay,
+                memory_floor=self.config.history_memory_floor, newest_first=self.config.history_newest_first)
+        return (MemoryEpisode if self.config.learned_memory else Episode)(maze, self.config.rules)
+
     def rollout(self, maze, weights, record=False):
-        episode = (HistoryEpisode if self.config.deterministic_history else MemoryEpisode if self.config.learned_memory else Episode)(maze, self.config.rules)
+        episode = self.make_episode(maze)
         frames = []
         def frame():
             state = episode.snapshot()
@@ -221,8 +264,7 @@ class Trainer:
         if not (self.config.learned_memory or self.config.deterministic_history):
             raise ValueError('GPU batch evaluation currently requires learned-memory mode')
         batch = BatchedNetwork(self.network.architecture, populations)
-        episode_type = HistoryEpisode if self.config.deterministic_history else MemoryEpisode
-        episodes = [[episode_type(maze, self.config.rules) for maze in self.training_set]
+        episodes = [[self.make_episode(maze) for maze in self.training_set]
                     for _ in populations]
         while True:
             outputs = batch.forward([[e.observations() for e in group] for group in episodes])
@@ -377,5 +419,9 @@ class Trainer:
                         population=self.config.population, field_stones=self.field_stones,
                         next_field_stones=min(self.config.field_stones_max,self.field_stones+self.config.field_stones_step) if self.field_stones < self.config.field_stones_max else None,
                         rules=asdict(self.config.rules), recording=self.recording,
+                        history_sensor_count=self.config.history_sensor_count,
+                        history_memory_decay=self.config.history_memory_decay,
+                        history_memory_floor=self.config.history_memory_floor,
+                        history_newest_first=self.config.history_newest_first,
                         training_attempts=self.training_attempts, background_attempts=10,
                         evaluations=list(self.evaluations[-20:]))

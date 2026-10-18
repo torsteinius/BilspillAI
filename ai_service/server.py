@@ -144,6 +144,8 @@ def handler(service):
             parsed=urlparse(self.path); parts=parsed.path.strip('/').split('/')
             try:
                 if parsed.path == '/v1/status': return self.respond(200, service.generic.status())
+                if len(parts)==4 and parts[:2] == ['v1','networks'] and parts[3]=='checkpoint':
+                    return self.respond(200, service.generic.export_checkpoint(parts[2]))
                 if len(parts)==3 and parts[:2] == ['v1','networks']:
                     return self.respond(200, service.generic.describe(parts[2]))
                 if parsed.path == '/networks':
@@ -167,6 +169,8 @@ def handler(service):
                 body=self.body()
                 if parsed.path == '/v1/networks/import-legacy':
                     return self.respond(201, service.generic.clone_legacy(body.get('network_id'), body.get('source_checkpoint'), body.get('app_id','maze')))
+                if len(parts)==4 and parts[:2] == ['v1','networks'] and parts[3]=='checkpoint':
+                    return self.respond(200, service.generic.replace_checkpoint(parts[2],body))
                 if len(parts)==4 and parts[:2] == ['v1','networks'] and parts[3] == 'predict':
                     return self.respond(200, service.generic.predict(parts[2], body))
                 if parsed.path == '/v1/evolution/sessions': return self.respond(201, service.generic.create_session(body))

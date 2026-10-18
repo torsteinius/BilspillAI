@@ -26,18 +26,27 @@ class MLXDenseBackend:
             mx.eval(layers)
         return layers
 
-    def predict_prepared(self, layers, observations):
+    def activate(self, values, normalized):
+        mx = self.mx
+        if normalized:
+            mean = mx.mean(values, axis=-1, keepdims=True)
+            centered = values - mean
+            variance = mx.mean(centered * centered, axis=-1, keepdims=True)
+            values = centered / mx.sqrt(variance + 1e-5)
+        return mx.tanh(values)
+
+    def predict_prepared(self, layers, observations, normalization=None):
         mx = self.mx
         started = time.perf_counter()
         with mx.stream(self.device):
             values = mx.array(observations,dtype=mx.float32)
-            for weights,bias in layers:
-                values = mx.tanh(values @ weights + bias)
+            for i,(weights,bias) in enumerate(layers):
+                values = self.activate(values @ weights + bias, normalization == "layernorm_hidden_v1" and i < len(layers)-1)
             mx.eval(values)
             result = values.tolist()
         return result, (time.perf_counter()-started)*1000
 
-    def predict_indexed(self, layers, indexes, inputs):
+    def predict_indexed(self, layers, indexes, inputs, normalization=None):
         """Group samples by candidate, reusing its weights without a copy per bot."""
         mx = self.mx
         started = time.perf_counter()
@@ -48,8 +57,8 @@ class MLXDenseBackend:
             pending = []
             for candidate, positions in groups.items():
                 values = mx.array([inputs[i] for i in positions], dtype=mx.float32)
-                for weights,bias in layers:
-                    values = mx.tanh(values @ weights[candidate] + bias[candidate,0])
+                for i,(weights,bias) in enumerate(layers):
+                    values = self.activate(values @ weights[candidate] + bias[candidate,0], normalization == "layernorm_hidden_v1" and i < len(layers)-1)
                 pending.append((positions, values))
             mx.eval([values for _,values in pending])
             result = [None]*len(inputs)

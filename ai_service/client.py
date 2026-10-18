@@ -46,4 +46,15 @@ class Client:
     def create_evolution_session(self, **settings): return self._request('POST','/v1/evolution/sessions',settings)
     def ask(self, session_id, request_id): return self._request('POST',f'/v1/evolution/sessions/{session_id}/ask',{'request_id':request_id})
     def candidate_predict(self, session_id, generation_id, items): return self._request('POST',f'/v1/evolution/sessions/{session_id}/predict',{'generation_id':generation_id,'items':items})
-    def tell(self, session_id, generation_id, fitness, request_id, evaluation_set_id='local-set'): return self._request('POST',f'/v1/evolution/sessions/{session_id}/tell',{'generation_id':generation_id,'fitness':fitness,'request_id':request_id,'evaluation_set_id':evaluation_set_id})
+    def tell(self, session_id, generation_id, fitness, request_id, evaluation_set_id='local-set', used_inputs=None):
+        body = {'generation_id':generation_id,'fitness':fitness,'request_id':request_id,'evaluation_set_id':evaluation_set_id}
+        if used_inputs is not None:
+            body['used_inputs'] = used_inputs
+        return self._request('POST',f'/v1/evolution/sessions/{session_id}/tell',body)
+
+    def checkpoint(self, network_id):
+        return self._request('GET',f'/v1/networks/{network_id}/checkpoint')
+
+    def replace_checkpoint(self, network_id, checkpoint, expected_checkpoint_id):
+        return self._request('POST',f'/v1/networks/{network_id}/checkpoint',
+                             dict(checkpoint=checkpoint,expected_checkpoint_id=expected_checkpoint_id))

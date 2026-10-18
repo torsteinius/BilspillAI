@@ -34,11 +34,16 @@ class NeuralNetwork:
         if len(inputs) != self.architecture[0] or len(weights) != self.weight_count:
             raise ValueError('Inputs and weights must match the architecture')
         values, offset = list(inputs), 0
-        for width in self.architecture[1:]:
+        for layer_index, width in enumerate(self.architecture[1:]):
             stride = len(values) + 1
             active = [(i, v) for i, v in enumerate(values) if v != 0.]
-            values = [math.tanh(sum(weights[offset + n * stride + i] * v for i, v in active)
-                                + weights[offset + n * stride + stride - 1]) for n in range(width)]
+            values = [sum(weights[offset + n * stride + i] * v for i, v in active)
+                      + weights[offset + n * stride + stride - 1] for n in range(width)]
+            if self.metadata.get('normalization') == 'layernorm_hidden_v1' and layer_index < len(self.architecture)-2:
+                mean = sum(values)/width
+                variance = sum((v-mean)**2 for v in values)/width
+                values = [(v-mean)/math.sqrt(variance+1e-5) for v in values]
+            values = [math.tanh(v) for v in values]
             offset += width * stride
         return values
 
