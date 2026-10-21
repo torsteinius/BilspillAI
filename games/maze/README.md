@@ -4,6 +4,12 @@ Gjeldende regler for forsøket med deterministisk historikk er dokumentert i [St
 
 En mann lærer å finne ut av tilfeldige labyrinter ved hjelp av den felles klassen `NeuralNetwork`. Labyrintmotor, regler, evaluering og visning er uavhengige av bilspillet. Python beregner alt; nettleseren viser opptak fra faktiske forsøk.
 
+## Video av labyrintforsøk
+
+[![Nye labyrintforsøk med lært hukommelse](../../docs/media/maze-preview.gif)](../../docs/media/maze-attempts.mp4)
+
+[Se videoen (ca. 32 sekunder)](../../docs/media/maze-attempts.mp4): modellen med lært hukommelse fra generasjon 3000 prøver nye tilfeldige 15 × 15-labyrinter. Visningen går i 3× tempo, med uendrede modellvekter. Dette er en demonstrasjon av faktiske forsøk, ikke en måling av løsningsgrad.
+
 ## Oversikt over gjennomførte forsøk
 
 [Forsøksloggen](../../docs/FORSOKSLOGG.md) samler nettstørrelse, minnevarianter, normalisering, belønningsendringer, kontroll av avspilling og målte resultater. Den skiller gjennomførte forsøk fra forslag og sammenligner prinsippet bak assistert læring med AlphaStar.

@@ -10,9 +10,20 @@ Et felles prosjekt for spill som lærer med nevrale nettverk. Bilspillet og laby
 
 ## Bilspillet i aksjon
 
-[![Opptak fra bilspillets trening med biler og sensorer](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4)
+| Oversiktskart med biler og sensorer | 3D fra førerplassen med banekart |
+| --- | --- |
+| [![Bilspillets trening sett ovenfra](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4) | [![3D-førerplass under trening](docs/media/bilspill-3d-preview.gif)](docs/media/bilspill-3d-training.mp4) |
+| [Se hele videoen · 1 minutt og 40 sekunder](docs/media/bilspill-training.mp4) | [Se 3D-videoen · ca. 28 sekunder](docs/media/bilspill-3d-training.mp4) |
 
-18 sekunders utdrag fra treningsopptaket. [Se eller last ned hele opptaket (1 minutt og 40 sekunder)](docs/media/bilspill-training.mp4).
+Begge videoene viser faktiske treningsforsøk. 3D-visningen bruker samme bane og bilposisjoner som oversiktskartet. Den er laget med en enkel perspektivrenderer i JavaScript og Canvas, mens Python beregner fysikk og læring. Se [kjøreinstruksjoner og beskrivelse av 3D-visningen](games/car/README.md#førerplass-i-3d).
+
+## Labyrintforsøk i aksjon
+
+[![Modellen prøver tilfeldige labyrinter med sensorer og lært hukommelse](docs/media/maze-preview.gif)](docs/media/maze-attempts.mp4)
+
+[Se labyrintvideoen · ca. 32 sekunder](docs/media/maze-attempts.mp4). Videoen viser nye forsøk på tilfeldige 15 × 15-labyrinter med den lagrede modellen `learned_memory_40_three_layers.json` fra generasjon 3000. Avspillingen går i 3× tempo; vektene oppdateres ikke under opptaket. Gult viser sensorer, lilla viser besøkte ruter, og grønt markerer utgangen. Klippet viser modellens faktiske valg og er ikke et mål på generell løsningsgrad.
+
+GIF-bildene er korte forhåndsvisninger. Klikk på et bilde eller en videolenke for hele MP4-opptaket.
 
 ## Flytt til Mac Studio
 

@@ -126,3 +126,7 @@ Trykk «Ta opp banevideo» over banen og deretter «Stopp opptak». Opptaket kan
 ### Førerplass i 3D
 
 V2 har en enkel 3D-perspektivvisning fra førersetet over oversiktskartet. Velg grønn eller blå bil med «Følg». Banen og den møtende bilen projiseres fra samme geometri og posisjoner som i Python-simuleringen. Frontrute, dashbord og ratt gir følelsen av å sitte inne i bilen. Rattutslaget illustrerer endring i kjøreretning, ikke nettverkets eksakte styreutslag. Bruk 1× for rolig avspilling. Visningen bruker Canvas uten ekstra biblioteker. Videoopptaket gjelder fortsatt oversiktskartet.
+
+[![3D-førerplass med banekart under trening](../../docs/media/bilspill-3d-preview.gif)](../../docs/media/bilspill-3d-training.mp4)
+
+[Se 3D-videoen (ca. 28 sekunder)](../../docs/media/bilspill-3d-training.mp4). Klippet viser faktiske treningsforsøk med et lite oversiktskart som følger begge bilene.
