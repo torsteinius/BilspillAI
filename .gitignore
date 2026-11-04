@@ -43,3 +43,6 @@ ai_engine/build/
 .ai-service/
 
 # Keep model checkpoints (*.json, *.safetensors), backups and reports in Git.
+
+# Rust build products (Cargo.lock is tracked for reproducible builds).
+rust/**/target/

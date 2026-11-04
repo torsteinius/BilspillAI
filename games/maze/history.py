@@ -55,6 +55,7 @@ def widen_network(old,sizes):
             new.weights[dst+neuron*(na+1)+na]=old.weights[src+neuron*(a+1)+a]
         src+=(a+1)*b;dst+=(na+1)*nb
     new.generation=old.generation;new.history=list(old.history);new.metadata=dict(old.metadata)
+    new.set_backend(old.backend)
     return new
 
 

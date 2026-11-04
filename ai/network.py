@@ -24,6 +24,19 @@ class NeuralNetwork:
         self.score = None
         self.history = []
         self.metadata = {}
+        self.backend = 'python'
+        self._native = None
+
+    def set_backend(self, backend):
+        """Select a local engine explicitly; checkpoints remain engine-independent."""
+        if backend not in ('python', 'rust'):
+            raise ValueError('Local network backend must be python or rust')
+        native = None
+        if backend == 'rust':
+            from ai.rust_backend import native_module
+            native = native_module().DenseNetwork(list(self.architecture))
+        self.backend, self._native = backend, native
+        return self
 
     def _check_weights(self, weights):
         if len(weights) != self.weight_count or any(not isinstance(v, (int, float)) or not math.isfinite(v) for v in weights):
@@ -33,6 +46,8 @@ class NeuralNetwork:
         weights = self.weights if weights is None else weights
         if len(inputs) != self.architecture[0] or len(weights) != self.weight_count:
             raise ValueError('Inputs and weights must match the architecture')
+        if self.backend == 'rust':
+            return self._native.forward(inputs, weights, self.metadata.get('normalization') == 'layernorm_hidden_v1')
         values, offset = list(inputs), 0
         for layer_index, width in enumerate(self.architecture[1:]):
             stride = len(values) + 1
@@ -47,6 +62,13 @@ class NeuralNetwork:
             offset += width * stride
         return values
 
+    def forward_batch(self, observations, weights=None):
+        """Evaluate observations together, transferring weights once to Rust."""
+        weights = self.weights if weights is None else weights
+        if self.backend == 'rust':
+            return self._native.forward_batch(observations, weights, self.metadata.get('normalization') == 'layernorm_hidden_v1')
+        return [self.forward(inputs, weights) for inputs in observations]
+
     def expand_inputs(self, count):
         """Append zero-weight inputs, preserving predictions from the old inputs."""
         if type(count) is not int or count < 1:
@@ -58,6 +80,7 @@ class NeuralNetwork:
             row = self.weights[neuron * (old_inputs + 1):(neuron + 1) * (old_inputs + 1)]
             rows.extend(row[:-1] + [0.] * count + row[-1:])
         expanded.weights = rows + self.weights[width * (old_inputs + 1):]
+        expanded.set_backend(self.backend)
         return expanded
 
     def save(self, path):
@@ -124,6 +147,10 @@ class NeuralNetwork:
         if any(not math.isfinite(s) or s < 0 for s in sigmas):
             raise ValueError('Mutation spread must be finite and nonnegative')
         rng = random.Random(self.seed + start)
+        native_rng = None
+        if self.backend == 'rust':
+            from ai.rust_backend import native_module
+            native_rng = native_module().EvolutionRng(rng.getrandbits(64))
 
         def measured(weights):
             score = float(evaluate(weights))
@@ -133,12 +160,13 @@ class NeuralNetwork:
 
         if resume:
             self.score = measured(self.weights) if on_generation_start is None else None
-            population = [self.weights[:]] + [[v + rng.gauss(0, .05) for v in self.weights]
-                                              for _ in range(population_size - 1)]
+            mutations = (native_rng.mutate(self.weights, population_size - 1, .05) if native_rng else
+                         [[v + rng.gauss(0, .05) for v in self.weights] for _ in range(population_size - 1)])
+            population = [self.weights[:]] + mutations
         else:
             self.generation, self.score, self.history = 0, None, []
-            population = [[rng.gauss(0, initial_sigma) for _ in range(self.weight_count)]
-                          for _ in range(population_size)]
+            population = (native_rng.mutate([0.] * self.weight_count, population_size, initial_sigma) if native_rng else
+                          [[rng.gauss(0, initial_sigma) for _ in range(self.weight_count)] for _ in range(population_size)])
         for generation, sigma in zip(range(start + 1, start + generations + 1), sigmas):
             if on_generation_start:
                 on_generation_start(generation)
@@ -167,14 +195,19 @@ class NeuralNetwork:
                     on_result(self)
             ranked.sort(key=lambda item: item[0], reverse=True)
             elites = [w[:] for _, w in ranked[:elite_count]]
-            population = elites[:]
-            while len(population) < population_size:
-                population.append([v + rng.gauss(0, sigma) for v in rng.choice(elites)])
+            if native_rng:
+                population = native_rng.breed(elites, population_size, sigma)
+            else:
+                population = elites[:]
+                while len(population) < population_size:
+                    population.append([v + rng.gauss(0, sigma) for v in rng.choice(elites)])
             self.generation = generation
             self.history.append(dict(generation=generation, best_score=self.score,
                                      population_size=population_size, elite_count=elite_count,
                                      initial_sigma=initial_sigma, mutation_sigma=sigma,
                                      seed=self.seed, run_start=start, resumed=resume))
+            if native_rng:
+                self.history[-1].update(backend='rust', rng='chacha8-rand0.8-rand_distr0.4')
             if checkpoint:
                 self.save(checkpoint)
             if on_generation:

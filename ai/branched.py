@@ -15,6 +15,16 @@ class BranchedNetwork(NeuralNetwork):
         self.weights = [0.] * self.weight_count
         self.metadata.update(model_type=MODEL_TYPE, branches=[list(b) for b in BRANCHES])
 
+    def set_backend(self, backend):
+        super().set_backend(backend)
+        if backend == 'rust':
+            from ai.rust_backend import native_module
+            self._native_branches = [native_module().DenseNetwork(list(b)) for b in BRANCHES]
+        return self
+
+    def forward_batch(self, observations, weights=None):
+        return [self.forward(inputs, weights) for inputs in observations]
+
     def randomize(self):
         rng=random.Random(self.seed)
         self.weights=[rng.gauss(0,1/math.sqrt(a)) for branch in BRANCHES
@@ -24,6 +34,15 @@ class BranchedNetwork(NeuralNetwork):
         weights=self.weights if weights is None else weights
         if len(inputs)!=260 or len(weights)!=self.weight_count:
             raise ValueError('Inputs and weights must match branched architecture')
+        if self.backend == 'rust':
+            offset = 0
+            outputs = []
+            for index, (native, sizes) in enumerate(zip(self._native_branches, BRANCHES)):
+                count = sum((a+1)*b for a,b in zip(sizes,sizes[1:]))
+                values = inputs[:4] if index == 0 else inputs[4:] if index == 1 else outputs[0] + outputs[1]
+                outputs.append(native.forward(values, weights[offset:offset+count], False))
+                offset += count
+            return outputs[-1]
         offset=0
         def branch(values, sizes):
             nonlocal offset

@@ -31,6 +31,10 @@ GIF-bildene er korte forhåndsvisninger. Klikk på et bilde eller en videolenke 
 
 Se [installasjon, GPU-oppstart og videre trening](MAC_STUDIO.md). Alle lagrede modeller og treningsrapporter følger repoet; lokale Python-miljøer og cache ignoreres.
 
+## Rust på CPU
+
+Bil- og labyrintspillet støtter `--backend rust` for raskere nettverksberegning og vektmutasjoner. Se [installasjon, bruk og målinger](docs/RUST_BACKEND.md). Modellformatet er beholdt, og simuleringen styres fortsatt av Python.
+
 ## Struktur
 
 - `ai/network.py`: den felles klassen `NeuralNetwork`. Velger lagstørrelser, beregner nettverkets utdata, trener med utvalg og mutasjon, utvider innganger og lagrer/laster modeller.

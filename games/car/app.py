@@ -193,7 +193,7 @@ def train(additional=GENERATIONS, fast=False, training_speed=0):
     global best, network
     resume = fast and MODEL.exists()
     if resume:
-        network = NeuralNetwork.load(MODEL, expected_architecture=ARCHITECTURE)
+        network = NeuralNetwork.load(MODEL, expected_architecture=ARCHITECTURE).set_backend(network.backend)
         best = network.weights[:]
     start = network.generation if resume else 0
     network.metadata.update(game='car', collision_penalty=COLLISION_PENALTY,
@@ -298,6 +298,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL
     parser = argparse.ArgumentParser()
+    parser.add_argument('--backend', choices=('python', 'rust'), default='python')
     parser.add_argument('--port', type=int, default=8766)
     parser.add_argument('--replay', action='store_true', help='Show saved model instead of live training')
     parser.add_argument('--fast-generations', type=int, default=0)
@@ -315,7 +316,9 @@ def main():
         status['architecture'] = ARCHITECTURE
         if args.replay or (args.fast_generations and MODEL.exists()):
             network = NeuralNetwork.load(MODEL, expected_architecture=ARCHITECTURE)
-    except (ValueError, KeyError, OSError, TypeError) as error:
+        network.set_backend(args.backend)
+        status['backend'] = args.backend
+    except (ValueError, KeyError, OSError, TypeError, RuntimeError) as error:
         parser.error(str(error))
     if args.fast_generations < 0:
         parser.error('--fast-generations must be positive')

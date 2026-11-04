@@ -11,7 +11,7 @@ from .world import Rules
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--backend', choices=('python', 'mlx-gpu'), default='python')
+    parser.add_argument('--backend', choices=('python', 'rust', 'mlx-gpu'), default='python')
     parser.add_argument('--port', type=int, default=8767)
     parser.add_argument('--model', type=Path, default=Path(__file__).parent / 'models' / 'maze.json')
     parser.add_argument('--generations', type=int, default=60)
@@ -33,7 +33,7 @@ def main():
     args = parser.parse_args()
     rule_values = {item.name: getattr(args, item.name) for item in fields(Rules) if getattr(args, item.name) is not None}
     config_values = {item.name: getattr(args, item.name) for item in fields(Config)
-                     if item.name != 'rules' and getattr(args, item.name) is not None}
+                     if item.name != 'rules' and getattr(args, item.name, None) is not None}
     try:
         if args.generations < 1:
             raise ValueError('Generations must be positive')
@@ -60,6 +60,11 @@ def main():
     except (ValueError, KeyError, OSError, TypeError) as error:
         parser.error(str(error))
     trainer.backend = args.backend
+    if args.backend == 'rust':
+        try:
+            trainer.network.set_backend('rust')
+        except (ValueError, RuntimeError) as error:
+            parser.error(str(error))
     if args.backend == 'mlx-gpu':
         if not (trainer.config.learned_memory or trainer.config.deterministic_history):
             parser.error('mlx-gpu requires a learned-memory model')
