@@ -82,7 +82,11 @@ class NeuralNetwork:
     @classmethod
     def load(cls, path, *, expected_architecture=None):
         saved = json.loads(Path(path).read_text(encoding='utf-8'))
-        network = cls(saved['architecture'], seed=saved.get('seed'))
+        model_class = cls
+        if saved.get('model_type') == 'present_history_branches_v1':
+            from ai.branched import BranchedNetwork
+            model_class = BranchedNetwork
+        network = model_class(saved['architecture'], seed=saved.get('seed'))
         if expected_architecture is not None and network.architecture != tuple(expected_architecture):
             raise ValueError('Saved model has incompatible architecture')
         network._check_weights(saved['weights'])

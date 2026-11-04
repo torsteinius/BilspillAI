@@ -1,5 +1,7 @@
 # Bilspill i AI-spill
 
+**Pågående eksperiment (planlegging):** [Begrenset synsfelt og hukommelse](../../docs/BIL_HUKOMMELSE.md). Steg 1 undersøker en mer avansert bane, begrensede observasjoner og eventuelt saktere biler å passere. Steg 2 undersøker rundetider og fordelen av å huske løypa; hypotesene for hukommelsesmekanismen kommer senere.
+
 Bilspillet er en simulering sett ovenfra i 2D. En bane bygges automatisk bit for bit, og en bil uten innebygd kunnskap om kjøring skal lære å følge banen ved hjelp av et nevralt nettverk. Bilen får fire avstandsmålinger til banekanten. Å komme nær kanten gir straff, og å treffe kanten gir en betydelig strengere straff.
 
 All banegenerering, bilfysikk, sensormåling, belønningsberegning og læring skal lages i Python. En eventuell React-klient viser simuleringen og henter oppdateringer fra Python via API. Simuleringen skal kunne kjøres og trenes uten React.

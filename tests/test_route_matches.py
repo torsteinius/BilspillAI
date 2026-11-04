@@ -40,6 +40,18 @@ class RouteMatchTests(unittest.TestCase):
         self.assertEqual(client.items[1]['input'],[.2]*12+[0.]*28)
         self.assertEqual(result['samples'][1]['step'],15)
 
+    def test_variant2_passes_occupancy_before_mutation_and_requires_confirmation(self):
+        point = Point((0.,) * 8, 'forward', 'r', 1, 9, '5x5')
+        class Client:
+            def ask(self, sid, rid, active_inputs):
+                self.mask = active_inputs
+                return dict(candidate_ids=['a'], generation_id='g')
+        client = Client()
+        with self.assertRaisesRegex(RuntimeError, 'confirm'):
+            train_round(client, 's', [point], 12, 1, variant=2)
+        # Occupied measurements can be zero; empty slots alone are frozen.
+        self.assertEqual(client.mask, [True] * 8 + [False] * 4)
+
     def test_expansion_keeps_trained_function_and_never_resets_weights(self):
         with tempfile.TemporaryDirectory() as d:
             t=Trainer(Config(deterministic_history=True,start_in_field=False,

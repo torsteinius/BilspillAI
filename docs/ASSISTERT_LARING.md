@@ -277,3 +277,267 @@ kandidatutvalg ble rekonstruert med nøyaktig samsvar i fitness og vinnervekter.
 Forsøksmappens `README.md`, `state.json`, `rounds.jsonl` og `audit.json` gir detaljene.
 Kontrollsettet inneholder bare ett bakover-eksempel; et godt samlet resultat er
 ikke alene bevis på mestring av alle handlingstyper.
+
+
+## Variant 2: frys tomme minneinnganger i hver treningsgruppe
+
+24. oktober 2026. Navnet blir **variant 2**, siden `route-match-200-v1`
+allerede er gjennomført. Innsamlingens `-v2` gjelder datasamleren, ikke et eget
+treningsforsøk. Tidligere modell beholdes.
+
+Variant 2 bruker samme lagrede vellykkede ruter og faktisk observasjon før hvert
+valg: fire nåværende målinger og fire målinger per tidligere kryss eller hjørne.
+Nyeste minne kommer først, med demping 0,75 per nivå og gulv 0,25. Fremtidige
+målinger, kart og fasit gis ikke til nettet. Det øves på punkter langs hele ruta,
+inkludert korridorer; bare selve minnet komprimeres til hjørner og kryss.
+
+Belønningen er fortsatt nøyaktig +1 for demonstrert neste handling og −1 for
+andre handlinger. En demonstrasjon som ender ved utgangen behøver ikke være
+korteste vei. Det gis ingen andre bonuser eller straffer.
+
+Før kandidatene lages, sender treneren en maske over opptatte innganger i akkurat
+denne treningsgruppen. Forbindelser fra minneplasser som er tomme i alle gruppens
+observasjoner, kopieres uendret fra gjeldende modell. En tidligere brukt plass
+fryses igjen når den er tom i neste gruppe. En opptatt plass kan ha måleverdi null;
+den regnes fortsatt som opptatt. Skjulte forbindelser og biaser trenes som før.
+Dette er assistert evolusjon med felles kandidater for en gruppe punkter, ikke
+vektoppdatering etter hvert enkelt punkt.
+
+API-et bekrefter masken før evaluering. Kontrollsettet brukes verken til å velge
+kandidat eller aktivere inngangsvekter. `--variant 1` beholder den tidligere
+regelen der innganger forblir aktive etter første bruk; standard er nå variant 2.
+
+Første variant 2-kjøring viderefører variant 1 fra generasjon 7200 med 200 nye
+generasjoner, fire kandidater, 128 punkter per gruppe, sigma 0,03 og seed 20261024.
+Resultatfiler: `.ai-service/route-match-200-v2/`. Egen lokal GPU-tjeneste ble brukt
+på port 8791, med kopi av variant 1 registrert som `route-variant1-source`:
+
+```sh
+.venv-gpu/bin/python -m scripts.train_route_matches \
+  --service http://127.0.0.1:8791 --source-network route-variant1-source \
+  --dataset .ai-service/datasets/sensor-walker-g3000-mixed-5000 \
+  --variant 2 --rounds 200 --batch-size 128 --population 4 --sigma 0.03 \
+  --seed 20261024 --output .ai-service/route-match-200-v2
+```
+
+Resultat: **2745 av 3142 riktige valg (87,36 %)**, opp fra 2722 (86,63 %):
+23 flere riktige valg, eller 0,73 prosentpoeng. Sluttmodellen er på generasjon 7400.
+Kjøringen tok omtrent 83 sekunder. Dette måler neste handling fra gitt historikk;
+selvstendig navigasjon i nye labyrinter er ikke målt i dette forsøket.
+
+Alle 200 lagrede generasjonsoverganger ble kontrollert mot gruppens opptatte
+minneplasser: fryste inngangsvekter var uendret. Kildemodellen er bevart.
+`state.json`, `rounds.jsonl`, `audit.json` og `final.json` ligger i forsøksmappen.
+Alle 109 tester bestod, inkludert GPU-testene.
+
+
+## Variant 3: minne om veivalget
+
+25. oktober 2026. Variant 2 lagret målingene ved kryss og hjørner, men manglet
+handlingen som ble valgt der. Variant 3 legger til to fortegnsbit per minnepunkt:
+`−1,−1 = bak`, `−1,+1 = høyre`, `+1,−1 = venstre`, `+1,+1 = frem`.
+Bits og målinger dempes med samme minnevekting. Tomme plasser er fortsatt null.
+Dagens fire sensorer står først; hver historikkplass har nå seks verdier.
+
+Valget registreres først etter at beslutningen er tatt. Input ved et treningspunkt
+inneholder dermed aldri dette punktets fasithandling. Ved gjenbesøk erstattes
+stedets gamle oppføring med siste observerte målinger og valgt handling, og
+oppføringen flyttes til nyeste plass. Handlingen er relativ til retningen som
+målingene ble tatt i. Vi lagrer siste valg per sted, ikke en liste over alle tidligere
+utprøvde grener. Koordinater brukes fortsatt kun til gjenkjenning i simulatoren.
+
+`scripts/add_route_choice_memory.py` rekonstruerer samtlige 2079 vellykkede
+ruter / 36 688 punkter fra de gamle opptakene. Trening/kontroll-delingen beholdes.
+Det nye datasettet ligger i `.ai-service/datasets/sensor-walker-g3000-mixed-5000-choice-v3`.
+
+Variant 2 sine første-lagsvekter flyttes til riktig plass i det nye inputformatet;
+nye forbindelser fra handlingsbitene starter på null. Skjulte lag beholdes.
+Nettet blir **1540 → 124 → 100 → 75 → 51 → 27 → 2**. Variant 2 og dens datasett
+beholdes. Ren omplassering av vekter er testet å bevare beregningen; oppdatert
+historikk ved gjenbesøk kan likevel endre modellens input og valg.
+
+Den nye treningskjøringen bruker fortsatt bare +1/−1 for riktig/feil neste handling,
+og fryser minneinnganger som ikke er opptatt i gruppen. 200 generasjoner fra
+variant 2, fire kandidater, 128 punkter, sigma 0,03 og seed 20261025.
+Resultatfiler: `.ai-service/route-match-200-v3/`.
+
+Rekonstruer til en ny mappe og importer dens `student-config.json` som en egen
+modell i GPU-tjenesten før trening:
+
+```sh
+.venv-gpu/bin/python -m scripts.add_route_choice_memory \
+  --model .ai-service/route-match-200-v2/final.json \
+  --dataset .ai-service/datasets/sensor-walker-g3000-mixed-5000 \
+  --output .ai-service/datasets/sensor-walker-g3000-mixed-5000-choice-v3
+
+.venv-gpu/bin/python -m scripts.train_route_matches \
+  --service http://127.0.0.1:8791 --source-network choice-v3-source \
+  --dataset .ai-service/datasets/sensor-walker-g3000-mixed-5000-choice-v3 \
+  --variant 3 --rounds 200 --batch-size 128 --population 4 --sigma 0.03 \
+  --seed 20261025 --output .ai-service/route-match-200-v3
+```
+
+Etter 200 generasjoner (sluttgenerasjon 7600): 2700 / 3142 riktige valg (85.93%), mot 2741 (87.24%) før videre trening med det nye minneformatet. Alle 200 overganger er kontrollert for uendrede fryste vekter. 112 tester bestod. Dette er punktvis kontroll, ikke løsningsgrad for hele labyrinter.
+
+
+## Variant 4: bare tidligere bevegelsesvalg, fra tilfeldige vekter
+
+25. oktober 2026. Brukerens nye hypotese er at bevegelseshistorikken kan være
+nok, uten å lagre kryssene. Input består derfor av fire nåværende målinger og
+to fortegnsbit per tidligere bevegelsesvalg: frem, bak, høyre eller venstre,
+relativt til retningen på det tidspunktet. Alle valg lagres, også langs rette
+korridorer. Det lagres ingen gamle sensormålinger, koordinater, kryss-ID-er eller
+landemerkemarkører i input. Ved veggkontakt beskriver posten et forsøkt valg.
+
+Nyeste valg står først. Samme demping brukes som tidligere (0,75, gulv 0,25).
+Det er plass til de siste 128 valgene. Lengste lagrede demonstrasjon har 109
+handlinger, så hele historikken beholdes i samtlige treningspunkter. Ved lengre
+selvstendige forsøk glir eldre valg ut. Minnet starter tomt i hver labyrint.
+
+**Alle vekter, inkludert biaser, starter tilfeldig. Ingen lærte vekter overføres.**
+Generasjon er 0, poeng er tomt og treningshistorikken er tom. Lagbreddene beholdes
+for sammenlignbarhet: **260 → 124 → 100 → 75 → 51 → 27 → 2**.
+Initialisering er Gauss-fordelt med standardavvik `1/sqrt(fan_in)` per lag,
+seed 20261025. Normalisering og øvrige simulatorinnstillinger beholdes.
+
+På brukerens uttrykkelige ønske kjøres **500 generasjoner**, fire kandidater og
+128 rutepunkter per generasjon, sigma 0,03. Bare +1/−1 for riktig/feil neste valg
+brukes. Tomme innganger fryses per gruppe. Samme 2079 ruter og samme fordeling
+mellom 33 546 treningspunkter og 3142 kontrollpunkter beholdes. Datasettet
+rekonstrueres før handlingen velges, så dagens fasit aldri ligger i minnet.
+
+Datasett: `.ai-service/datasets/sensor-walker-g3000-mixed-5000-actions-v4`.
+Forsøk: `.ai-service/route-match-500-v4-random/`.
+
+```sh
+.venv-gpu/bin/python -m scripts.add_route_choice_memory --action-only --seed 20261025 \
+  --model .ai-service/route-match-200-v2/final.json \
+  --dataset .ai-service/datasets/sensor-walker-g3000-mixed-5000 \
+  --output .ai-service/datasets/sensor-walker-g3000-mixed-5000-actions-v4
+```
+
+`--model` brukes her bare til å hente lagbredder og innstillinger. Med
+`--action-only` bygges en ny modell med tilfeldige vekter og ny metadata.
+Importer deretter den nye `student-config.json` som `actions-v4-random-source`
+i den lokale GPU-tjenesten:
+
+```sh
+.venv-gpu/bin/python -m scripts.train_route_matches \
+  --service http://127.0.0.1:8791 --source-network actions-v4-random-source \
+  --dataset .ai-service/datasets/sensor-walker-g3000-mixed-5000-actions-v4 \
+  --variant 4 --rounds 500 --batch-size 128 --population 4 --sigma 0.03 \
+  --seed 20261025 --output .ai-service/route-match-500-v4-random
+```
+
+Resultat etter 500 generasjoner fra tilfeldige vekter: 2212 / 3142 riktige valg (70.40%), mot 1530 (48.70%) før trening. Samme sluttvekter med minneinput nullstilt ga 2612 (83.13%). Minneablasjonen er en kontroll av denne modellen, ikke sammenligning med en separat trent modell uten minne. Alle 500 overganger har uendrede fryste inngangsvekter; faktisk startmodell er kontrollert mot random-seeden. 114 tester bestod.
+
+På de samme ti visningskartene fra treningsmaterialet nådde variant 4 utgangen i 0 av 10 forsøk med vanlig minneinput. Historikken hjalp ikke den ferdigtrente modellen i denne kjøringen: nullstilling av minnet økte punktvis kontrolltreff fra 70,40 % til 83,13 %. Dette avgjør ikke om bevegelseshistorikk kan fungere med annen eller lengre trening.
+
+## Variant 4 videreført til generasjon 1500
+
+25. oktober 2026: 1000 nye generasjoner fra gen. 500, med samme datasett, fire kandidater, 128 punkter og sigma 0,03; ny trekningsseed 20261026. Initialvektene er kontrollert identiske med den bevarte gen. 500-modellen.
+
+Kontrolltreff: 2212/3142 (70.40%) → 2121/3142 (67.50%). Samme sluttmodell med nullstilt minne: 2531/3142 (80.55%). Ingen kontrollpunkter ble brukt til kandidatvalg. Alle 1000 overganger er kontrollert for uendrede fryste inngangsvekter.
+
+Resultater: `.ai-service/route-match-1500-v4-random/`. Kommando: `python -m scripts.train_route_matches --service http://127.0.0.1:8791 --source-network route-match-v4-411361c1108c --dataset .ai-service/datasets/sensor-walker-g3000-mixed-5000-actions-v4 --variant 4 --rounds 1000 --batch-size 128 --population 4 --sigma 0.03 --seed 20261026 --output .ai-service/route-match-1500-v4-random`.
+
+Gen. 1500 løste 0 av de samme 10 visningskartene. Videreføringen ga lavere kontrolltreff enn gen. 500; begge modeller er bevart. Visningen på port 8792 viser gen. 1500.
+
+
+## Variant 5: faktisk utforsking og harde straffer for blokkering
+
+25. oktober 2026. Brukeren peker på at kopiering av neste handling ikke belønner
+framdrift i modellens egne forsøk. Variant 5 går derfor over til fulle episoder.
+Kart og startposisjoner hentes fra de eksisterende treningsrutene, men verken
+fasithandlinger eller demonstrert historikk inngår i treningsløkken. Nettet
+bygger sin egen bevegelseshistorikk fra tomt minne og velger alle bevegelser selv.
+
+| Hendelse | Poeng |
+| --- | ---: |
+| Første besøk på en ny celle | +1 |
+| Vellykket bevegelse | +0,1 |
+| Gjenbesøk | −0,2 |
+| Veggtreff | −5 |
+| Ingen posisjonsendring | −5 |
+| Utgang | +100 |
+
+Nytt steg gir dermed +1,1, gjenbesøk −0,1 og veggtreff uten bevegelse −10.
+Det finnes ingen egen vent-handling i to-bit-modellen. Alle fire handlinger
+forsøker å flytte mannen; stillstand betyr derfor et blokkert bevegelsesforsøk.
+Ingen bonus for kryss, skjult sti eller redusert avstand til utgangen brukes.
+Utgangen avslutter forsøket; ellers fortsetter det i opptil 128 steg, også etter
+veggtreff. Derved kan modellen øve på å komme seg videre etter feil.
+
+500 generasjoner fra nye tilfeldige vekter (seed 2026102505), samme nettbredder
+og action-only-minne som variant 4. Fire kandidater konkurrerer på samme fem
+kart per generasjon, ett fra hver størrelse. Gjennomsnittlig episodepoeng er
+fitness. Tidligere vinner måles på nytt på de samme kartene. Inngangsvekter som
+aldri hadde opptatt input under kandidatens forsøk gjenopprettes før utvalg;
+dette påvirker ikke beregningene, siden disse inputene alltid var null.
+
+Kontrollkart holdes adskilt og brukes bare til før-/ettermåling. Målingen gjelder
+nå faktisk løsningsgrad og episodepoeng, ikke neste-handling-treffprosent. Tallene
+kan derfor ikke sammenlignes direkte med de tidligere prosentene.
+
+Implementasjon: `scripts/train_exploration.py`. Resultatmappe:
+`.ai-service/exploration-500-v5-random/`. Tidligere modeller er bevart.
+Alle 118 tester bestod, inkludert spesifikke tester for nye celler, gjenbesøk,
+vegg/stillstand, utgang og frysing av ubrukte inngangsvekter.
+
+```sh
+.venv-gpu/bin/python -m scripts.train_exploration \
+  --settings-source .ai-service/route-match-500-v4-random/final.json \
+  --dataset .ai-service/datasets/sensor-walker-g3000-mixed-5000-actions-v4 \
+  --output .ai-service/exploration-500-v5-random --rounds 500
+```
+
+Innstillingskilden brukes kun til nettbredder og konfigurasjon; den lagrede
+startmodellen er kontrollert mot random-seeden og har ingen overførte vekter.
+
+Resultat etter 500 generasjoner: 16 → 17 løste av 148 separate kontrollforsøk (10.81% → 11.49%). Gjennomsnittlig episodepoeng gikk fra -573.13 til -597.38. Besøkte celler økte fra 5.01 til 6.95, men veggtreff økte også (58.29 → 61.00). Dette forsøket dokumenterer ikke en tydelig forbedring av navigasjonen. Kontrollsettet inneholder 148 unike kombinasjoner av kart/start/retning; gjentatte identiske oppgaver er slått sammen.
+
+## Full nullstilling av aktiv variant 5
+
+25. oktober 2026, etter uttrykkelig beskjed om å nullstille all trening: ny kjøring med seed 2026102506 fra generasjon 0 til 500. Alle vekter er nye tilfeldige tall; gammel poengsum, historikk og progresjon er nullstilt. `reset-audit.json` dokumenterer at startvektene stemmer nøyaktig med ny seed og er forskjellige fra forrige startmodell. De gamle modellene beholdes kun som arkiv. Kartsett og belønningsregler er beholdt.
+
+Ny resultatmappe: `.ai-service/exploration-v5-reset-20261025`. Den aktive pekeren `current-fresh-run.json` peker hit. Kontrollresultat: 39 → 38 løste av 148 (26.35% → 25.68%). Gjennomsnittlig poengsum: -612.64 → -567.70.
+
+
+## Videreføring til generasjon 1500
+
+1000 nye generasjoner fra den nullstilte variant 5-modellen ved generasjon 500. Startvekter og konfigurasjon er identiske med forrige sluttmodell, verifisert i `resume-audit.json`. Samme seed 2026102506, belønninger og kartsett; mutasjoner og kartutvalg fortsetter fra generasjon 500. Resultatmappe: `.ai-service/exploration-v5-reset-1500-20261025`. Den aktive pekeren peker nå på denne sluttmodellen.
+
+Kontrollsett: 38 → 44 løste av 148 (25.68% → 29.73%). Gjennomsnittlig poengsum -567.70 → -483.42, veggtreff 59.80 → 51.61. Unike besøkte celler gikk fra 8.85 til 8.12. Dette er en moderat forbedring av løsningsgraden, men flertallet av forsøkene mislykkes fortsatt. Alle 118 tester bestod. Treneren støtter videreføring med `--resume-model`; denne kjøringen brukte `--rounds 1000 --seed 2026102506`.
+
+## Variant 6: separate grener og tilfeldige startpunkter
+
+Nåtid: 4→4→4→4. Historikk: 256→64→16→4. De to utgangene
+kobles sammen til 8 verdier, deretter felles lag 8→8→2. Alle lag bruker tanh,
+uten lag-normaliseringen fra variant 5. Nettet har 17 706 trenbare vekter og
+biaser. `ai/branched.py` beskriver grafen eksplisitt; checkpointets
+`architecture=[260,2]` angir kun inngangs-/utgangskontrakten, mens `branches`
+og `model_type` angir den faktiske arkitekturen. Både CPU-visningen og
+GPU-treningen følger denne grafen.
+
+Hver generasjon trekker én lagret vellykket treningsrute per kartstørrelse og
+ett tilfeldig punkt før en handling på hver av disse rutene. Mannen starter
+med posisjonen og retningen fra dette punktet, tom historikk og et nytt
+besøksregister. Han går selv i opptil 128 steg, eller til utgangen nås.
+Fasithandlingene brukes ikke til å velge bevegelse eller beregne belønning.
+Fire kandidater vurderes på de samme fem startpunktene. Deretter trekkes nye
+startpunkter. Historikken husker fortsatt forsøkte relative bevegelser som i
+variant 5, inkludert blokkerte forsøk. Den fylles med nuller før noe er husket.
+
+Alle belønningsverdier beholdes fra variant 5. Førstelagsvekter fra
+historikkplasser som aldri ble brukt i kandidatens forsøk gjenopprettes før
+utvalg. Begge grener trenes samtidig; «tre lag» beskriver nettstrukturen,
+ikke tre separate treningsfaser.
+
+Ny tilfeldig initialisering med seed 2026102507, ingen overførte vekter.
+Resultatmappe: `.ai-service/branched-v6-random-starts-1000`.
+Trener: `scripts/train_branched_maze.py`. Kontrollmålinger gjøres både fra de
+148 opprinnelige kontrollstartene og 150 faste tilfeldige kontrollstartpunkter
+(30 per størrelse). Kontrollkart brukes ikke i utvalget av kandidater.
+Kart-overlapp mellom trening og kontroll er kontrollert til null.
+
+Resultat etter 1000 generasjoner: fra opprinnelig kontrollstart 8→0 av 148 løste, og poeng -623.11→-939.86. Fra tilfeldige kontrollstartpunkter 35→0 av 150 løste, men poeng -500.80→-104.81. Besøkte celler ved tilfeldige starter falt 2.35→1.93. Treningen har dermed ikke gitt bedre navigasjon; poengforbedringen fra tilfeldige starter kom uten flere utganger. Modellen beholdes som forsøksresultat, med variant 5 bevart separat. Alle 122 tester bestod, inklusive CPU/GPU-samsvar, grenadskillelse, innlasting og frysing av ubrukte inngangsvekter.

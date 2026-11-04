@@ -165,9 +165,19 @@ class GenericAPI:
     @serialized
     def ask(self, session_id, body):
         row,d=self._session(session_id); rid=body.get('request_id')
-        if rid and rid in d['request_ids']: return d['request_ids'][rid]
-        if d['asked']: return d['asked']
-        e=EvolutionSession(d['champion'],population_size=d['population_size'],elite_count=d['elite_count'],mutation_sigma=d['mutation_sigma'],seed=d['seed'],generation=d['generation'] + d.get('mutation_generation_start',0),mutation_mask=self.mutation_mask(d)); candidates=e.ask(); d['candidates']=candidates; generation_id=f"generation-{d['generation']+1}"; d['asked']={'generation_id':generation_id,'champion_candidate_id':'candidate-0','candidate_ids':[f'candidate-{i}' for i in range(len(candidates))]}; d['request_ids'][rid]=d['asked']; self._save(session_id,d); return d['asked']
+        requested = None
+        if 'active_inputs' in body:
+            requested = self.active_inputs(body['active_inputs'], d['architecture'][0])
+        previous = (d['request_ids'].get(rid) if rid else None) or d['asked']
+        if previous:
+            if requested is not None and previous.get('active_inputs') != requested:
+                raise ValueError('Cannot change input occupancy for existing candidates')
+            return previous
+        mutation_data = d
+        if requested is not None:
+            # This generation's occupancy replaces, rather than accumulates, the mask.
+            mutation_data = dict(d, mutation_active_inputs=requested)
+        e=EvolutionSession(d['champion'],population_size=d['population_size'],elite_count=d['elite_count'],mutation_sigma=d['mutation_sigma'],seed=d['seed'],generation=d['generation'] + d.get('mutation_generation_start',0),mutation_mask=self.mutation_mask(mutation_data)); candidates=e.ask(); d['candidates']=candidates; generation_id=f"generation-{d['generation']+1}"; d['asked']={'generation_id':generation_id,'champion_candidate_id':'candidate-0','candidate_ids':[f'candidate-{i}' for i in range(len(candidates))]}; d['asked']['active_inputs'] = mutation_data.get('mutation_active_inputs'); d['request_ids'][rid]=d['asked']; self._save(session_id,d); return d['asked']
     @serialized
     def candidate_predict(self, session_id, body):
         started=time.perf_counter()

@@ -10,6 +10,8 @@ Et felles prosjekt for spill som lærer med nevrale nettverk. Bilspillet og laby
 
 ## Bilspillet i aksjon
 
+Et [pågående eksperiment med begrenset synsfelt og hukommelse](docs/BIL_HUKOMMELSE.md) er nå i planleggingsfasen: først en mer avansert bane og eventuelt forbikjøring av saktere biler med dagens treningsmetode, deretter rundetider og mulig nytte av å huske kommende svinger.
+
 | Oversiktskart med biler og sensorer | 3D fra førerplassen med banekart |
 | --- | --- |
 | [![Bilspillets trening sett ovenfra](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4) | [![3D-førerplass under trening](docs/media/bilspill-3d-preview.gif)](docs/media/bilspill-3d-training.mp4) |

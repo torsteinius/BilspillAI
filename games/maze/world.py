@@ -25,6 +25,8 @@ class Rules:
     min_steps: int = 0
     max_steps: int = 128
     memory_steps: int = 50
+    movement_reward: float = 0.
+    penalize_stationary_immediately: bool = False
     progress_reward: float = .25
     path_reward: float = .2
     exploration_reward: float = .2

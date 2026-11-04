@@ -86,7 +86,8 @@ def collect(teacher_path, student_path, output, attempts=1000, seed=202610180100
                               or any(type(n) is not int or n < 5 for n in sizes)):
         raise ValueError('Sizes must be distinct integers of at least five')
     dimensions = [(n,n) for n in sizes] if sizes else [(trainer.width,trainer.height)]
-    input_count = max(4*(1+capacity(w,h)) for w,h in dimensions)
+    row_width = 2 if trainer.config.history_action_memory_steps else 4 + 2 * trainer.config.history_choice_memory
+    input_count = max(4+row_width*(trainer.config.history_action_memory_steps or capacity(w,h)) for w,h in dimensions)
     student_bytes = student_path.read_bytes()
     # A new directory is mandatory; existing datasets are never overwritten.
     output.mkdir(parents=True, exist_ok=False)
@@ -99,6 +100,8 @@ def collect(teacher_path, student_path, output, attempts=1000, seed=202610180100
         teacher_mode='eight normalized rays; all memory and occupancy inputs zero; original argmax',
         randomization='maze layout and initial pose only; deterministic teacher, unchanged weights',
         student_source=str(student_path.resolve()), student_sensor_count=4,
+        student_choice_memory=trainer.config.history_choice_memory, student_memory_row_width=row_width,
+        student_action_memory_steps=trainer.config.history_action_memory_steps,
         student_input_count=input_count, source_model_input_count=trainer.network.architecture[0],
         student_config_sha256=hashlib.sha256(student_bytes).hexdigest(),
         observation_padding='append zeros to largest maze capacity; current sensors remain first',
@@ -117,7 +120,7 @@ def collect(teacher_path, student_path, output, attempts=1000, seed=202610180100
         split_attempts=dict(train=0, validation=0),
         split_successes=dict(train=0, validation=0), split_samples=dict(train=0, validation=0))
     manifest['by_size'] = {f'{w}x{h}':dict(attempted=0,successes=0,successful_samples=0,
-        native_input_count=4*(1+capacity(w,h)),truncated=0,
+        native_input_count=4+row_width*(trainer.config.history_action_memory_steps or capacity(w,h)),truncated=0,
         split_successes=dict(train=0,validation=0),split_samples=dict(train=0,validation=0))
         for w,h in dimensions}
     layouts_by_size = {key:set() for key in manifest['by_size']}

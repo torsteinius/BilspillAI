@@ -98,6 +98,11 @@ class MemoryEpisode(Episode):
                 self.done = self.escaped = True
                 self.event = 'Fant utgangen!'
         self.stationary_steps = self.stationary_steps + 1 if old == (self.x, self.y) else 0
+        if old != (self.x, self.y):
+            reward += self.rules.movement_reward
+        elif self.rules.penalize_stationary_immediately:
+            reward -= self.rules.stationary_penalty
+            self.stall_penalties += 1
         self.history.append((self.x, self.y, self.heading))
         state = (self.x, self.y, self.heading, tuple(self.memory))
         if self.rules.until_failure and not self.done:
@@ -118,7 +123,7 @@ class MemoryEpisode(Episode):
         return dict(x=self.x, y=self.y, heading=self.heading, steps=self.steps,
                     score=self.score, reward=self.last_reward, event=self.event,
                     stationary_steps=self.stationary_steps, collisions=self.collisions,
-                    stall_penalties=0, clean_success=self.clean_success,
+                    stall_penalties=self.stall_penalties, clean_success=self.clean_success,
                     action=self.last_action, done=self.done, escaped=self.escaped,
                     output_values=self.output_values[:], output_bits=[],
                     memory=self.memory[:], memory_written=self.memory_written,

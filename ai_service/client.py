@@ -44,7 +44,11 @@ class Client:
     def import_legacy(self, network_id, source_checkpoint, app_id='maze'): return self._request('POST','/v1/networks/import-legacy',{'network_id':network_id,'source_checkpoint':source_checkpoint,'app_id':app_id})
     def predict(self, network_id, inputs, request_id=None): return self._request('POST',f'/v1/networks/{network_id}/predict',{'inputs':inputs,'request_id':request_id})
     def create_evolution_session(self, **settings): return self._request('POST','/v1/evolution/sessions',settings)
-    def ask(self, session_id, request_id): return self._request('POST',f'/v1/evolution/sessions/{session_id}/ask',{'request_id':request_id})
+    def ask(self, session_id, request_id, active_inputs=None):
+        body = {'request_id': request_id}
+        if active_inputs is not None:
+            body['active_inputs'] = active_inputs
+        return self._request('POST',f'/v1/evolution/sessions/{session_id}/ask',body)
     def candidate_predict(self, session_id, generation_id, items): return self._request('POST',f'/v1/evolution/sessions/{session_id}/predict',{'generation_id':generation_id,'items':items})
     def tell(self, session_id, generation_id, fitness, request_id, evaluation_set_id='local-set', used_inputs=None):
         body = {'generation_id':generation_id,'fitness':fitness,'request_id':request_id,'evaluation_set_id':evaluation_set_id}

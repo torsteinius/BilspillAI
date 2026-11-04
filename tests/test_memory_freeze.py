@@ -41,6 +41,36 @@ class MemoryFreezeTests(unittest.TestCase):
             new_sid = restored.create_session(settings)['session_id']
             self.assertEqual(restored._session(new_sid)[1]['mutation_active_inputs'], [True,True,False])
 
+    def test_current_batch_mask_refreezes_previously_used_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            model = NeuralNetwork([3, 2, 1])
+            model.weights = [.4] * model.weight_count
+            model.metadata['mutation_active_inputs'] = [True] * 3
+            model.save(home / 'source.json')
+            api = GenericAPI(home)
+            api.clone_legacy('batch', str(home / 'source.json'))
+            sid = api.create_session(dict(network_id='batch', population_size=3,
+                elite_count=1, mutation_sigma=.12, seed=42))['session_id']
+            for generation, mask in enumerate(([True, False, False], [True, True, False], [True, False, False])):
+                before = api._session(sid)[1]['champion'][:]
+                request = dict(request_id=f'a{generation}', active_inputs=mask)
+                asked = api.ask(sid, request)
+                self.assertEqual(asked['active_inputs'], mask)
+                self.assertEqual(GenericAPI(home).ask(sid, request), asked)
+                with self.assertRaises(ValueError):
+                    api.ask(sid, dict(request, active_inputs=[False] * 3))
+                for candidate in api._session(sid)[1]['candidates'][1:]:
+                    for neuron in range(2):
+                        for feature in range(3):
+                            index = neuron * 4 + feature
+                            if mask[feature]:
+                                self.assertNotEqual(candidate[index], before[index])
+                            else:
+                                self.assertEqual(candidate[index], before[index])
+                api.tell(sid, dict(request_id=f't{generation}', generation_id=asked['generation_id'],
+                    fitness=[0, 1, 2], used_inputs=mask))
+
 
 class MutationRandomnessTests(unittest.TestCase):
     def test_generation_varies_but_restart_reproduces_candidates(self):

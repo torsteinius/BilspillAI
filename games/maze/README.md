@@ -14,9 +14,9 @@ En mann lærer å finne ut av tilfeldige labyrinter ved hjelp av den felles klas
 
 [Forsøksloggen](../../docs/FORSOKSLOGG.md) samler nettstørrelse, minnevarianter, normalisering, belønningsendringer, kontroll av avspilling og målte resultater. Den skiller gjennomførte forsøk fra forslag og sammenligner prinsippet bak assistert læring med AlphaStar.
 
-## Foreslått neste læringsopplegg
+## Rutepunkttrening og utforsking – variant 5
 
-[Assistert læring fra kjente ruter](../../docs/ASSISTERT_LARING.md) beskriver trening på tilfeldige punkter langs kjente løsninger, med den faktiske historikken ved hvert punkt. Forslaget lar nettet øve på hele ruten uten først å mestre veien frem til hvert treningspunkt. Dette er dokumentert design og er ikke implementert i dagens trener.
+[Assistert læring fra kjente ruter](../../docs/ASSISTERT_LARING.md) beskriver trening på tilfeldige punkter langs kjente løsninger, med den faktiske historikken ved hvert punkt. Den separate treneren `scripts/train_route_matches.py` lar nettet øve på hele ruten uten først å mestre veien frem til hvert treningspunkt. Variant 2 fryser inngangsvekter for minneplasser som er tomme i den aktuelle treningsgruppen. Bare riktig/feil neste handling gir +1/−1. Variant 3 legger til valgt retning i hvert minnepunkt og oppdaterer stedet ved gjenbesøk. Variant 4 prøver bare bevegelseshistorikk og dagens fire sensorer, fra tilfeldige vekter i 500 generasjoner. Variant 5 (`scripts/train_exploration.py`) bruker samme input, men trenes på hele forsøk med belønning for nye celler og bevegelse, og straff for gjenbesøk, stillstand og veggtreff.
 
 ## Start
 

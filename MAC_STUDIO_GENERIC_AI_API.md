@@ -159,6 +159,16 @@ Parameterverdiene er eksempler fra nåværende oppsett. Kontroller dagens kode o
 
 Returner `generation_id`, kandidat-ID-er og den gjeldende vinnerens ID. Kandidatvektene blir på Studio. Gjentatt forespørsel med samme request-ID skal returnere samme kandidater.
 
+Valgfritt `active_inputs` i forespørselen er én boolsk verdi per inngang og styrer
+mutasjonene for akkurat denne generasjonen. `false` fryser alle utgående vekter
+fra inngangen; biaser og senere lag følger vanlig mutasjon. Masken bekreftes som
+`active_inputs` i svaret og kan ikke endres for kandidater som allerede er laget.
+Uten feltet brukes den eksisterende akkumulerte `mutation_active_inputs`-regelen.
+Rutepunkttrening variant 2 sender masken før kandidatene lages, basert på opptatte
+minneplasser i den aktuelle treningsgruppen (ikke om måleverdien er forskjellig
+fra null).
+
+
 MacBook velger et felles nytt sett labyrinter for generasjonen. Både den gamle vinneren og alle kandidatene må evalueres på nøyaktig samme sett, slik dagens trening gjør. Resultater fra forskjellige labyrintsett må ikke konkurrere direkte.
 
 ### Beregn handlinger for kandidatene

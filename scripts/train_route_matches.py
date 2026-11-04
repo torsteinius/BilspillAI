@@ -29,6 +29,11 @@ class Point:
     attempt: int
     step: int
     size: str
+    memory_row_width: int = 4
+
+    @property
+    def history_count(self):
+        return (len(self.values)-4)//self.memory_row_width
 
     def inputs(self, width):
         if len(self.values) > width:
@@ -47,6 +52,7 @@ def load_points(dataset):
     manifest=json.loads((dataset/'manifest.json').read_text())
     if manifest['status']!='complete' or manifest['student_output_encoding']!='bits2':
         raise ValueError('Expected a complete two-bit demonstration dataset')
+    row_width=manifest.get('student_memory_row_width',4)
     routes=defaultdict(list);validation=[];sets={'train':set(),'validation':set()}
     counts=Counter()
     with (dataset/'successful-routes.jsonl').open() as stream:
@@ -57,14 +63,14 @@ def load_points(dataset):
             split=route['split'];sets[split].add(route['route_id'])
             size=f"{route['width']}x{route['height']}"; points=[]
             for sample in route['samples']:
-                width=4*(1+sample['history_count'])
+                width=4+row_width*sample['history_count']
                 observation=sample['observation']
                 if width>len(observation) or any(observation[width:]):
                     raise ValueError('Invalid memory occupancy or padding')
                 if tuple(sample['target_bits']) != BITS[sample['action']]:
                     raise ValueError('Route action and target bits disagree')
                 points.append(Point(tuple(observation[:width]),sample['action'],route['route_id'],
-                                    route['attempt'],sample['step'],size))
+                                    route['attempt'],sample['step'],size,row_width))
             counts[split]+=len(points)
             if split=='train':routes[size].append(points)
             else:validation.extend(points)
@@ -87,8 +93,19 @@ def sample_batch(routes, rng, count):
     return points
 
 
-def train_round(client, session_id, points, width, generation):
-    asked=client.ask(session_id,f'ask-{generation}')
+def train_round(client, session_id, points, width, generation, variant=1):
+    if not points:
+        raise ValueError('A training batch cannot be empty')
+    used=max(len(p.values) for p in points)
+    if used > width:
+        raise ValueError('History exceeds input capacity')
+    active=[i<used for i in range(width)]
+    if variant >= 2:
+        asked=client.ask(session_id,f'ask-{generation}',active_inputs=active)
+        if asked.get('active_inputs') != active:
+            raise RuntimeError('Service did not confirm current-batch input freezing')
+    else:
+        asked=client.ask(session_id,f'ask-{generation}')
     candidates=asked['candidate_ids']
     reply=client.candidate_predict(session_id,asked['generation_id'],[
         dict(candidate_id=cid,sample_id=str(i),input=point.inputs(width))
@@ -100,16 +117,15 @@ def train_round(client, session_id, points, width, generation):
         raise ValueError('Prediction identifiers do not match sampled points')
     scores=[sum(match_reward(returned[cid,str(i)],point.action) for i,point in enumerate(points))/len(points)
             for cid in candidates]
-    used=max(len(p.values) for p in points)
     result=client.tell(session_id,asked['generation_id'],scores,f'tell-{generation}',
-        f'route-points-{generation}',used_inputs=[i<used for i in range(width)])
+        f'route-points-{generation}',used_inputs=active)
     winner=candidates.index(result['selected_candidate'])
     if abs(result['score']-scores[winner])>1e-9:raise RuntimeError('Saved fitness differs from route matches')
-    return dict(round=generation,fitness=scores,accuracies=[(s+1)/2 for s in scores],
+    return dict(round=generation,variant=variant,active_input_count=used,fitness=scores,accuracies=[(s+1)/2 for s in scores],
         selected=winner,checkpoint_id=result['checkpoint_id'],
         selected_accuracy=(scores[winner]+1)/2,
         samples=[dict(attempt=p.attempt,step=p.step,route_id=p.route_id,size=p.size,
-                      history_count=len(p.values)//4-1,target=p.action) for p in points])
+                      history_count=p.history_count,target=p.action) for p in points])
 
 
 def evaluate(client,network_id,points,width):
@@ -133,7 +149,7 @@ def evaluate(client,network_id,points,width):
         majority_action_baseline=max(labels.values())/len(points),checkpoint_id=checkpoint)
 
 
-def prepare_model(source,dataset_manifest):
+def prepare_model(source,dataset_manifest,variant=1):
     source=copy.deepcopy(source)
     old=NeuralNetwork(source['architecture'],seed=source['seed'])
     old.weights=source['weights'];old.generation=source['generation'];old.history=source.get('history',[])
@@ -144,6 +160,10 @@ def prepare_model(source,dataset_manifest):
                       ('history_memory_floor',dataset_manifest['student_memory_floor']),
                       ('history_newest_first',dataset_manifest['student_newest_first'])]:
         if config.get(key)!=value:raise ValueError(f'Source/dataset mismatch: {key}')
+    if config.get('history_choice_memory',False) != dataset_manifest.get('student_choice_memory',False):
+        raise ValueError('Source/dataset choice memory mismatch')
+    if config.get('history_action_memory_steps',0) != dataset_manifest.get('student_action_memory_steps',0):
+        raise ValueError('Source/dataset action history mismatch')
     width=dataset_manifest['student_input_count']
     model=widen_network(old,[width,*old.architecture[1:]])
     model.metadata['history_hidden_widths']=list(model.architecture[1:-1])
@@ -151,7 +171,8 @@ def prepare_model(source,dataset_manifest):
     model.metadata['mutation_active_inputs']=active+[False]*(width-old.architecture[0])
     dimensions=max(dataset_manifest['dimensions'],key=lambda d:(d[0]-2)*(d[1]-2))
     model.metadata['curriculum'].update(width=dimensions[0],height=dimensions[1],streak=0,streak_model=None)
-    model.metadata['training_objective']=dict(name='recorded_next_action_match_v1',
+    model.metadata['training_objective']=dict(name=f'recorded_next_action_match_v{variant}',variant=variant,
+        input_freezing='current_batch_occupancy' if variant >= 2 else 'ever_used',
         correct=1,incorrect=-1,aggregation='mean over same sampled points for all candidates',
         other_rewards=False,history='full recorded history at randomly sampled route point',
         method='evolution',source_generation=old.generation)
@@ -166,13 +187,13 @@ def run(args):
     client=Client(args.service,timeout=120)
     if client.engine_status().get('backend')!='mlx-gpu':raise RuntimeError('GPU service required')
     source=client.checkpoint(args.source_network)
-    model=prepare_model(source['checkpoint'],manifest)
+    model=prepare_model(source['checkpoint'],manifest,args.variant)
     output.mkdir(parents=True,exist_ok=False)
     initial=output/'initial.json';model.save(initial)
     (output/'source.json').write_text(json.dumps(source['checkpoint']))
-    network_id='route-match-'+uuid.uuid4().hex[:12]
+    network_id=f'route-match-v{args.variant}-'+uuid.uuid4().hex[:12]
     client.import_legacy(network_id,str(initial.resolve()))
-    state=dict(status='running',network_id=network_id,source_network=args.source_network,
+    state=dict(status='running',variant=args.variant,network_id=network_id,source_network=args.source_network,
         source_checkpoint_id=source['checkpoint_id'],source_generation=model.generation,
         architecture=list(model.architecture),dataset=str(dataset.resolve()),
         dataset_manifest_sha256=hashlib.sha256((dataset/'manifest.json').read_bytes()).hexdigest(),
@@ -191,7 +212,7 @@ def run(args):
         with (output/'rounds.jsonl').open('w') as log:
             for generation in range(1,args.rounds+1):
                 batch=sample_batch(routes,rng,args.batch_size)
-                record=train_round(client,session,batch,model.architecture[0],generation)
+                record=train_round(client,session,batch,model.architecture[0],generation,args.variant)
                 log.write(json.dumps(record)+'\n');log.flush()
                 state.update(completed_rounds=generation,last_batch_accuracy=record['selected_accuracy'],
                              checkpoint_id=record['checkpoint_id']);save()
@@ -216,6 +237,7 @@ def main():
     p.add_argument('--source-network',default='history-4rays-decay75-v1')
     p.add_argument('--rounds',type=int,default=200);p.add_argument('--batch-size',type=int,default=128)
     p.add_argument('--population',type=int,default=4);p.add_argument('--sigma',type=float,default=.03)
+    p.add_argument('--variant',type=int,choices=(1,2,3,4),default=2)
     p.add_argument('--seed',type=int,default=20261018)
     run(p.parse_args())
 
