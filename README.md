@@ -18,7 +18,32 @@ mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid undervei
 
 ## Nå: trening på svinger, kjegler og trafikk
 
-Vi trener på en egen bane med vekslende svinger, 11 kjegler og fem biler som kjører samme vei med 80–120 % fart. Radaren har rekkevidde 540 og gir separat nærhet og sideplassering til modellen. 3D-visningen bruker Rust/WebGPU. [Status, oppsett og begrensninger](docs/BIL_HUKOMMELSE.md#status-ved-dokumentasjons--og-videooppdatering).
+Den oppdaterte treningsbanen har vekslende svinger, 33 kjegler og fem biler som kjører samme vei med 80–120 % fart. Radaren har 60° åpningsvinkel og rekkevidde 540, og gir nærhet, sideplassering, objektfart og relativ tilnærmingsfart til modellen. 3D-visningen bruker Rust/WebGPU. [Status, oppsett og begrensninger](docs/BIL_HUKOMMELSE.md#status-ved-dokumentasjons--og-videooppdatering).
+
+### Ny video: 33 kjegler og smalere radar
+
+[![Ny faktisk kjøring ovenfra med fem biler, 33 kjegler og 60° radar](docs/media/hybrid-33cones-60deg-overhead-preview.gif)](docs/media/hybrid-33cones-60deg-overhead.mp4)
+
+[Se videoen — 60 sekunder, MP4](docs/media/hybrid-33cones-60deg-overhead.mp4).
+Filmet 5. november 2026 i 1× avspilling. Alle fem bilene bruker vinnernettverket
+lagret ved **hybridgenerasjon 8**. Banen har nå **33 kjegler** og radaren **60°
+åpningsvinkel**. Vektene i dette opptaket var trent med 11 kjegler og 120° radar;
+videoen viser overgangen til den vanskeligere banen, med faktiske kollisjoner
+og omstarter. Det er et nytt opptak, ikke stillbildet eller de eldre klippene
+nedenfor. Videre trening beholder de lærte vektene.
+
+### Tidligere stillbilde fra generasjon 5
+
+![Fem biler på treningsbanen med kjegler, kantfølere og kjegleradar, sett ovenfra](docs/media/hybrid-generation-5-overhead.png)
+
+Stillbilde fra avspilling 5. november 2026 med den lagrede vinneren ved
+**generasjon 5 av 30** i hybridforsøket. Alle fem bilene bruker vinnernettverket
+med forskjellig fart. Bildet viser faktisk kjøring med omstarter ved kollisjon,
+ikke en feilfri demonstrasjon eller selve treningen. Dette er et datert
+øyeblikksbilde, ikke en automatisk oppdatert visning.
+
+Se [utviklingsloggen](docs/UTVIKLINGSLOGG_BIL.md) for hvordan treningsmetoden ble
+endret underveis. De eldre videoklippene nedenfor viser et tidligere oppsett.
 
 | Oversiktskart · 31 sekunder | Rust/WebGPU i 3D · 60 sekunder |
 | --- | --- |
@@ -130,7 +155,7 @@ python3 -m unittest discover -s v2 -p 'test_*.py' -v
 Detaljer og tidligere designnotater for bilspillet finnes i [games/car/README.md](games/car/README.md). Den historiske V1-demoen kjøres med `python3 versions/v1/demo.py` på port 8765.
 
 
-Nyeste bilforsøk: radaren er en 120° kjegle uten veggsperring, med avstand,
+Nyeste bilforsøk: radaren er en 60° kjegle uten veggsperring, med avstand,
 sideposisjon, objektfart og relativ tilnærmingsfart. 1000 generasjoner er
 startet fra nye vekter uten visning. Videoene fra treningsbanen er fra før
 denne radarendringen. Se [status og kjørekommando](docs/BIL_HUKOMMELSE.md#ny-radar-og-ny-trening-1000-generasjoner-uten-visning).

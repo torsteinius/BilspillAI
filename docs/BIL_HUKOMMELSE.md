@@ -378,3 +378,22 @@ Målinger, kandidater og vinnere lagres per generasjon. `complete.json` markerer
 at alle 30 generasjonene er ferdige. Prosessinformasjon finnes i
 `.ai-service/car-hybrid-30generations-process.json`; standardutdata i
 `.ai-service/car-hybrid-30generations.log`.
+
+
+### 33 kjegler og 60° radar — videreføring med samme vekter
+
+5. november: etter prosjekteierens ønske økes kjeglene fra 11 til 33 og
+radarvinkelen halveres fra 120° til 60°, med rekkevidde 540 og uendret
+nettverksarkitektur. Opprinnelige kjegler beholdes. Nytt oppsett testes for
+klaring ved start og mellom hindringer. Trening skal videreføres fra siste
+fullførte hybridgenerasjon mot totalt 30 generasjoner; vektene nullstilles ikke.
+Overgangen logges i `.ai-service/car-hybrid-geometry-transition.json`, og
+ny kjøring i `.ai-service/car-hybrid-33cones-60deg/`. Den opprinnelige
+evolusjonsprosessen fortsetter uendret med sitt gamle baneoppsett.
+
+
+Overgangen er bekreftet: generasjon 9 ble fullført med det gamle oppsettet,
+og videreføringen kjører generasjon 10–30 med 33 kjegler og 60° radar.
+Startvektene er kontrollert identiske med vinneren fra generasjon 9; ingen
+vekter ble nullstilt. Den nye videoen i README viser generasjon-8-vekter
+på det nye oppsettet, før videreføringen.

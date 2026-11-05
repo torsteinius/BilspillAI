@@ -232,3 +232,8 @@ Ny hybridvariant: `python -m games.car.hybrid --initial-model <modell.json>
 uavhengig med belønning for kollisjonsfri kjøring og fremdrift, samt straff
 fordelt på de siste 50 handlingene. Etter 100 forsøk testes hvert nettverk
 20 ganger i hver bilposisjon før en vinner velges. Se eksperimentloggen.
+
+
+Nyeste ovenfra-opptak: [60 sekunder med 33 kjegler og 60° radar](../../docs/media/hybrid-33cones-60deg-overhead.mp4).
+Filmet 5. november med vinnervekter lagret ved hybridgenerasjon 8, før disse
+vektene ble videreført på den tettere banen. Opptaket viser også feil og omstarter.

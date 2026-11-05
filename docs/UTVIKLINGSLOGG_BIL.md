@@ -226,6 +226,32 @@ Dette er bare et utgangspunkt for tidsanslag; resultat og varighet for 30
 generasjoner er ikke kjent. Den opprinnelige evolusjonskjøringen fortsetter
 separat. Ny logg og checkpoints: `.ai-service/car-hybrid-100train-20test-30generations/`.
 
+## 12 — Flere kjegler og smalere radar uten å forkaste vektene
+
+**5. november 2026 — prosjekteierens endringer:** Tredoble antallet kjegler og
+behold det som allerede er lært. Deretter halvere bredden på radarkjeglen.
+
+**Gjennomført:** De opprinnelige 11 banekjeglene beholdes, og to nye plasseres
+i hvert mellomrom langs banen: 33 totalt. Tester kontrollerer klaring til
+veikant, andre kjegler og startposisjoner. Radaren er innsnevret fra 120° til
+60° total åpningsvinkel; rekkevidden 540 og de 11 nettverksinputene beholdes.
+Dette tolker «halv bredde» som halv åpningsvinkel, ikke halve kjegleradiusen på
+banen. Veikjeglene beholder størrelse 6 verdenheter i radius.
+
+**Overgang:** Den aktive hybridgenerasjonen får fullføre. Siste vinnervekter
+brukes til resten av målet på 30 generasjoner, med fortsatt generasjonsnummer
+og en ny separat logg. Optimizerne opprettes på nytt ved generasjonsgrensen,
+slik de også gjør mellom vanlige hybridgenerasjoner. Ny seed er 20261107.
+Resultater før og etter endringen skal holdes adskilt; flere hindringer og
+smalere radar endrer oppgaven. Den gamle evolusjonskjøringen med 11 kjegler
+beholdes som separat referanse.
+
+**Video:** Prosjekteieren påpekte at README bare hadde fått et stillbilde og
+fortsatt viste gamle filmer. Et nytt faktisk ovenfra-opptak viser derfor
+33 kjegler og 60° radar med lagrede vekter fra generasjon 8, som ennå var trent
+med 11 kjegler og 120° radar. Opptaket er en demonstrasjon av overgangen, ikke
+et resultat fra ferdig trening i det nye oppsettet.
+
 ## Hva vi vet, og hva som står åpent
 
 Vi har dokumentert en stor ytelsesgevinst og reproduserbare, separate forsøk.
@@ -253,3 +279,10 @@ Behold mislykkede forsøk i loggen. Rett faktiske feil med en tydelig rettelse;
 ikke skriv om et tidligere forsøk som om den nye metoden alltid var planen.
 Når prosjekteieren endrer eller presiserer retningen, skal dette komme fram
 som en del av utviklingen, ikke forsvinne inn i en etterkonstruert suksesshistorie.
+
+
+Overgangen er bekreftet: generasjon 9 ble fullført med det gamle oppsettet,
+og videreføringen kjører generasjon 10–30 med 33 kjegler og 60° radar.
+Startvektene er kontrollert identiske med vinneren fra generasjon 9; ingen
+vekter ble nullstilt. Den nye videoen i README viser generasjon-8-vekter
+på det nye oppsettet, før videreføringen.
