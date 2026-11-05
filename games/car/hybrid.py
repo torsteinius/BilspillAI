@@ -1,4 +1,5 @@
 """Five independent learners: safe driving rewards, last-50 credit, elite selection."""
+import copy
 import argparse
 from collections import deque
 import json
@@ -159,11 +160,11 @@ def train_round(learners,steps,offset,cars=None):
     return results
 
 
-def evaluate_candidate(actor, traffic, steps, offset=0):
+def evaluate_candidate(actor, traffic, steps, offset=0, initial_cars=None):
     """Every candidate drives every starting slot/speed against frozen opponents."""
     rows=[]
     for role in range(5):
-        cars=app.initial(offset)
+        cars=app.initial(offset) if initial_cars is None else copy.deepcopy(initial_cars)
         reward=distance=0.
         survived=0
         for tick in range(steps):
@@ -188,9 +189,9 @@ def evaluate_candidate(actor, traffic, steps, offset=0):
                 distance=sum(r['distance'] for r in rows),roles=rows)
 
 
-def evaluate_suite(actor, traffic, steps, offsets):
+def evaluate_suite(actor, traffic, steps, offsets, starts=None):
     """Identical deterministic scenarios for each network; no training here."""
-    runs=[dict(offset=offset, **evaluate_candidate(actor,traffic,steps,offset)) for offset in offsets]
+    runs=[dict(offset=offset, **evaluate_candidate(actor,traffic,steps,offset,initial_cars=None if starts is None else starts[i])) for i,offset in enumerate(offsets)]
     return dict(score=sum(r['score'] for r in runs),
                 collisions=sum(r['collisions'] for r in runs),
                 distance=sum(r['distance'] for r in runs),
@@ -203,17 +204,31 @@ def main():
     source.add_argument('--initial-model',type=Path)
     source.add_argument('--fresh-brake',action='store_true',help='Fresh random 23-input, two-output steering/brake network')
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--cone-count',type=int,choices=range(34),help='Evenly spaced cones (0–33)')
+    parser.add_argument('--no-cones',action='store_true',help='Train and evaluate without cones')
     parser.add_argument('--traffic-model',type=Path,help='Keep fixed evaluation opponents when continuing a run')
     parser.add_argument('--hidden',type=int,nargs='+',help='Hidden layer widths for --fresh-brake; default: 8 8')
+    parser.add_argument('--collision-credit',choices=('uniform50','latest20_linear','latest25_last10'),default='uniform50')
+    parser.add_argument('--history-stride',type=int,default=1,help='Save one action per N steps; aggregate intervening rewards (rotating trainer)')
     parser.add_argument('--rotate',action='store_true',help='Asynchronous round-robin assignment across cars')
     parser.add_argument('--trained-only',action='store_true',help='Choose among trained candidates; keep parent as reference only')
     parser.add_argument('--generations',type=int,default=2)
+    parser.add_argument('--random-scenarios',action='store_true',help='4–8 random cones, random starts and alternating convoy direction each generation')
+    parser.add_argument('--learners',type=int,default=5,help='Number of independently trained networks in rotation')
     parser.add_argument('--rounds',type=int,default=100)
     parser.add_argument('--test-rounds',type=int,default=20)
     parser.add_argument('--steps',type=int,default=1000)
     parser.add_argument('--seed',type=int,default=20261105)
     parser.add_argument('--generation-offset',type=int,default=0)
     args=parser.parse_args()
+    if args.collision_credit != 'uniform50' and not args.rotate:
+        parser.error('--collision-credit requires --rotate')
+    if args.history_stride < 1 or (args.history_stride != 1 and not args.rotate):
+        parser.error('--history-stride must be positive; values above one require --rotate')
+    if args.random_scenarios and (not args.rotate or args.no_cones or args.cone_count is not None):
+        parser.error('--random-scenarios requires --rotate and controls cone placement itself')
+    if args.learners < 1 or (args.learners != 5 and not args.rotate):
+        parser.error('--learners must be positive; values other than five require --rotate')
     if args.hidden is not None and (not args.fresh_brake or any(width<1 for width in args.hidden)):
         parser.error('--hidden requires --fresh-brake and positive layer widths')
     if args.generation_offset < 0:
@@ -243,34 +258,57 @@ def main():
     parent.metadata.update(radar_mode='cone4relative',observation_version='seven_rays_four_relative_targets_v6')
     args.output.mkdir(parents=True)
     parent.save(args.output/'initial.json')
-    app.configure_track('training',args.steps);app.configure_traffic('convoy')
+    app.configure_track('training',args.steps,cones=not args.no_cones,cone_count=args.cone_count);app.configure_traffic('convoy')
     app.configure_radar(3.);app.RADAR_MODE='cone4relative';app.TRACK.set_backend('rust')
     rng=random.Random(args.seed)
     test_rng=random.Random(args.seed+1)
     test_offsets=[test_rng.uniform(-12.,12.) for _ in range(args.test_rounds)]
-    settings=dict(engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake,action_outputs=parent.architecture[-1],brake_max_reduction=.5 if parent.architecture[-1]==2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=23,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
-                  learners=5,history=50,credit='uniform50',safe_reward=SAFE_REWARD,
+    settings=dict(random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake,action_outputs=parent.architecture[-1],brake_max_reduction=.5 if parent.architecture[-1]==2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=23,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
+                  learners=args.learners,training_attempts_per_generation=args.learners*args.rounds,history=50,history_stride=args.history_stride,history_reward='sum_between_samples',history_boundary='new_sample_on_new_session',credit=args.collision_credit,safe_reward=SAFE_REWARD,
                   progress_reward=PROGRESS_REWARD,collision_penalty=COLLISION_PENALTY,
                   exploration_sigma=.15,learning_rate=.0003,mutation_sigma=.03,
                   initial_generation=source_generation,protected_parent=not args.trained_only,
                   selection='20 test scenarios by default, each in all five slots/speeds against fixed initial-model opponents; no learning or exploration',
                   holdout='Offsets -8 and +8, reported only, not used for selection')
+    if args.random_scenarios:
+        settings.update(cone_count=None,cone_count_range=[4,8],starts='random_each_attempt',direction='alternates_each_generation',training_continuation='new_random_pose_each_attempt',selection='Parent and children reevaluated on identical new starts and layout each generation',holdout='Two additional random starts on the current layout; not used for selection')
     (args.output/'settings.json').write_text(json.dumps(settings,indent=2))
     traffic=clone_network(NeuralNetwork.load(args.traffic_model) if args.traffic_model else parent)
     if traffic.architecture != parent.architecture or traffic.metadata.get("observation_version") != parent.metadata.get("observation_version"):
         parser.error("Traffic model must use the same architecture and observations")
     traffic.save(args.output/"traffic-reference.json")
+    scenario=None
+    test_starts=holdout_starts=None
+    def prepare_scenario(gen):
+        nonlocal scenario,test_starts,holdout_starts
+        if not args.random_scenarios:return
+        from .scenarios import Scenario
+        scenario=Scenario(args.seed,gen)
+        test_starts=scenario.evaluation_starts(args.test_rounds)
+        holdout_starts=scenario.evaluation_starts(2,holdout=True)
+    def evaluate_current(n):
+        return evaluate_suite(n,traffic,args.steps,test_offsets,starts=test_starts)
+    def holdout_current(n):
+        return [evaluate_candidate(n,traffic,args.steps,o,initial_cars=None if holdout_starts is None else holdout_starts[i]) for i,o in enumerate((-8,8))]
+    prepare_scenario(args.generation_offset+1)
     started=time.monotonic()
     with (args.output/'metrics.jsonl').open('w') as log:
-        initial=evaluate_suite(parent,traffic,args.steps,test_offsets)
-        initial_holdout=[evaluate_candidate(parent,traffic,args.steps,o) for o in (-8,8)]
+        initial=evaluate_current(parent)
+        initial_holdout=holdout_current(parent)
         log.write(json.dumps(dict(generation=0,evaluation=initial,holdout=initial_holdout))+'\n');log.flush()
         training_cars=app.initial(0)
         learners=[]
         car_histories=[deque() for _ in training_cars]
         for gen in range(args.generation_offset+1,args.generation_offset+args.generations+1):
+            if args.random_scenarios:
+                prepare_scenario(gen)
+                training_cars=scenario.initial()
+                car_histories=[deque() for _ in training_cars]
+                layout=dict(**scenario.payload(),test_starts=test_starts,holdout_starts=holdout_starts,training_starts=copy.deepcopy(training_cars))
+                (args.output/f'generation-{gen}-scenario.json').write_text(json.dumps(layout,indent=2))
+                log.write(json.dumps(dict(generation=gen,scenario=layout))+'\n');log.flush()
             previous_learners=learners
-            learners=[Learner(clone_network(parent,rng,0. if i==0 else .03),rng.randrange(2**32)) for i in range(5)]
+            learners=[Learner(clone_network(parent,rng,0. if i==0 else .03),rng.randrange(2**32)) for i in range(args.learners)]
             for current,previous in zip(learners,previous_learners):
                 current.history=deque(previous.history)
                 current.sequence=previous.sequence
@@ -279,7 +317,7 @@ def main():
                 def report_attempt(row):
                     log.write(json.dumps(dict(generation=gen,training_attempt=row))+'\n');log.flush()
                 rotation=train_generation([l.actor for l in learners],args.steps,args.rounds,
-                                          training_cars,car_histories,args.seed+gen*100,on_attempt=report_attempt)
+                                          training_cars,car_histories,args.seed+gen*100,on_attempt=report_attempt,history_stride=args.history_stride,credit_mode=args.collision_credit,scenario=scenario)
                 log.write(json.dumps(dict(generation=gen,rotation_summary={k:v for k,v in rotation.items() if k!='records'}))+'\n');log.flush()
             else:
                 for round_index in range(args.rounds):
@@ -289,12 +327,13 @@ def main():
             candidates=[parent]+[l.actor for l in learners]
             evaluations=[]
             for candidate_index,n in enumerate(candidates):
-                result=evaluate_suite(n,traffic,args.steps,test_offsets)
+                result=evaluate_current(n)
                 evaluations.append(result)
                 log.write(json.dumps(dict(generation=gen,test_candidate=candidate_index,evaluation=result))+'\n');log.flush()
             winner=max(range(1 if args.trained_only else 0,len(candidates)),key=lambda i:evaluations[i]['score'])
             parent=clone_network(candidates[winner])
             parent.generation=gen;parent.score=evaluations[winner]['score']
+            if scenario is not None:parent.metadata['scenario']=scenario.payload()
             parent.metadata.update(training_method='hybrid_uniform50_v1',experiment=settings)
             parent.save(args.output/f'generation-{gen}.json');parent.save(args.output/'model.json')
             for i,learner in enumerate(learners):
@@ -303,7 +342,7 @@ def main():
                 learner.actor.metadata.update(training_method='hybrid_uniform50_v1',experiment=settings)
                 learner.actor.save(args.output/f'generation-{gen}-learner-{i}.json')
             row=dict(generation=gen,winner='parent' if winner==0 else f'learner-{winner-1}',
-                     evaluations=evaluations,holdout=[evaluate_candidate(parent,traffic,args.steps,o) for o in (-8,8)],
+                     evaluations=evaluations,holdout=holdout_current(parent),
                      elapsed_seconds=time.monotonic()-started)
             log.write(json.dumps(row)+'\n');log.flush();print(json.dumps(row),flush=True)
     (args.output/'complete.json').write_text(json.dumps(dict(generations=args.generations,last_generation=args.generation_offset+args.generations,elapsed_seconds=time.monotonic()-started)))

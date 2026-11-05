@@ -23,6 +23,7 @@ class Record:
     reward: float = 0.
     credited: bool = False
     origin: object = None
+    span_steps: int = 0
 
 
 class PoolPolicy:
@@ -71,10 +72,29 @@ def next_owner(policies,cursor,budget):
     return None,cursor
 
 
-def credit_history(history,policies,collision=False):
+def collision_weights(count, mode='uniform50'):
+    """Oldest first; truncate the 50-slot schedule and renormalize short lives."""
+    if not 0 <= count <= 50:
+        raise ValueError('Expected up to 50 history records')
+    if mode not in ('uniform50', 'latest20_linear', 'latest25_last10'):
+        raise ValueError('Unknown collision credit mode')
+    if not count:
+        return []
+    if mode == 'uniform50':
+        return [1./count]*count
+    if mode == 'latest25_last10':
+        schedule = [0.]*40 + [.75*i/36 for i in range(9)] + [.25]
+    else:
+        schedule = [.8*i/sum(range(1,50)) for i in range(1,50)] + [.2]
+    weights = schedule[-count:]
+    total = sum(weights)
+    return [w/total for w in weights]
+
+
+def credit_history(history,policies,collision=False,credit_mode='uniform50'):
     if collision and history:
-        share=50./len(history)
-        for record in history:record.reward-=share
+        for record,weight in zip(history,collision_weights(len(history),credit_mode)):
+            record.reward-=50.*weight
     retired=set()
     for record in history:
         policy=record.origin or policies[record.owner]
@@ -84,14 +104,18 @@ def credit_history(history,policies,collision=False):
     if collision:history.clear()
 
 
-def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None):
+def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None):
     """Exactly `attempts` completed drives per policy, with no shared round barrier."""
+    if type(history_stride) is not int or history_stride < 1:
+        raise ValueError('History stride must be a positive integer')
+    collision_weights(0,credit_mode)
     policies=[PoolPolicy(actor,seed+i) for i,actor in enumerate(actors)]
     sessions=[None]*len(cars)
     cursor=0;tick=0;assignment_cursor=0
     records=[]
     while any(p.completed<attempts for p in policies):
-        app.restart_crashed(cars,0)
+        if scenario is None:app.restart_crashed(cars,0)
+        else:scenario.restart_crashed(cars)
         assigned=False
         for i in [(assignment_cursor+j)%len(cars) for j in range(len(cars))]:
             car=cars[i]
@@ -100,7 +124,7 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None):
             if owner is None:continue
             p=policies[owner];p.started+=1;p.car_counts[i]+=1
             assigned=True
-            sessions[i]=dict(owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.)
+            sessions[i]=dict(owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.,start_pose={k:car[k] for k in ('x','y','heading','direction') if k in car})
         if assigned:assignment_cursor=(assignment_cursor+1)%len(cars)
         active=[s is not None and not c['crashed'] for s,c in zip(sessions,cars)]
         if not any(active):
@@ -115,10 +139,13 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None):
             means=tuple(forward_latent(session['snapshot'],inputs))
             samples=tuple(p.rng.gauss(mean,.15) for mean in means)
             action=app.decode_outputs([math.tanh(z) for z in samples]);controls.append(action)
-            if len(histories[i])==50:
-                old=histories[i].popleft();origin=old.origin or policies[old.owner];origin.credit(old)
-                if origin not in policies:origin.update()
-            histories[i].append(Record(owner,inputs,samples,means,action,origin=p))
+            # Start a new sample at each policy/snapshot boundary; never assign
+            # the new driver's rewards to a record belonging to the previous one.
+            if session['steps']==0 or not histories[i] or histories[i][-1].span_steps >= history_stride:
+                if len(histories[i])==50:
+                    old=histories[i].popleft();origin=old.origin or policies[old.owner];origin.credit(old)
+                    if origin not in policies:origin.update()
+                histories[i].append(Record(owner,inputs,samples,means,action,origin=p))
         # Finished-budget cars are parked while remaining drives finish.
         parked=[(i,c['crashed']) for i,c in enumerate(cars) if not active[i]]
         for i,_ in parked:cars[i]['crashed']=True
@@ -129,17 +156,21 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None):
             delta=car['travel']-before[i]
             reward=driving_reward(delta,car['crashed'])
             histories[i][-1].reward+=reward
+            histories[i][-1].span_steps+=1
             session['reward']+=reward;session['distance']+=max(0.,delta);session['steps']+=1
             if car['crashed'] or session['steps']>=steps:
                 owner=session['owner'];p=policies[owner]
-                credit_history(histories[i],policies,collision=car['crashed'])
+                credit_history(histories[i],policies,collision=car['crashed'],credit_mode=credit_mode)
                 p.update();p.completed+=1
                 row=dict(network=owner,car=i,attempt=p.completed,steps=session['steps'],
                          collision=car['crashed'],distance=session['distance'],
-                         reward=session['reward']-(50. if car['crashed'] else 0.),tick=tick)
+                         reward=session['reward']-(50. if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'])
                 records.append(row)
                 if on_attempt:on_attempt(row)
                 sessions[i]=None
+                if scenario is not None:
+                    histories[i].clear()
+                    if not car['crashed']:scenario.restart_car(cars,i)
         tick+=1
     # Include late collision credit attributed to a policy that already finished.
     for p in policies:p.update()

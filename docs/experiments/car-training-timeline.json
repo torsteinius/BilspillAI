@@ -1,0 +1,293 @@
+{
+  "description": "Chronological development events. Null generation means no verified boundary or not a training change; never infer a position from the entry number.",
+  "events": [
+    {
+      "id": "E01",
+      "title": "Hukommelse ble delt i to separate spørsmål",
+      "log_anchor": "endring-01",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E02",
+      "title": "Fra oval til åttetall, høyde og trafikk",
+      "log_anchor": "endring-02",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E03",
+      "title": "Egen treningsbane og mer informasjon om andre biler",
+      "log_anchor": "endring-03",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E04",
+      "title": "Visualisering og faktisk treningshastighet",
+      "log_anchor": "endring-04",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E05",
+      "title": "Radaren fikk veggskjerming, og så ble det valgt bort",
+      "log_anchor": "endring-05",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E06",
+      "title": "Måling lokaliserte flaskehalsen",
+      "log_anchor": "endring-06",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E07",
+      "title": "Prosjekteieren utfordret hvordan straffen brukes",
+      "log_anchor": "endring-07",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E08",
+      "title": "Fra halvering bakover til hovedvekt før kollisjonen",
+      "log_anchor": "endring-08",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E09",
+      "title": "Positiv belønning og evolusjon ble eksplisitte krav",
+      "log_anchor": "endring-09",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E10",
+      "title": "Prosjekteieren skjerpet protokollen til 100/20",
+      "log_anchor": "endring-10",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E11",
+      "title": "Utvidelse til 30 generasjoner med samme hybridmetode",
+      "log_anchor": "endring-11",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E12",
+      "title": "Flere kjegler og smalere radar uten å forkaste vektene",
+      "log_anchor": "endring-12",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E13",
+      "title": "Fire radarobjekter og utvidelse av det trente nettet",
+      "log_anchor": "endring-13",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E14",
+      "title": "Fortsett fra samme sted, og behold historikken",
+      "log_anchor": "endring-14",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E15",
+      "title": "Avgrens til fem generasjoner før ny vurdering",
+      "log_anchor": "endring-15",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E16",
+      "title": "Brems, ny initialisering og relativ fart i radaren",
+      "log_anchor": "endring-16",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E17",
+      "title": "Resultat etter fem generasjoner med brems",
+      "log_anchor": "endring-17",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E18",
+      "title": "To ekstra skjulte lag og 100 generasjoner fra nye vekter",
+      "log_anchor": "endring-18",
+      "series": "deep-reset",
+      "first_generation": 1,
+      "chart_label": "Fire skjulte lag; nye vekter"
+    },
+    {
+      "id": "E19",
+      "title": "Automatisk forbedringslogg per generasjon",
+      "log_anchor": "endring-19",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E20",
+      "title": "Trening uten løpende visualisering",
+      "log_anchor": "endring-20",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E21",
+      "title": "Asynkron rotasjon av nettverk mellom bilene",
+      "log_anchor": "endring-21",
+      "series": "deep-reset",
+      "first_generation": 28,
+      "chart_label": "Asynkron nettverksrotasjon"
+    },
+    {
+      "id": "E22",
+      "title": "Bredere sidesyn og 300 nye generasjoner med beholdte vekter",
+      "log_anchor": "endring-22",
+      "series": "wide120",
+      "first_generation": 101,
+      "chart_label": "120° radar"
+    },
+    {
+      "id": "E23",
+      "title": "Gradienter, radar og kollisjonsavstander flyttes til Rust",
+      "log_anchor": "endring-23",
+      "series": "wide120",
+      "first_generation": 111,
+      "chart_label": "Rust-kjerner"
+    },
+    {
+      "id": "E24",
+      "title": "Ny video etter observert framgang",
+      "log_anchor": "endring-24",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E25",
+      "title": "Lengre historikk og større kollisjonsstraff på siste handling",
+      "log_anchor": "endring-25",
+      "series": "wide120",
+      "first_generation": 201,
+      "chart_label": "Historikk ×3; vektet straff"
+    },
+    {
+      "id": "E26",
+      "title": "Uten kjegler; samme vekter og læringsmetode",
+      "log_anchor": "endring-26",
+      "series": "no_cones",
+      "first_generation": 246,
+      "chart_label": "Kjegler fjernet"
+    },
+    {
+      "id": "E27",
+      "title": "Fire kjegler tilbake; beholdte vekter",
+      "log_anchor": "endring-27",
+      "series": "four_cones",
+      "first_generation": 255,
+      "chart_label": "Fire kjegler"
+    },
+    {
+      "id": "E28",
+      "title": "Straff på ti siste; 25 % til handlingen nærmest krasjet",
+      "log_anchor": "endring-28",
+      "series": "four_cones",
+      "first_generation": 287,
+      "chart_label": "Straff: siste 10"
+    },
+    {
+      "id": "E29",
+      "title": "Hypotese fra prosjekteieren: skille radar fra kantfølere",
+      "log_anchor": "endring-29",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null,
+      "status": "hypothesis"
+    },
+    {
+      "id": "E30",
+      "title": "Tilbake til 50 oppføringer og vektene fra generasjon 286",
+      "log_anchor": "endring-30",
+      "series": "four_cones",
+      "first_generation": 296,
+      "chart_label": "50 igjen; vekter fra 286",
+      "reset_trend": true
+    },
+    {
+      "id": "E31",
+      "title": "Budsjett utvidet til 800; automatisk videreføring etter 345",
+      "log_anchor": "endring-31",
+      "series": "four_cones",
+      "first_generation": 346,
+      "chart_label": "Videreføring",
+      "status": "started",
+      "planned_first_generation": 346
+    },
+    {
+      "id": "E32",
+      "title": "Gjenopprett generasjon 325; gammel modell kan vinne",
+      "log_anchor": "endring-32",
+      "series": "four_cones",
+      "first_generation": 358,
+      "chart_label": "Vekter 325; forelder kan vinne",
+      "reset_trend": true
+    },
+    {
+      "id": "E33",
+      "title": "Ti nettverk; dobbelt antall treningsforsøk",
+      "log_anchor": "endring-33",
+      "series": "four_cones",
+      "first_generation": 361,
+      "chart_label": "10 nettverk; 1000 forsøk"
+    },
+    {
+      "id": "E34",
+      "title": "Tilfeldige 4–8 kjegler og starter; felles retning veksler",
+      "log_anchor": "endring-34",
+      "series": "random_scenarios",
+      "first_generation": 383,
+      "chart_label": "Tilfeldig bane/start; vekslende retning",
+      "reset_trend": true
+    },
+    {
+      "id": "E35",
+      "title": "1000 generasjoner: mål om passeringer og ulike hindringer",
+      "log_anchor": "endring-35",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null,
+      "status": "scheduled_continuation",
+      "planned_first_generation": 801
+    }
+  ]
+}

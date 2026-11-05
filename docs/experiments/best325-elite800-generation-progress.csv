@@ -1,0 +1,5 @@
+generation,winner,test_score,score_change,score_change_from_start,mean_distance,distance_change,distance_change_from_start_pct,collisions,collision_reduction,collision_reduction_from_start,attempts,completed_without_collision,holdout_score,holdout_collisions,elapsed_seconds
+0,startmodell,15247.476208668135,0.0,0.0,2775.2952417336387,0.0,0.0,9,0,0,100,91,1505.8873730637201,1,0.0
+358,parent,15247.476208668135,0.0,0.0,2775.2952417336387,0.0,0.0,9,0,0,100,91,1505.8873730637201,1,40.765431832987815
+359,parent,15247.476208668135,0.0,0.0,2775.2952417336387,0.0,0.0,9,0,0,100,91,1505.8873730637201,1,75.1038104170002
+360,parent,15247.476208668135,0.0,0.0,2775.2952417336387,0.0,0.0,9,0,0,100,91,1505.8873730637201,1,117.66413341695443

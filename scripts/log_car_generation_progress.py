@@ -27,7 +27,9 @@ def progress_rows(events):
         initial=result[0] if result else None
         score=evaluation['score'];collisions=evaluation['collisions']
         holdout=event.get('holdout',[])
-        result.append(dict(generation=event['generation'],winner=winner,test_score=score,
+        parent=event['evaluations'][0] if 'evaluations' in event else evaluation
+        parent_mean=parent['distance']/parent['attempts'] if parent['attempts'] else 0.
+        result.append(dict(generation=event['generation'],winner=winner,test_score=score,score_vs_parent=score-parent['score'],distance_vs_parent=mean-parent_mean,collision_reduction_vs_parent=parent['collisions']-collisions,
             score_change=score-previous['test_score'] if previous else 0.,
             score_change_from_start=score-initial['test_score'] if initial else 0.,
             mean_distance=mean,distance_change=mean-previous['mean_distance'] if previous else 0.,
@@ -90,6 +92,12 @@ def publish(run,output):
         if r['holdout_score'] is not None:
             text.append(f"| {r['generation']} | {r['holdout_score']:.2f} | {r['holdout_collisions']} |")
     text += ['', 'Datakilde: lokal `metrics.jsonl` i kjøringen. CSV-en inneholder også samlet endring i kollisjoner fra start og registrert kjøretid. GitHub-versjonen oppdateres først ved en ny push; den lokale filen oppdateres mens kjøringen går.', '']
+    if settings.get('random_scenarios'):
+        text=[line.replace('Testoppsettet er det samme mellom generasjonene i denne kjøringen.', 'Bane, startsteder og felles retning endres hver generasjon; kandidater og forelder testes på identiske scenarioer innen generasjonen.').replace('De to ekstra startforskyvningene under','De to ekstra tilfeldige teststartene under').replace('Ekstra startforskyvninger','Ekstra tilfeldige teststarter') for line in text]
+        text[2:2]=['**Viktig:** Endringer fra forrige generasjon og fra start blander læring med endret vanskelighetsgrad. Bruk sammenligningen med forelderen på samme generasjons scenarioer nedenfor for å vurdere kandidatens gevinst.', '']
+        text += ['## Vinner mot forelder på samme scenarioer', '', '| Gen. | Δ poeng | Δ distanse/test | Færre krasj |', '| ---: | ---: | ---: | ---: |']
+        for r in rows:
+            text.append(f"| {r['generation']} | {r['score_vs_parent']:+.2f} | {r['distance_vs_parent']:+.2f} | {r['collision_reduction_vs_parent']:+d} |")
     atomic_write(output.with_suffix('.md'),'\n'.join(text))
     return len(rows)
 

@@ -35,14 +35,24 @@ clearance, progress = TRACK.clearance, TRACK.progress
 PERIMETER, PATH = TRACK.perimeter, TRACK.path
 SIMULATION_STEPS = 650
 TRAFFIC = 'opposite'
+REPLAY_SCENARIO = None
 RADAR_MODE = 'legacy'
 RADAR_SCALE = 1.
 SPEED_FACTORS = (.8, .9, 1., 1.1, 1.2)
 
 
-def configure_track(name='s_curve', steps=None):
+def configure_track(name='s_curve', steps=None, *, cones=True, cone_count=None):
     global TRACK, clearance, progress, PERIMETER, PATH, HALF_WIDTH, SIMULATION_STEPS, cars
     TRACK = Track.generate(name)
+    if cone_count is not None:
+        if type(cone_count) is not int or not 0 <= cone_count <= 33:
+            raise ValueError('Cone count must be between 0 and 33')
+        TRACK.cones.clear()
+        for i in range(cone_count):
+            pose = TRACK.pose(TRACK.perimeter*(i+.5)/cone_count, -12. if i%2==0 else 12.)
+            TRACK.cones.append(dict(x=pose['x'],y=pose['y'],z=pose['z'],radius=6.,kind='cone',crashed=False))
+    if not cones:
+        TRACK.cones.clear()
     clearance, progress = TRACK.clearance, TRACK.progress
     PERIMETER, PATH, HALF_WIDTH = TRACK.perimeter, TRACK.path, TRACK.half_width
     SIMULATION_STEPS = steps or (max(650, math.ceil(PERIMETER / 3 * 1.5)) if name in ('figure_eight', 'training') else 650)
@@ -458,10 +468,11 @@ def replay_live():
     """Run saved weights directly, without waiting for a full recorded lap."""
     global cars, reason
     while True:
-        attempt, score = initial(), 0.
+        attempt, score = (REPLAY_SCENARIO.initial() if REPLAY_SCENARIO else initial()), 0.
         for tick in range(SIMULATION_STEPS):
             started = time.monotonic()
-            restart_crashed(attempt)
+            if REPLAY_SCENARIO:REPLAY_SCENARIO.restart_crashed(attempt)
+            else:restart_crashed(attempt)
             reward, event = step(attempt, best)
             score += reward
             with lock:
@@ -548,11 +559,13 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE
+    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO
     parser = argparse.ArgumentParser()
     parser.add_argument('--radar-scale', type=float, default=3., help='Radar radius and range multiplier')
     parser.add_argument('--radar-mode', choices=('legacy', 'spatial', 'cone', 'cone4', 'cone4relative'), help='spatial: independent distance and lateral position; requires matching training')
     parser.add_argument('--traffic', choices=('convoy', 'opposite'), default='convoy')
+    parser.add_argument('--cone-count',type=int,choices=range(34),help='Evenly spaced cones (0–33)')
+    parser.add_argument('--no-cones',action='store_true',help='Remove cones from sensors, physics and rendering')
     parser.add_argument('--track', choices=Track.NAMES, default='s_curve')
     parser.add_argument('--steps', type=int, help='Simulation steps per attempt')
     parser.add_argument('--backend', choices=('python', 'rust'), default='python')
@@ -569,7 +582,7 @@ def main():
     if not math.isfinite(args.radar_scale) or args.radar_scale <= 0:
         parser.error('--radar-scale must be positive and finite')
     configure_radar(args.radar_scale)
-    configure_track(args.track, args.steps)
+    configure_track(args.track, args.steps, cones=not args.no_cones,cone_count=args.cone_count)
     configure_traffic(args.traffic)
     try:
         RADAR_MODE = args.radar_mode or ('cone4' if args.track == 'training' and not args.replay else 'legacy')
@@ -596,6 +609,15 @@ def main():
         network.set_backend(args.backend)
         TRACK.set_backend(args.backend)
         status['backend'] = args.backend
+        if args.replay and network.metadata.get('scenario'):
+            import sys
+            from .scenarios import Scenario
+            saved = network.metadata['scenario']
+            REPLAY_SCENARIO = Scenario(saved['seed'], saved['generation'],world=sys.modules[__name__])
+            REPLAY_SCENARIO.cones = saved['cones']
+            REPLAY_SCENARIO.direction = saved['direction']
+            TRACK.cones = REPLAY_SCENARIO.cones
+            status['scenario_direction'] = saved['direction_label']
     except (ValueError, KeyError, OSError, TypeError, RuntimeError) as error:
         parser.error(str(error))
     if args.fast_generations < 0:

@@ -16,18 +16,70 @@ utformer og utfordrer hypotesene; Codex implementerer, tester og bidrar med
 tekniske forslag. Loggen viser også forsøk som forverret kjøringen, og skiller
 mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid underveis.
 
-[Gjeldende logg: 120° radar og Rust-trening mot generasjon 400](docs/experiments/wide-rust-generation-progress.md).
+[Gjeldende logg: tilfeldige kjegler og starter, vekslende kjøreretning](docs/experiments/random800-generation-progress.md).
+Fra generasjon 383 trekkes 4–8 kjegler og startposisjoner tilfeldig. Alle fem biler kjører samme vei, vekselvis med og mot klokka per generasjon. Videoene nedenfor viser tidligere oppsett.
+Treningsbudsjettet er utvidet til **1000 generasjoner totalt**, med automatisk videreføring etter 800. Målet er bedre passeringer og håndtering av biler og kjegler.
 Nettverkene bytter nå bil mellom kjøringer; den forrige metoden er bevart nedenfor.
 
 [Forbedring per generasjon i det nye 100-generasjoners forsøket](docs/experiments/deep-100-generation-progress.md)
 viser testpoeng, kjørt distanse, kollisjoner og endring fra startmodellen.
 Loggen oppdateres lokalt under kjøringen; GitHub viser sist pushede versjon.
 
+[Tidslinje med alle metodeendringer og trendgraf](docs/experiments/car-training-timeline.md).
+Grafmarkeringene og tidslinjen hentes fra samme hendelsesregister.
+
 ## Nå: trening på svinger, kjegler og trafikk
 
 Den oppdaterte treningsbanen har vekslende svinger, 33 kjegler og fem biler som kjører samme vei med 80–120 % grunnfart. Radaren har 120° åpningsvinkel og rekkevidde 540. Den gir nærhet, sideplassering, relativ lengdehastighet og tilnærmingsfart for de fire nærmeste objektene; manglende objekter gir nuller. Sju sensorstråler måler avstand til vegger, kjegler og biler. Nettverket har 23 innganger, fire skjulte lag med åtte nevroner og to utganger: styring og brems (0–50 % fartsreduksjon). Rust beregner nettverk, gradienter, veigeometri, radar og kollisjonsavstander. [Metodehistorikk og resultater](docs/UTVIKLINGSLOGG_BIL.md).
 
-### Ny video: generasjon 156 med styring og brems
+## Kjøringen utvikler seg — minst trening først
+
+Opptakene følger utviklingen fra de tidlige forsøkene til den nyeste modellen.
+Treningsmetode, sensorer og bane ble endret underveis, og enkelte forsøk startet
+med nye vekter. Generasjonsnumrene tilhører derfor forskjellige forsøksserier.
+Se [utviklingsloggen](docs/UTVIKLINGSLOGG_BIL.md) for overgangene.
+
+### Tidlige forsøk — før kjegletreningen
+
+Et [pågående eksperiment med begrenset synsfelt og hukommelse](docs/BIL_HUKOMMELSE.md) har nå en lang åttetallsbane med overpass og en første evaluering med eksisterende vekter. Prøv den med `python3 -m games.car.app --track figure_eight --replay`. Fargeavlesing, rundetider og hukommelse følger i steg 2.
+
+| Oversiktskart med biler og sensorer | 3D fra førerplassen med banekart |
+| --- | --- |
+| [![Bilspillets trening sett ovenfra](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4) | [![3D-førerplass under trening](docs/media/bilspill-3d-preview.gif)](docs/media/bilspill-3d-training.mp4) |
+| [Se hele videoen · 1 minutt og 40 sekunder](docs/media/bilspill-training.mp4) | [Se 3D-videoen · ca. 28 sekunder](docs/media/bilspill-3d-training.mp4) |
+
+Begge videoene viser faktiske treningsforsøk. 3D-visningen bruker samme bane og bilposisjoner som oversiktskartet. Klippene viser den tidligere perspektivrendereren i JavaScript og Canvas. Dagens 3D-visning bruker Rust/WebAssembly og WebGPU. Ved Rust-kjøring beregnes også nettverket, veigeometrien og kantfølerne i Rust; Python styrer resten av simuleringen og treningsløkken. Se [kjøreinstruksjoner og beskrivelse av 3D-visningen](games/car/README.md#førerplass-i-3d).
+
+### Første generasjon — kjegler og trafikk
+
+| Oversiktskart · 31 sekunder | Rust/WebGPU i 3D · 60 sekunder |
+| --- | --- |
+| [![Treningsbanen med biler, kjegler og radar](docs/media/training-cones-overview-preview.gif)](docs/media/training-cones-overview.mp4) | [![3D-kjøring under tidlig trening](docs/media/training-cones-3d-preview.gif)](docs/media/training-cones-3d.mp4) |
+
+Opptak fra **første generasjon**, kandidat 7 og 13, i **1× avspilling**. De viser faktiske forsøk med feil og omstarter, ikke en ferdigtrent modell. Begge klipp er tatt 5. november 2026. Klikk på forhåndsvisningene for MP4-videoene.
+
+### Generasjon 5 — stillbilde fra hybridtrening
+
+![Fem biler på treningsbanen med kjegler, kantfølere og kjegleradar, sett ovenfra](docs/media/hybrid-generation-5-overhead.png)
+
+Stillbilde fra avspilling 5. november 2026 med den lagrede vinneren ved
+**generasjon 5 av 30** i hybridforsøket. Alle fem bilene bruker vinnernettverket
+med forskjellig fart. Bildet viser faktisk kjøring med omstarter ved kollisjon,
+ikke en feilfri demonstrasjon eller selve treningen. Dette er et datert
+øyeblikksbilde, ikke en automatisk oppdatert visning.
+
+### Generasjon 8 — flere kjegler og smalere radar
+
+[![Faktisk kjøring ovenfra med fem biler, 33 kjegler og 60° radar](docs/media/hybrid-33cones-60deg-overhead-preview.gif)](docs/media/hybrid-33cones-60deg-overhead.mp4)
+
+[Se videoen — 60 sekunder, MP4](docs/media/hybrid-33cones-60deg-overhead.mp4).
+Filmet 5. november 2026 i 1× avspilling. Alle fem bilene bruker vinnernettverket
+lagret ved **hybridgenerasjon 8**. Banen i opptaket har **33 kjegler** og radaren **60°
+åpningsvinkel**. Vektene i dette opptaket var trent med 11 kjegler og 120° radar;
+videoen viser overgangen til den vanskeligere banen, med faktiske kollisjoner
+og omstarter. Vektene ble beholdt ved videre trening.
+
+### Generasjon 156 — styring og brems
 
 [![Generasjon 156 kjører ovenfra med fem biler, 33 kjegler og 120° radar](docs/media/hybrid-generation156-overhead-preview.gif)](docs/media/hybrid-generation156-overhead.mp4)
 
@@ -42,48 +94,6 @@ før krasj**, mot **405** ved generasjon 110: omtrent **90 % lengre** under samm
 testoppsett. Alle 100 tester endte fortsatt i krasj. [Lagrede testresultater](docs/experiments/2026-11-05-generation156.json). Videoen er en illustrasjon,
 ikke selve testen: her bruker alle bilene samme modell og får starte på nytt.
 I testene prøves kandidaten i én bilrolle av gangen mot fast referansetrafikk.
-
-### Tidligere video: generasjon 8 med smalere radar
-
-[![Ny faktisk kjøring ovenfra med fem biler, 33 kjegler og 60° radar](docs/media/hybrid-33cones-60deg-overhead-preview.gif)](docs/media/hybrid-33cones-60deg-overhead.mp4)
-
-[Se videoen — 60 sekunder, MP4](docs/media/hybrid-33cones-60deg-overhead.mp4).
-Filmet 5. november 2026 i 1× avspilling. Alle fem bilene bruker vinnernettverket
-lagret ved **hybridgenerasjon 8**. Banen har nå **33 kjegler** og radaren **60°
-åpningsvinkel**. Vektene i dette opptaket var trent med 11 kjegler og 120° radar;
-videoen viser overgangen til den vanskeligere banen, med faktiske kollisjoner
-og omstarter. Det er et nytt opptak, ikke stillbildet eller de eldre klippene
-nedenfor. Videre trening beholder de lærte vektene.
-
-### Tidligere stillbilde fra generasjon 5
-
-![Fem biler på treningsbanen med kjegler, kantfølere og kjegleradar, sett ovenfra](docs/media/hybrid-generation-5-overhead.png)
-
-Stillbilde fra avspilling 5. november 2026 med den lagrede vinneren ved
-**generasjon 5 av 30** i hybridforsøket. Alle fem bilene bruker vinnernettverket
-med forskjellig fart. Bildet viser faktisk kjøring med omstarter ved kollisjon,
-ikke en feilfri demonstrasjon eller selve treningen. Dette er et datert
-øyeblikksbilde, ikke en automatisk oppdatert visning.
-
-Se [utviklingsloggen](docs/UTVIKLINGSLOGG_BIL.md) for hvordan treningsmetoden ble
-endret underveis. De eldre videoklippene nedenfor viser et tidligere oppsett.
-
-| Oversiktskart · 31 sekunder | Rust/WebGPU i 3D · 60 sekunder |
-| --- | --- |
-| [![Treningsbanen med biler, kjegler og radar](docs/media/training-cones-overview-preview.gif)](docs/media/training-cones-overview.mp4) | [![3D-kjøring under tidlig trening](docs/media/training-cones-3d-preview.gif)](docs/media/training-cones-3d.mp4) |
-
-Opptak fra **første generasjon**, kandidat 7 og 13, i **1× avspilling**. De viser faktiske forsøk med feil og omstarter, ikke en ferdigtrent modell. Begge klipp er tatt 5. november 2026. Klikk på forhåndsvisningene for MP4-videoene.
-
-## Bilspillet i aksjon
-
-Et [pågående eksperiment med begrenset synsfelt og hukommelse](docs/BIL_HUKOMMELSE.md) har nå en lang åttetallsbane med overpass og en første evaluering med eksisterende vekter. Prøv den med `python3 -m games.car.app --track figure_eight --replay`. Fargeavlesing, rundetider og hukommelse følger i steg 2.
-
-| Oversiktskart med biler og sensorer | 3D fra førerplassen med banekart |
-| --- | --- |
-| [![Bilspillets trening sett ovenfra](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4) | [![3D-førerplass under trening](docs/media/bilspill-3d-preview.gif)](docs/media/bilspill-3d-training.mp4) |
-| [Se hele videoen · 1 minutt og 40 sekunder](docs/media/bilspill-training.mp4) | [Se 3D-videoen · ca. 28 sekunder](docs/media/bilspill-3d-training.mp4) |
-
-Begge videoene viser faktiske treningsforsøk. 3D-visningen bruker samme bane og bilposisjoner som oversiktskartet. Klippene viser den tidligere perspektivrendereren i JavaScript og Canvas. Dagens 3D-visning bruker Rust/WebAssembly og WebGPU. Ved Rust-kjøring beregnes også nettverket, veigeometrien og kantfølerne i Rust; Python styrer resten av simuleringen og treningsløkken. Se [kjøreinstruksjoner og beskrivelse av 3D-visningen](games/car/README.md#førerplass-i-3d).
 
 ## Labyrintforsøk i aksjon
 

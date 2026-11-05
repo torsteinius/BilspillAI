@@ -36,7 +36,7 @@
 <text id="mapTitle" x="400" y="262" fill="#a9bac7" text-anchor="middle" font-size="20">PYTHON KJØRER</text><text id="mode" x="400" y="290" fill="#72e4b0" text-anchor="middle" font-size="14">Treningen starter …</text>
 <g id="radars"></g><g id="rays" stroke="#f3c969" stroke-width="2" opacity=".85"></g>
 <g id="cars"></g></svg>
-<p class="note">Alle bilene bruker samme nettverk; under trening følger visningen kandidaten som evalueres. Sensorstrålene måler nærmeste vegg eller bil, og radaren gir nærhet og retning til nærmeste synlige bil. Fem biler starter jevnt fordelt rundt hele banen, med en femtedels runde mellom hver. Fartsforskjellene gjør at de etter hvert tar igjen hverandre. Ved kollisjon starter bare involverte biler på nytt når startplassen er ledig. Modellen styrer selv; vellykkede forbikjøringer er ikke garantert. Fargene identifiserer bilene i visningen og er ikke sensorinput.</p><p id="validation" class="note"></p></main>
+<p class="note">Alle bilene bruker samme nettverk; under trening følger visningen kandidaten som evalueres. Sensorstrålene måler nærmeste vegg eller bil, og radaren gir nærhet og retning til nærmeste synlige bil. Startsteder følger forsøksoppsettet; i randomiserte forsøk trekkes nye, ledige startsteder ved hver start. Fartsforskjellene gjør at de etter hvert tar igjen hverandre. Ved kollisjon starter bare involverte biler på nytt når startplassen er ledig. Modellen styrer selv; vellykkede forbikjøringer er ikke garantert. Fargene identifiserer bilene i visningen og er ikke sensorinput.</p><p id="validation" class="note"></p></main>
 <script type="module" src="/renderer/bridge.js"></script>
 <script>
 const overheadOnly=location.hash==='#ovenfra';
@@ -52,7 +52,7 @@ function prepareCars(s){
  const selected=$('driver').value;
  $('driver').innerHTML=s.cars.map((c,i)=>`<option value="${i}">${carNames[i]} · ${Math.round(100*(c.speed_factor||1))} %</option>`).join('');
  $('driver').value=Number(selected)<s.cars.length?selected:'0';
- $('trafficInfo').textContent=s.traffic==='convoy'?'Fem biler · samme retning · fart 80–120 %':'To biler · motsatt kjøreretning';
+ $('trafficInfo').textContent=s.traffic==='convoy'?`Fem biler · ${s.scenario_direction?(s.scenario_direction==='clockwise'?'med klokka':'mot klokka'):'samme retning'} · fart 80–120 %`:'To biler · motsatt kjøreretning';
 }
 function updateMapView(){
  if(!trackData)return;
@@ -88,7 +88,7 @@ fetch('/api/track').then(r=>r.json()).then(t=>{
  $('cones').innerHTML=(t.cones||[]).map(c=>`<circle cx="${c.x}" cy="${c.y}" r="${c.radius}" fill="#ff6b19" stroke="#fff" stroke-width="2"/>`).join('');
  document.querySelectorAll('.track').forEach((p,i)=>{p.setAttribute('d',t.path);p.setAttribute('stroke-width',[t.width+4,t.width,1.5][i]);});
  $('trackView').setAttribute('viewBox',t.view_box.join(' '));
- const names={s_curve:'S-banen',oval:'Opprinnelig oval',figure_eight:'Åttetallsbane med overpass',training:'Treningsbane med kjegler'};
+ const names={s_curve:'S-banen',oval:'Opprinnelig oval',figure_eight:'Åttetallsbane med overpass',training:(t.cones?.length?'Treningsbane med kjegler':'Treningsbane uten kjegler')};
  $('trackInfo').textContent=`${names[t.name]||t.name} · Lengde ${Math.round(t.perimeter)} · Høyde ${Math.min(...t.points.map(p=>p[2]))}–${Math.max(...t.points.map(p=>p[2]))}.`;
  if(t.name!=='s_curve'){
   $('startLine').style.display='none';$('mapTitle').style.display='none';$('mode').style.display='none';

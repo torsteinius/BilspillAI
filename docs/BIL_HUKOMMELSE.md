@@ -485,3 +485,35 @@ og kontinuerlige kollisjonsavstander flyttet til Rust. Målingen viser omtrent
 innenfor flyttallstoleranse. Se utviklingsloggens oppføring 23 og
 [målingene](experiments/2026-11-05-rust-training-kernels.json).
 Videre trening beholder vektene og målet om generasjon 400.
+
+
+## 5. november 2026 — Reagere tydeligere nær hinderet
+
+Prosjekteieren opplever bilen som dvask når den nærmer seg et hinder.
+Forsøket beholder vektene, men lagrer hver tredje handling i en historikk
+med 50 oppføringer. Nyeste oppføring får 20 % av kollisjonsstraffen med full
+historikk; resten fordeles lineært bakover mot nær null på eldste.
+Målet er tydeligere reaksjoner nær hinderet, med fortsatt ansvar for tidligere
+valg. Se utviklingsloggens oppføring 25 for nøyaktig fordeling, kort historikk,
+belønning mellom lagringene, tester og avgrensninger. Ingen læringsgevinst
+er fastslått ennå. [Ny forsøkslogg](experiments/history3-weighted-generation-progress.md).
+
+
+## 5. november 2026 — Hypotese om radar og kantfølere
+
+Prosjekteieren tror radar og kantfølere bør skilles fordi de kan forstyrre
+hverandres læring under dagens felles kollisjonsstraff. Dette er et forslag
+til videre undersøkelse, ikke en påvist årsak eller implementert endring.
+Hva en oppdeling konkret skal bety er fortsatt åpent. Se
+[utviklingsloggens oppføring 29](UTVIKLINGSLOGG_BIL.md#endring-29).
+
+
+## 5. november 2026 — Formålet med randomiseringen
+
+Prosjekteieren presiserer at hensikten er **randomisering av hele oppsettet**:
+variasjon i kjegleantall, plasseringer, startsteder og kjøreretning skal bryte
+tilpasningen til én fast kjøresituasjon. Målet er å lære situasjonsvurdering
+ut fra sensorene og håndtere nye kombinasjoner. Banens geometri, sensorene
+og fartsfaktorene er fortsatt faste; retningen veksler systematisk.
+Dette er et mål om generalisering, ikke et allerede dokumentert resultat.
+Se [oppføring 34](UTVIKLINGSLOGG_BIL.md#endring-34).

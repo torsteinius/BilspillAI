@@ -1,0 +1,2 @@
+generation,winner,test_score,score_change,score_change_from_start,mean_distance,distance_change,distance_change_from_start_pct,collisions,collision_reduction,collision_reduction_from_start,attempts,completed_without_collision,holdout_score,holdout_collisions,elapsed_seconds
+0,startmodell,13236.253849027038,0.0,0.0,2535.0107698054176,0.0,0.0,22,0,0,100,78,989.3816292922335,4,0.0

@@ -16,6 +16,8 @@ metodene som er implementert korrekt, har foreløpig gitt dårligere kjøring.
 [Detaljert forsøksoppsett](BIL_HUKOMMELSE.md) ·
 [Arkiverte målinger og innstillinger](experiments/2026-11-05-results.json)
 
+<a id="endring-01"></a>
+
 ## 01 — Hukommelse ble delt i to separate spørsmål
 
 **Prosjekteierens forslag:** Først en vanskeligere bane med begrenset synsfelt
@@ -29,6 +31,8 @@ legge alle nye sensorinput inn i det første forsøket.
 **Status:** Nye baner og kjøretrening er prøvd. Veggfarger som input og minne
 under kjøring er fortsatt hypoteser. En historikkø brukt under trening er ikke
 i seg selv hukommelse tilgjengelig for bilen når den senere kjører.
+
+<a id="endring-02"></a>
 
 ## 02 — Fra oval til åttetall, høyde og trafikk
 
@@ -46,6 +50,8 @@ Høyde må brukes ved sensorer og kollisjoner, ikke bare tegnes i bildet.
 hyppige møter. Formen skulle beholdes, bredden økes og banen krympes til en
 fjerdedel. Det opprinnelige størrelseskravet ble dermed erstattet etter utprøving.
 
+<a id="endring-03"></a>
+
 ## 03 — Egen treningsbane og mer informasjon om andre biler
 
 **Prosjekteierens forslag:** En bane med raske venstre-/høyresvinger og kjegler.
@@ -60,6 +66,8 @@ nye vekter. Gamle modeller ble beholdt.
 seks eliter. Alle fem biler brukte samme kandidatnettverk. Nærhet og kollisjoner
 ga straff; det var ingen egen fremdriftspremie. En generasjon var dermed ikke
 bare fem biler eller fem handlinger.
+
+<a id="endring-04"></a>
 
 ## 04 — Visualisering og faktisk treningshastighet
 
@@ -76,6 +84,8 @@ veigrensen som sensorgrunnlag.
 omtrent 4 % raskere total kjøring i en kort måling. Det var ikke grunnlag for å
 si at hele simuleringen allerede kjørte raskt i Rust.
 
+<a id="endring-05"></a>
+
 ## 05 — Radaren fikk veggskjerming, og så ble det valgt bort
 
 **Prosjekteierens innvending:** Radar gjennom vegger kan registrere irrelevante
@@ -91,6 +101,8 @@ nærmeste objekt.
 tilnærmingsfart, i tillegg til avstand og sideposisjon. Sammen med syv kantfølere
 ble dette 11 input. Treningsforsøket ble startet på nytt. Dette er to forskjellige
 sensoroppsett; resultater fra dem skal ikke beskrives som én uendret treningsserie.
+
+<a id="endring-06"></a>
 
 ## 06 — Måling lokaliserte flaskehalsen
 
@@ -110,6 +122,8 @@ sensorverdier ble også sammenlignet på alle fire banetypene.
 akselerasjon gjennom hele treningen. Den nye 1000-generasjoners kjøringen
 fortsatte som evolusjonsforsøket og ble holdt separat fra senere læringspiloter.
 
+<a id="endring-07"></a>
+
 ## 07 — Prosjekteieren utfordret hvordan straffen brukes
 
 **Prosjekteierens spørsmål:** Straffes bare selve kollisjonsøyeblikket, eller
@@ -122,6 +136,8 @@ tidspunkter uten å endre læringsregelen ville ikke endret totalsummen.
 
 **Konsekvens:** Forslaget om en kø var ikke bare en loggendring. Det krevde en
 ny måte å oppdatere vektene på, og dermed et separat eksperiment.
+
+<a id="endring-08"></a>
 
 ## 08 — Fra halvering bakover til hovedvekt før kollisjonen
 
@@ -154,6 +170,8 @@ Piloten viste derfor ikke at den nye metoden var bedre enn eksisterende kjøring
 Én kort kjøring med én seed avgjør heller ikke om ideen kan fungere med andre
 innstillinger eller mer trening.
 
+<a id="endring-09"></a>
+
 ## 09 — Positiv belønning og evolusjon ble eksplisitte krav
 
 **Prosjekteierens neste forslag:** Kjør til kollisjon, straff de siste 50
@@ -175,6 +193,8 @@ kandidater i alle bilposisjoner og hastigheter med faste motstandere.
 
 **Første tekniske pilot:** 30 forsøk per bil, én test per bilposisjon, to
 generasjoner. Forelderen vant begge. Dette var ikke sluttprotokollen.
+
+<a id="endring-10"></a>
 
 ## 10 — Prosjekteieren skjerpet protokollen til 100/20
 
@@ -203,6 +223,8 @@ oppfører seg som forventet — det dokumenterer ikke at læringsmetoden lykkes.
 Testpoengene her kan ikke sammenlignes direkte med evolusjonens gamle poengsum
 eller forrige pilots kollisjonsrate; belønning og evalueringsprotokoll er forskjellige.
 
+<a id="endring-11"></a>
+
 ## 11 — Utvidelse til 30 generasjoner med samme hybridmetode
 
 **5. november 2026 — prosjekteierens beslutning:** Kjør 30 generasjoner på det
@@ -225,6 +247,8 @@ brukte omtrent 136 sekunder for én generasjon inkludert innledende evaluering.
 Dette er bare et utgangspunkt for tidsanslag; resultat og varighet for 30
 generasjoner er ikke kjent. Den opprinnelige evolusjonskjøringen fortsetter
 separat. Ny logg og checkpoints: `.ai-service/car-hybrid-100train-20test-30generations/`.
+
+<a id="endring-12"></a>
 
 ## 12 — Flere kjegler og smalere radar uten å forkaste vektene
 
@@ -251,6 +275,8 @@ fortsatt viste gamle filmer. Et nytt faktisk ovenfra-opptak viser derfor
 33 kjegler og 60° radar med lagrede vekter fra generasjon 8, som ennå var trent
 med 11 kjegler og 120° radar. Opptaket er en demonstrasjon av overgangen, ikke
 et resultat fra ferdig trening i det nye oppsettet.
+
+<a id="endring-13"></a>
 
 ## 13 — Fire radarobjekter og utvidelse av det trente nettet
 
@@ -283,6 +309,8 @@ hybridforsøket: hver bil kjører til egen kollisjon eller steggrensen 1000.
 De andre stoppes ikke av dens kollisjon. En test dekker at bil 1 krasjer ved
 første steg mens de fire andre fortsetter. En krasjet bil starter først igjen
 ved neste felles treningsforsøk; historikk og oppdateringer er individuelle.
+
+<a id="endring-14"></a>
 
 ## 14 — Fortsett fra samme sted, og behold historikken
 
@@ -328,6 +356,8 @@ prosessavbrudd er ikke implementert. Overgangsstatus:
 `.ai-service/car-hybrid-continuous-transition.json`; ny logg og checkpoints:
 `.ai-service/car-hybrid-continuous/`.
 
+<a id="endring-15"></a>
+
 ## 15 — Avgrens til fem generasjoner før ny vurdering
 
 **5. november 2026 — prosjekteierens beslutning:** Gi den nye metoden fem
@@ -344,6 +374,8 @@ prosessavbrudd er ikke implementert. Overgangsstatus:
  fra resultatene. Den separate evolusjonsreferansen omfattes ikke av stoppen.
  Kontroll og femgenerasjoners resultatoversikt lagres i
  `.ai-service/car-hybrid-continuous/stop-control.json`.
+
+<a id="endring-16"></a>
 
 ## 16 — Brems, ny initialisering og relativ fart i radaren
 
@@ -399,6 +431,8 @@ kollisjonsstraff på begge handlingene over en oppdateringsgrense. En kort
 kjøring gjennom to generasjoner er også fullført. Ingen læringsgevinst er
 rapportert ennå for det nye bremseforsøket.
 
+<a id="endring-17"></a>
+
 ## 17 — Resultat etter fem generasjoner med brems
 
 **5. november 2026 — målt oppfølging:** Forsøket fra tilfeldige vekter er ferdig
@@ -422,6 +456,8 @@ kjøring. Forsøket isolerer ikke effekten av brems fra øvrig læring; det gir
 ikke grunnlag for å si at brems alene forårsaket forbedringen. Resultat og
 oppsett er arkivert i [resultatfilen](experiments/2026-11-05-braking-results.json).
 Ingen videre trening er startet automatisk etter de fem generasjonene.
+
+<a id="endring-18"></a>
 
 ## 18 — To ekstra skjulte lag og 100 generasjoner fra nye vekter
 
@@ -466,6 +502,8 @@ Prosessinfo: `.ai-service/car-brake-deep-100generations-process.json`.
 Kjøringen lagrer kandidater og vinner etter hver generasjon og skriver
 `complete.json` når alle 100 er ferdige. Start er ikke et ferdig læringsresultat.
 
+<a id="endring-19"></a>
+
 ## 19 — Automatisk forbedringslogg per generasjon
 
 **5. november 2026 — prosjekteierens ønske:** Loggfør hvor mye forbedring hver
@@ -486,6 +524,8 @@ steggrensen. Poengforbedring og kollisjonsreduksjon holdes adskilt. GitHub får
 ikke automatisk nye tall uten push. En test dekker valg av vinner, fortegn,
 uendrede resultater og utelatelse av uferdige generasjoner.
 
+<a id="endring-20"></a>
+
 ## 20 — Trening uten løpende visualisering
 
 **5. november 2026 — prosjekteierens presisering:** Ressursene skal brukes til
@@ -500,6 +540,8 @@ og lager tekst/CSV. Den separate avspillingen som tidligere ble åpnet etter
 Videre visninger skal være korte, separate avspillinger av lagrede modeller ved
 forespørsel, ikke en kontinuerlig del av treningsløkken. Treningen ble ikke
 stoppet eller startet på nytt ved denne endringen.
+
+<a id="endring-21"></a>
 
 ## 21 — Asynkron rotasjon av nettverk mellom bilene
 
@@ -557,6 +599,8 @@ separat. Testscenarienes seed er uendret, men referansetrafikken bruker nå
 startmodellen fra denne overgangen; bruk derfor den nye startmålingen ved
 sammenligning innenfor rotasjonsforsøket.
 
+<a id="endring-22"></a>
+
 ## 22 — Bredere sidesyn og 300 nye generasjoner med beholdte vekter
 
 **Dato:** 5. november 2026. Prosjekteieren observerte kjøringen ovenfra og
@@ -592,6 +636,8 @@ Kjøring: `.ai-service/car-brake-deep-wide-300/`.
 Status ved oppføring: startet; ingen konklusjon om forbedring ennå.
 Forrige 73 generasjoner tok 7339,6 sekunder; lineært tilsvarer 300 omtrent
 8,4 timer. Lengre overlevelse eller maskinbelastning kan øke tiden.
+
+<a id="endring-23"></a>
 
 ## 23 — Gradienter, radar og kollisjonsavstander flyttes til Rust
 
@@ -642,6 +688,8 @@ Ny kjøring: `.ai-service/car-brake-deep-wide-rust/`.
 [Resultatlogg etter byttet](experiments/wide-rust-generation-progress.md).
 [Resultater før byttet](experiments/wide-300-generation-progress.md) beholdes.
 
+<a id="endring-24"></a>
+
 ## 24 — Ny video etter observert framgang
 
 **5. november 2026:** Prosjekteieren observerte tydelig bedre kjøring og ba
@@ -656,6 +704,427 @@ selve testoppsettet; testene bruker én kandidatrolle mot faste motstandere.
 [Resultater](experiments/2026-11-05-generation156.json).
 Den tidligere videoen fra generasjon 8 beholdes i README som historikk.
 En utdatert, hardkodet tekst om trening med 11 kjegler er fjernet fra opptaksbåndet.
+
+<a id="endring-25"></a>
+
+## 25 — Lengre historikk og større kollisjonsstraff på siste handling
+
+**Dato:** 5. november 2026. Prosjekteieren spurte hvordan historikken før
+krasj faktisk ble brukt, og hvor langt bilen kjørte på 50 steg. Etter å ha
+fått forklart at 50 steg bare dekker omtrent 120–180 banenheter uten brems,
+foreslo han å lagre hvert tredje steg og beholde de trente vektene.
+Deretter foreslo han avtakende straff bakover i tid og presiserte fordelingen:
+**20 % til nyeste handling, resten lineært bakover**.
+
+**Observasjon og mål:** Prosjekteieren opplever bilen som litt dvask når den
+nærmer seg et hinder. Målet hans er å få bilen til å lære tydeligere reaksjoner
+nær hinderet, samtidig som tidligere handlinger som førte til situasjonen
+fortsatt får straff. Dette er en hypotese om hva endringen kan forbedre, ikke
+et dokumentert læringsresultat. Negativ tilbakemelding lærer heller ikke i seg
+selv hvilken alternativ handling som ville vært riktig.
+
+**Implementering:** Bilen observerer, velger styring og brems og beveger seg
+hvert steg som før. Historikken beholder 50 oppføringer, men lagrer input og
+valgt handling hvert tredje steg. Belønningen fra de mellomliggende stegene
+summeres på den lagrede oppføringen. Slik forsvinner ingen framdriftsbelønning
+eller belønning for å kjøre uten krasj. Ved bytte av nettverk eller nytt
+treningsforsøk lagres alltid første handling, slik at belønning ikke havner
+på forrige nettverks handling. Dette kan gjøre det faktiske tidsvinduet noe
+kortere enn 150 steg. Historikken bevares ved fortsettelse uten krasj.
+
+**Kollisjonsstraff:** Totalen er fortsatt 50. Med full historikk får nyeste
+oppføring 10. De øvrige 40 fordeles med lineært stigende vekter 1–49 fra
+eldste til nest nyeste: omtrent 0,033 på eldste og 1,6 på nest nyeste.
+Det er dermed et bevisst sprang fra 1,6 til 10 ved siste oppføring, ikke én
+rett linje gjennom alle 50. Ved kortere historikk brukes den nyeste delen av
+samme vektskjema og normaliseres til totalstraff 50; da får nyeste mer enn
+20 %. Med bare én oppføring får den hele straffen. Siste lagrede handling
+kan ligge inntil to steg før selve krasjet.
+
+**Uendret:** Nettverkets arkitektur og sensorformat, radar på 120°, brems,
+belønningskoeffisienter, asynkron rotasjon, 100 forsøk per nettverk og
+20 × 5 tester per kandidat. Handlinger krediteres sitt opprinnelige nettverk;
+allerede gitt belønning telles ikke på nytt. Vektene nullstilles ikke.
+
+**Kontroll og forsøk:** 91 tester passerer. Nye tester dekker lagring hvert
+tredje steg, alle mellomliggende belønninger, krasj i et ufullstendig intervall,
+straffens sum og vekter, og riktig eier uten dobbel belønning. En separat
+CLI-pilot har fullført trening, utvelgelse og lagring. Dette kontrollerer
+implementeringen; effekten på kjøringen er ennå ikke målt over generasjoner.
+
+**Overgang bekreftet:** Generasjon 200 ble fullført med forrige metode.
+Generasjon 201–400 er startet med den nye varianten. Startvektene er
+kontrollert identiske med vinneren fra generasjon 200.
+
+Videreføringen har egen mappe `.ai-service/car-history3-weighted/` og
+[egen resultatlogg](experiments/history3-weighted-generation-progress.md).
+Den faste referansetrafikken beholdes. Budsjettet slutter fortsatt ved
+generasjon 400. Ved prosessbyttet gjenbrukes lagrede vekter, mens posisjoner,
+korttidshistorikk, optimizer og tilfeldighetsgenerator initialiseres på nytt.
+Begge endringer prøves samtidig; en eventuell effekt kan derfor ikke tilskrives
+bare lengre historikk eller bare straffefordelingen.
+
+<a id="endring-26"></a>
+
+## 26 — Kjøring og videre trening uten kjegler
+
+**5. november 2026:** Prosjekteieren ba om å fjerne alle kjeglene og se hvordan
+bilene kjører uten dem. Kjeglene fjernes fra fysikk, sensorstråler, radar og
+visualisering gjennom flagget `--no-cones`. Banens form, fem biler, 120° radar,
+brems og læringsmetoden med 50 oppføringer hvert tredje steg beholdes.
+
+Avspillingen viser generasjon 244 uten kjegler. Treningen fullførte generasjon
+245 før overgang; vektene derfra er videreført uendret til generasjon 246–400.
+Referansetrafikkens nettverk er også beholdt. Posisjoner, historikk, optimizer
+og tilfeldighetsgenerator initialiseres på nytt ved prosessbyttet.
+
+**Hypotese:** Ved å ta bort kjeglene kan vi observere hvordan bilen håndterer
+veggene og de andre bilene. Dette er et enklere testmiljø; bedre kjørelengde
+enn i kjegleforsøket er ikke alene dokumentasjon på bedre læring. Ny startmåling
+uten kjegler er sammenligningsgrunnlaget for videre framgang. Testgrensen er
+fortsatt 1000 steg. Forsøk som når grensen er ikke målt tid til krasj.
+
+91 eksisterende tester passerer. Oppsett og startvekter er kontrollert ved
+oppstart. Kjøringen lagres separat i `.ai-service/car-no-cones/` med
+[egen resultatlogg](experiments/no-cones-generation-progress.md).
+
+**Budsjettpresisering etter oppføring 26:** Prosjekteieren ba om 100 treninger
+uten kjegler. Dette ble tolket og meldt som 100 generasjoner totalt i dette
+forsøket, 246–345, inkludert allerede fullførte generasjoner. Det tidligere
+målet 400 er dermed redusert for denne kjøringen. Hver generasjon har fortsatt
+100 forsøk per nettverk og 20 × 5 tester per kandidat. En egen stoppovervåker
+stopper etter lagret og ferdig evaluert generasjon 345. Ingen vekter nullstilles.
+
+<a id="endring-27"></a>
+
+## 27 — Fire kjegler tilbake etter kjøring uten kjegler
+
+**5. november 2026:** Etter å ha sett generasjon 250 uten kjegler ba
+prosjekteieren om fire kjegler i runden. De plasseres jevnt langs veien ved
+12,5 %, 37,5 %, 62,5 % og 87,5 % av runden, vekselvis 12 banenheter til hver
+side av midtlinjen. Radiusen er fortsatt 6. Radar, sensorer, fysikk og
+visualisering bruker de samme fire kjeglene. Plasseringene er kontrollert
+innenfor veien og uten overlapping med bilenes normale startplasser.
+
+Avspillingen bruker fortsatt generasjon 250, nå med fire kjegler, så effekten
+kan ses uten at modellen samtidig er byttet. Videre trening starter ved
+**generasjon 255**, med uendrede vinnervekter fra ferdig generasjon 254.
+Generasjon 246–254 kjørte uten kjegler; 255–345 skal kjøre med fire.
+Stoppunktet 345 beholdes, altså fortsatt 100 generasjoner totalt siden 245.
+Treningsmetode og fast referansetrafikk beholdes. Ved prosessbyttet starter
+posisjoner, historikk, optimizer og tilfeldighetsgenerator på nytt.
+
+Kjegleantallet endrer vanskelighetsgraden: resultater før og etter byttet er
+ikke en ren måling av læring. En ny startmåling med fire kjegler tas før
+videre trening. 91 eksisterende tester passerer, startvekter og kjegleantall
+er kontrollert, og nettleseren viser nøyaktig fire kjegler.
+Kjøringen ligger i `.ai-service/car-four-cones/` med
+[egen resultatlogg](experiments/four-cones-generation-progress.md).
+
+<a id="endring-28"></a>
+
+## 28 — Kollisjonsstraff begrenses til de ti siste lagrede handlingene
+
+**5. november 2026:** Prosjekteieren mente kollisjonsstraffen omfattet for mye
+historikk. Han ba om bare de ti siste handlingene, og bekreftet etter avklaring
+at nyeste betyr handlingen rett før kollisjon: 25 % dit og de øvrige 75 %
+lineært bakover til null på den eldste av de ti. Målet er å konsentrere
+læringssignalet nærmere kollisjonen; effekten er foreløpig en hypotese.
+
+50 oppføringer beholdes i køen, og det lagres fortsatt hvert tredje steg.
+Bare de ti siste kan få kollisjonsstraff, tilsvarende omtrent 30 steg.
+Nyeste lagrede handling kan ligge 0–2 steg før krasjet. Med minst ti
+oppføringer blir straffen 12,5 på den nyeste; de øvrige 37,5 fordeles
+lineært med vekter 0–8 fra tiende siste til nest siste. Den tiende siste
+får dermed null, nest siste omtrent 8,33. Eldre oppføringer får ingen
+kollisjonsstraff; deres framdriftsbelønning beholdes. Ved færre enn ti
+oppføringer normaliseres den tilgjengelige nyeste delen av skjemaet til
+samme totalstraff 50. Da kan nyeste få mer enn 25 %.
+
+Fire kjegler, radar, brems, nettverksrotasjon og testoppsett beholdes.
+Vektene nullstilles ikke. Ved prosessbyttet initialiseres posisjoner,
+historikk, optimizer og tilfeldighetsgenerator på nytt som ved tidligere
+videreføringer. Stoppunktet er fortsatt generasjon 345.
+
+**Overgang:** Generasjon 286 er fullført med forrige metode; generasjon
+287–345 er startet med den nye. Startvektene er kontrollert identiske med
+vinneren fra 286.
+
+92 tester passerer. Den nye testen kontrollerer totalstraff, 25 % til nyeste,
+lineær rest, korte historikker og at eldre oppføringer beholder belønningen.
+En separat pilot har fullført trening, evaluering og lagring.
+[Resultatlogg](experiments/last10-generation-progress.md) lagres separat i
+`.ai-service/car-last10/`.
+
+<a id="endring-29"></a>
+
+## 29 — Hypotese: skille radar fra kantfølere i læringen
+
+**5. november 2026 — prosjekteierens hypotese:** Prosjekteieren tror vi trenger
+å splitte radar fra kantfølere, fordi de «ødelegger litt for hverandre» med
+straffesystemet som brukes nå. Han ønsker dette dokumentert som en mulig
+forklaring og retning for videre arbeid.
+
+**Kontekst:** Radarverdiene og de sju sensorstrålene går inn i samme nettverk.
+Kollisjonsstraffen påvirker nå de ti siste lagrede handlingene, uten å skille
+mellom veggkontakt, kjeglekontakt og kollisjon med en annen bil. Sensorstrålene
+måler dessuten nærmeste vegg, kjegle eller bil; de er ikke rene veggsensorer.
+
+**Mulig forklaring, ikke bekreftet:** En felles straff kan gjøre det vanskelig
+å lære hvilken informasjon og hvilket handlingsvalg som var relevant for
+krasjet. En reaksjon på et radarobjekt kan for eksempel komme i konflikt med
+å holde avstand til veikanten. Dette er en hypotese om læringen, ikke påvist
+sensorfeil eller dokumentasjon på at en oppdeling vil fungere bedre.
+
+**Åpent spørsmål:** «Splitte» er foreløpig ikke definert som en bestemt
+arkitektur eller metode. Separate deler av nettverket, ulik behandling av
+sensorinput og straff avhengig av kollisjonstype er mulige tolkninger som må
+avklares og testes før en implementering. Ingen av disse er valgt nå.
+
+**Status:** Dokumentert forslag. Ingen endring i sensorer, nettverk, belønning
+eller pågående trening. Oppføringen har derfor ingen startgenerasjon og skal
+ikke vises som en gjennomført metodeendring på resultatgrafen.
+
+<a id="endring-30"></a>
+
+## 30 — Tilbake til kollisjonsstraff over 50 lagrede handlinger
+
+**5. november 2026:** Etter å ha sett grafen ba prosjekteieren om å gå tilbake
+til tidligere historikk. Hans vurdering var at utviklingen før innkortingen
+var positiv, men hadde blitt dårligere etterpå. Dette dokumenteres som
+begrunnelsen for tilbakeføringen; det korte forsøket beviser ikke alene en
+årsakssammenheng.
+
+Kollisjonsstraffen går tilbake til `latest20_linear`: med full historikk får
+nyeste oppføring 20 % av totalstraffen 50, og de øvrige 80 % fordeles lineært
+bakover over de resterende 49. Lagring hvert tredje steg beholdes, slik at
+straffen igjen dekker omtrent 150 steg. Normalisering ved kort historikk,
+framdriftsbelønning, fire kjegler, radar, brems og testmotstandere beholdes.
+
+**Presisering fra prosjekteieren:** Han ba deretter også om å rulle tilbake
+vektene til før innkortingen. Checkpointet fra **generasjon 286** finnes og er
+gjenopprettet; startvektene er kontrollert identiske. En kort oppstart med
+vekter fra 295 ble avbrutt og merket som erstattet før den nye videreføringen.
+
+Generasjon 287–295 med kort straffehistorikk beholdes som forsøksresultater.
+Den nye grenen bruker vektene fra 286, men nummereres **296–345** for å bevare
+en entydig kronologisk tidslinje. Generasjon 296 er dermed ikke en etterkommer
+av vektene fra 295. Ny startmåling viser modellen fra 286 på uendret testoppsett.
+Prosessbyttet initialiserer posisjoner, historikk, optimizer og
+ tilfeldighetsgenerator på nytt; bare modellvektene gjenopprettes, ikke hele
+RAM-tilstanden fra generasjon 286. Stoppunktet er fortsatt 345.
+Dette er den tidligere testede fordelingen, ikke en ny implementering.
+Forsøket med ti oppføringer og resultatene beholdes i loggen.
+
+[Ny resultatlogg](experiments/rollback286-generation-progress.md).
+Kjøringen lagres i `.ai-service/car-rollback286/`.
+
+<a id="endring-31"></a>
+
+## 31 — Treningsbudsjettet utvides til 800 generasjoner totalt
+
+**5. november 2026:** Prosjekteieren ba om å fortsette til 800 generasjoner.
+Den aktive kjøringen får fullføre 296–345. En separat, startet overvåker
+venter på ferdigmarkeringen og starter deretter automatisk **346–800** fra
+lagret vinner ved 345. Ingen modell eller metode byttes under det aktive
+forsøket. Fire kjegler, 50 historikkoppføringer hvert tredje steg, 20 % straff
+til nyeste, nettverksrotasjon og testoppsett beholdes.
+
+Videreføringen beholder også den faste referansetrafikken. Vektene sjekkes
+mot checkpointet ved oppstart. Som tidligere initialiseres posisjoner,
+handlingshistorikk, optimizer og tilfeldighetsgenerator på nytt mellom
+prosessene; dette er ikke eksakt gjenopptakelse av RAM-tilstand.
+
+Kontrollfil: `.ai-service/car-rollback286/continuation.json`.
+Planlagt kjøring: `.ai-service/car-continued800/`.
+Fortsatt logging per generasjon; resultatloggen for 346–800 opprettes ved
+oppstart. En kort, separat pilot har kontrollert at videreføringen starter
+med samme vekter og fullfører sitt nye budsjett. Dette er en budsjettendring,
+ikke et nytt læringsresultat. Grafen utvides med nye fullførte generasjoner.
+
+<a id="endring-32"></a>
+
+## 32 — Foreldremodellen får delta i utvelgelsen igjen
+
+**5. november 2026:** Etter at grafen viste oppgang fulgt av nedgang, spurte
+prosjekteieren om den gamle modellen kunne tas med i evalueringen. Den ble
+allerede testet som referanse, men var utelukket fra å vinne siden oppføring 21.
+Nå aktiveres eksisterende støtte for beskyttet forelder ved å utelate
+`--trained-only`.
+
+Fem nettverk trener fortsatt med asynkron rotasjon. Deretter testes både de
+fem kandidatene og den uendrede forelderen på de samme 20 × 5 forsøkene, uten
+læring eller tilfeldig handlingsstøy. Modellen med høyest samlet testpoeng
+velges. Ved lik poengsum beholdes forelderen fordi den står først i listen.
+Hvis alle barna gjør det dårligere, beholder vi forelderens vekter.
+
+Dette beskytter testpoeng på det faste utvelgelsesoppsettet, ikke nødvendigvis
+kjørelengde, krasjantall eller generalisering hver for seg. Etter oppfølgingsønsket nedenfor brukes den beste historiske modellen som
+startforelder. Senere velges forelderen fra forrige generasjon, uten nye
+søk bakover gjennom alle modellene. Metoden kan også stå stille over flere generasjoner
+når ingen barn vinner, slik tidligere observert. Forelderens beskyttelse er
+en endring av utvelgelsen, ikke av radar, historikkstraff eller treningsbelønning.
+
+Fire kjegler, 50 oppføringer hvert tredje steg, 20 % til nyeste, testscenarier
+og referansetrafikk beholdes. Stoppunktet er 800. Prosessbyttet initialiserer
+posisjoner, historikk, optimizer og tilfeldighetsgenerator på nytt; vektene
+videreføres uendret. **Presisering:** Prosjekteieren ba også om å gå tilbake til en modell fra da
+resultatene var gode. Lagrede vinnere på det sammenlignbare oppsettet med fire
+kjegler og samme testmotstandere ble gjennomgått. **Generasjon 325** hadde
+høyest testpoeng (15247,48), gjennomsnittlig kjørelengde 2775,30 og 9 krasj av
+100 tester. Generasjon 340 hadde marginalt større distanse (2794,35), men
+lavere testpoeng og 11 krasj. Valget av 325 følger den eksisterende poengregelen.
+
+Vektene fra 325 er gjenopprettet og kontrollert identiske. Oppstarten med
+vekter fra 357 ble avbrutt og merket erstattet. Den nye grenen nummereres
+**358–800** for å bevare kronologien; 358 stammer fra 325, ikke fra 357.
+Dette er både tilbakeføring av vekter og endret utvelgelse, så en effekt kan
+ikke tilskrives bare én av dem. Optimizer, historikk og posisjoner gjenopprettes
+ikke fra 325; de initialiseres på nytt som ved andre prosessoverganger.
+
+Resultater bevares separat i `.ai-service/car-best325-elite800/`.
+[Ny resultatlogg](experiments/best325-elite800-generation-progress.md).
+
+<a id="endring-33"></a>
+
+## 33 — Ti nettverk roterer mellom fem biler
+
+**5. november 2026:** Prosjekteieren foreslo å øke fra fem til ti modeller,
+la dem rotere gjennom bilene og doble treningsmengden slik at alle får trent.
+Dette er implementert som **ti uavhengig trente kandidater, fem biler og
+100 treningsforsøk per kandidat**: 1000 forsøk per generasjon mot tidligere
+500. Antall simuleringssteg per forsøk er fortsatt maksimalt 1000; vi dobler
+antall forsøk, ikke steggrensen eller forsøkene per nettverk.
+
+Den eksisterende asynkrone køen roterer de ti nettverkene mellom de fem
+bilene. Nytt forsøk tar neste nettverk med gjenværende budsjett. Bilene venter
+ikke på at alle andre avslutter. Fordelingen mellom bilrollene logges i en
+10 × 5-matrise; den er ikke tvunget til nøyaktig 20 forsøk per bilrolle.
+Handlingshistorikk og senere straff tilordnes nettverket som valgte handlingen.
+
+Alle ti kandidater og den uendrede forelderen testes i samme 20 × 5
+scenarier, totalt 1100 utvelgelsestester per generasjon. Forelderen kan vinne,
+og beholdes ved lik poengsum. Fire kjegler, radar, brems, belønning og
+50 historikkoppføringer hvert tredje steg beholdes. Vinnervektene fra siste
+ferdige generasjon videreføres uten nullstilling. Posisjoner, optimizer,
+historikk og tilfeldighetsgenerator initialiseres på nytt ved prosessbyttet.
+Målet er fortsatt 800 generasjoner; flere kandidater øker tidsbruken.
+
+93 tester passerer. Ny rotasjonstest kontrollerer ti nettverk på fem biler,
+fullt forsøksbudsjett og at alle bilroller besøkes. En separat CLI-pilot
+fullførte 20 treningsforsøk (to per nettverk), evaluerte elleve kandidater og
+lagret resultatet. Disse kontrollene dokumenterer funksjon, ikke bedre læring.
+
+**Overgang bekreftet:** Generasjon 360 ble fullført med fem kandidater.
+Generasjon 361–800 kjører med ti. Startvektene er kontrollert identiske
+med vinneren fra 360.
+
+Kjøring: `.ai-service/car-ten-models800/`.
+[Resultatlogg](experiments/ten-models800-generation-progress.md).
+
+<a id="endring-34"></a>
+
+## 34 — Tilfeldige banescenarioer og felles retning som veksler
+
+**5. november 2026 — prosjekteierens forslag og presiseringer:** Først ble
+veksling i kjegleantall foreslått; det ble presisert til et tilfeldig antall
+**4, 5, 6, 7 eller 8**, med tilfeldige plasseringer. Deretter ønsket han
+helt tilfeldige startsteder og foreslo to møtende biler, men korrigerte dette:
+**Alle fem kjører samme vei. Retningen veksler med/mot klokka for hver ny
+generasjon.** Oppsettet ble bekreftet før implementering.
+
+**Presisert formål fra prosjekteieren:** Poenget med endringene er
+**randomisering av hele oppsettet**. Kjegleantall, kjegleplasseringer,
+startposisjoner og kjøreretning skal variere slik at treningen ikke låses til
+én bestemt situasjon. Målet er at modellen lærer å vurdere situasjonen fra
+sensorene og håndtere variasjon, framfor å tilpasse seg faste hinderplasseringer
+og starter. Bedre generalisering er målet, men er ennå ikke dokumentert.
+
+«Hele oppsettet» beskriver her kjøresituasjonen: banens form og bredde,
+sensoroppsett og de fem fartsfaktorene er fortsatt uendret. Retningen veksler
+systematisk mellom generasjonene; den trekkes ikke tilfeldig. Forelder og
+kandidater deler like scenarioer innen hver evaluering, slik at randomisering
+ikke gjør utvelgelsen urettferdig.
+
+Hver generasjon trekker 4–8 kjegler med lik sannsynlighet, og nye tilfeldige
+posisjoner langs banen og på tvers av den. De ligger innenfor veien og uten
+overlapping. Biler trekkes tilfeldig langs hele banen og innenfor sikker
+veibredde, med klaring til vegger, kjegler og andre aktive biler. Fartsrollene
+80–120 % beholdes. Ved hver ny kjøring, også etter steggrensen uten krasj,
+trekkes nytt startsted. Dette erstatter tidligere videreføring fra samme sted.
+Bare bilen som avslutter sitt forsøk starter på nytt; andre kjører videre.
+
+Alle fem følger samme generasjonsretning. Positiv retning følger banens
+punktrekkefølge, negativ retning legger pi til heading og snur fortegnet på
+framdriftsmålingen. Med/mot klokka registreres også eksplisitt i scenariofilen.
+Retningen byttes ved generasjonsgrensen, ikke for hver bil individuelt.
+
+**Historikk:** 50 oppføringer, lagring hvert tredje steg og 20 % straff til
+nyeste beholdes. Ved flytting til nytt startsted og ved ny generasjon tømmes
+bilens historikk, slik at en kollisjon ikke straffer handlinger fra et annet
+sted eller motsatt kjøreretning. Opptjent belønning krediteres før tømming.
+
+**Rettferdig utvelgelse:** Ti trente kandidater og den uendrede forelderen
+bruker samme kjegler og samme 20 forhåndstrukne sett med fem startposisjoner.
+Hver kandidat prøves i alle fem fartsroller, uten læring eller støy. Alle får
+kopier av de samme starttilstandene. To andre tilfeldige startsett rapporteres
+uten å inngå i utvelgelsen. Referansetrafikkens vekter beholdes.
+
+Kjegler, retning, teststarter, ekstra teststarter og første treningsstarter
+lagres i `generation-N-scenario.json`. Hvert avsluttet treningsforsøk logger
+sin faktiske startposisjon. Separate seed-strømmer for oppsett, treningsstarter
+og teststarter gjør forsøket reproduserbart og hindrer treningsaktivitet i å
+endre testscenarioene.
+
+**Tolkning av resultatene:** Vanskelighetsgraden varierer mellom generasjoner.
+Forelderens beskyttelse gjelder poeng på den aktuelle generasjonens scenarioer,
+ikke tidligere baner. En egen tabell viser vinner minus forelder på identiske
+scenarioer. Vanlige endringer fra forrige generasjon blander læring med endret
+miljø; dette er merket i loggen. Tidligere konstante scenarioer er ikke direkte
+sammenlignbare med det nye forsøket.
+
+**Kontroll:** 97 tester passerer. Nye tester dekker reproduserbare oppsett,
+alle kjegleantall, begge retninger med positiv framdrift, sikre tilfeldige
+omstarter, uendrede øvrige biler, felles teststarter og historikktømming ved
+ny start. En to-generasjoners pilot med ti nettverk fullførte begge retninger,
+alle forsøksbudsjetter og evaluering av elleve modeller.
+
+Eksisterende vekter beholdes. Ny prosess initialiserer optimizer og
+handlingshistorikk på nytt. Målet er fortsatt 800 generasjoner.
+**Overgang bekreftet:** Generasjon 382 fullførte med fast oppsett.
+Generasjon 383–800 kjører med tilfeldige scenarioer. Startvektene er
+kontrollert identiske med vinneren fra 382.
+
+Kjøring: `.ai-service/car-random800/`.
+[Resultatlogg](experiments/random800-generation-progress.md).
+
+<a id="endring-35"></a>
+
+## 35 — Utvidelse til 1000 generasjoner: passeringer og ulike hindringer
+
+**5. november 2026:** Prosjekteieren vurderer at vi må nærme oss 1000
+generasjoner for at bilene skal lære å passere hverandre og håndtere forskjellen
+mellom andre biler og kjegler. Budsjettet utvides til **1000 totalt**. Den aktive
+kjøringen fortsetter til 800; en startet overvåker viderefører automatisk
+801–1000 fra lagret vinner, med samme faste referansetrafikk og innstillinger.
+
+Ti nettverk, fem biler, 100 forsøk per nettverk, tilfeldig antall 4–8 kjegler,
+tilfeldige startsteder og felles retning som veksler per generasjon beholdes.
+Forelderen kan fortsatt vinne. Vektene beholdes; prosessovergangen etter 800
+initialiserer posisjoner, historikk, optimizer og tilfeldighetsgenerator på nytt.
+
+**Mål, ikke bekreftet resultat:** Bedre passeringer og ulik håndtering av
+bevegelige biler og stillestående kjegler. Nettverket får fortsatt ikke en
+objekttype som input. Det må bruke avstand, sideplassering og relative
+hastigheter; en bil i ro kan derfor være vanskelig å skille fra en kjegle
+med radarverdiene alene. Ingen arkitektur- eller sensorendring er gjort her.
+Mer trening er ikke i seg selv dokumentasjon på at disse ferdighetene læres.
+Loggen måler kjørelengde, overlevelse og krasj, men teller foreløpig ikke
+vellykkede forbikjøringer separat.
+
+Kontrollfil: `.ai-service/car-random800/continuation.json`.
+Planlagt videreføring: `.ai-service/car-random1000/`, generasjon 801–1000.
+Denne oppføringen er en budsjettendring; videreføringen er planlagt, ikke startet.
 
 ## Hva vi vet, og hva som står åpent
 
