@@ -1,6 +1,19 @@
 # Pågående eksperiment: begrenset synsfelt og hukommelse i bilspillet
 
-Opprettet 4. november 2026, oppdatert 5. november 2026. **Status: underveis, første bane og evaluering i steg 1 er gjennomført.** Steg 2 er fortsatt under planlegging. Det er ikke gjennomført ny trening i dette forsøket.
+Opprettet 4. november 2026, oppdatert 5. november 2026. **Status: underveis.**
+Ny evolusjonstrening er startet, og separate piloter med historikkstraff og
+hybridlæring er gjennomført. Pilotene forbedret ikke startmodellen. Steg 2 med
+farger og minne under kjøring er fortsatt under planlegging.
+
+Se [utviklingsloggen](UTVIKLINGSLOGG_BIL.md) for den kronologiske historien,
+prosjekteierens forslag og presiseringer, Codex sine bidrag og beslutningene
+etter hvert forsøk. Dette dokumentet inneholder de detaljerte forsøksnotatene.
+
+**Lesemerknad:** De innledende planavsnittene nedenfor bevarer det opprinnelige
+utgangspunktet. Formuleringer som «dagens» og «foreløpig» i disse avsnittene
+viser til planleggingstidspunktet. Senere endringer er ført videre nedover i
+dokumentet og oppsummert i utviklingsloggen. Tidligere toppstatus om at ingen
+ny trening var gjennomført, er rettet 5. november etter at den var blitt utdatert.
 
 ## Hensikt og utgangspunkt
 
@@ -160,3 +173,208 @@ hukommelse hører fortsatt til del 2.
 Treningsvideoer skal vise hele banen ovenfra som standard, med alle fem bilene
 synlige samtidig. 3D-opptak er et supplement. Dette endrer ikke den pågående
 1000-generasjoners treningen uten visning.
+
+
+### Gjeldende forsøk: kjegleradar med fart (5. november 2026)
+
+Dette erstatter forsøket med veggskjult radar. Ny radar er en sektor foran bilen,
+120 grader bred og med rekkevidde 540. Objektets sentrum må ligge i sektoren;
+vegger ignoreres. Høydefilteret for brokryss beholdes. Nærmeste objekt velges
+etter avstand til overflaten. Syv veggsensorer beholdes separat.
+
+Fire radarinput: nærhet (1 − avstand/540), signert sideposisjon/540 (positiv er
+høyre), objektfart/3,6 og relativ tilnærmingsfart/7,2 (avgrenset til ±1).
+Tilnærmingsfart er positiv når avstanden minker. Fart oppgis i verdenheter per
+simuleringssteg. Kjegler står stille. Ved ingen treff er alle fire input null.
+Nettverket er nå 11 → 8 → 8 → 1. Kartet tegner radaren som en sektor.
+
+Den gamle prosessen er stoppet; lagrede vekter er beholdt. 1000 nye generasjoner
+kjører fra tilfeldige vekter uten visning med Rust-nettverksmotor. Modell:
+`games/car/models/training_cone_motion_20261105.json`. Lokal logg og prosessinfo:
+`.ai-service/car-cone-1000/`. Ingen fullførte resultater er rapportert ennå.
+48 biltester passerer, og en kort ende-til-ende-trening med Rust er kontrollert.
+
+
+Visualisering: veikantene er senket fra 26 til 2 verdenheter i både Rust/GPU-
+og Canvas-visningen, som lave kanter. Dette endrer ikke veigrensen som brukes
+av kantfølerne og kollisjonsberegningen. Kjegler og bilkontakt beholdes.
+Den pågående treningen trenger derfor ingen omstart for denne visuelle endringen.
+
+
+### Rust-geometri og kantfølere
+
+Veiprojeksjon, romlig kandidatcache og de syv kantstrålene kjører nå i Rust når
+`--backend rust` velges. Python-versjonen beholdes som referanse. Samme regler
+brukes for høyder, strålelengde, treff på biler/kjegler og kollisjonsavstander.
+Bygg/installasjon: `PATH="$HOME/.cargo/bin:$PATH" .venv-training/bin/pip install ./rust/ai_native`.
+
+Kontroll: 50 biltester passerer, inkludert sammenligning av Python og Rust på
+alle fire baner. Tre identiske 500-stegs evalueringer med fem biler ga i snitt
+3,33 s med Python-geometri og 0,195 s med Rust-geometri (ca. 17× raskere).
+Begge brukte Rust-nettverk. Poengsum, distanse og omstarter var identiske.
+Dette er en kort måling, ikke en garanti for hele treningens hastighet.
+
+1000-generasjoners kjøringen er startet med Rust-geometri. Den forrige prosessen
+hadde ennå ikke fullført første generasjon, så første populasjon kjøres på nytt
+med samme seed; den opprinnelige initialfilen er beholdt som backup. Nettverkets
+11 input og radarregler er uendret. Logg: `.ai-service/car-cone-1000/`.
+
+
+### Pilot: kollisjonsstraff tilbake i tid (5. november 2026)
+
+Implementert i `games/car/temporal.py`, separat fra evolusjonstreningen.
+Hver bil har en kø på maksimalt 100 observasjoner og handlinger, inkludert
+objekt-ID, informasjon om utforskningshandlingen og gradienter. Køen tømmes ved
+krasj og episodens slutt. Handlinger fra forskjellige liv blandes ikke.
+
+Kollisjonsstraff 50 fordeles med 10 % ved kollisjonen, 30 % rundt 3 steg,
+30 % rundt 6 steg, 15 % rundt 12 steg og 15 % rundt 24 steg tilbake. Tidspunktene
+unntatt 0 jevnes over ±1 steg med vektene 1:2:1. Manglende historikk flytter
+andelen til nærmeste tilgjengelige steg; totalstraffen bevares. Ved flere treff
+på samme bil i samme steg deles én kollisjonsstraff mellom treffene.
+
+Objekttreff bruker siste observerte møte med akkurat dette objektet. Inntil tre
+manglende målinger tolereres mellom observasjoner. Bil-ID inkluderer livnummer,
+så en bil som har blitt startet på nytt ikke forveksles med sin tidligere
+plassering. Hvis objektet aldri ble observert, brukes umiddelbar straff; dette
+registreres i målingene. Veggtreff bruker hele bilens tilgjengelige historikk.
+Første pilot bruker samme fordelingsprofil for veggtreff og objekttreff.
+
+Fremdrift belønnes med 0,05 per verdenhet langs banen (negativt for baklengs
+fremdrift). Denne piloten bruker ikke evolusjonens nærhetsstraffer. Den lærer med
+policygradient og en lært tilstandsbaseline for den omfordelte belønningen.
+Dette er en eksplisitt hypotese om handlingsansvar, ikke et bevis på årsak eller
+en full actor–critic-metode med Bellman-verdi. Vektene er faste under hvert
+treningsforsøk og oppdateres etterpå, slik at lagrede gradienter stemmer med
+handlingenes opprinnelige sannsynlighet. Styringen bruker tanh-transformert
+normalfordelt utforskning (sigma 0,25). Deterministisk evaluering bruker middelhandlingen.
+
+To varianter fikk identiske startvekter fra evolusjonsgenerasjon 55 og samme
+seed: forsinket straff og en kontroll med bare umiddelbar straff. Begge kjørte
+20 treningsforsøk à 1000 steg med fem biler. Etterpå ble startmodellen og de to
+sluttmodellene evaluert uten utforskning over 2542 steg og tre startforskyvninger
+(−8, 0, 8):
+
+| Modell | Kollisjoner per 1000 verdenheter | Kollisjoner totalt |
+| --- | ---: | ---: |
+| Startmodell | 0,685 | 77 |
+| Forsinket straff etter 20 forsøk | 1,187 | 133 |
+| Umiddelbar straff etter 20 forsøk | 1,755 | 197 |
+
+Kollisjoner telles per rammet bil, ikke som antall unike sammenstøt. Historikk-
+varianten var bedre enn kontrollvarianten i denne piloten, men begge forverret
+startmodellen. Dette er én seed og en kort kjøring; resultatet dokumenterer
+ikke at metoden generelt er bedre. Sluttmodellene erstatter derfor ikke den
+pågående 1000-generasjoners evolusjonstreningen. Ingen passeringstelling er
+implementert i denne piloten.
+
+Lokale resultater: `.ai-service/car-temporal-pilot/` med felles `initial.json`,
+`evaluation.json`, og undermappene `delayed`/`immediate`. Hver har konfigurasjon,
+modell, baseline, målinger og logg over straffordelingen i første episode.
+
+```bash
+.venv-training/bin/python -m games.car.temporal \
+  --initial-model games/car/models/training_cone_motion_20261105.json \
+  --output .ai-service/car-temporal-new --episodes 20 --steps 1000 --credit delayed
+```
+
+Bruk en ny outputmappe og samme faste initialfil for en sammenlignbar kontroll
+med `--credit immediate`. Pilotkjøringer gjenopptas ikke fra checkpoint; full
+optimizer-/RNG-tilstand lagres foreløpig ikke. Åtte tester dekker fordelingen,
+objektidentitet, korte køer, bevart totalstraff, analytiske gradienter mot
+numerisk differensiering, retningen på policyoppdateringen og hendelser fra
+fysikken. Eksisterende biltester passerer også.
+
+
+### Hybrid: fem egne nettverk, 100 treningsforsøk og 20 tester per bilposisjon
+
+Ny variant i `games/car/hybrid.py`. Hver av fem biler har sitt eget nettverk,
+optimizer, tilfeldighetsgenerator og historikkø. Et forsøk slutter ved bilens
+første kollisjon eller etter 1000 steg. En krasjet bil deltar ikke videre i
+forsøket; neste forsøk starter når alle er ferdige. Ingen omstart midt i forsøket.
+
+Hvert kollisjonsfritt steg gir 0,02 poeng, og fremdrift langs banen gir ytterligere
+0,05 per verdenhet. Baklengs fremdrift gir negativt fremdragsbidrag. Kollisjon
+gir totalt 50 i straff, jevnt fordelt på de siste 50 handlingene (eller hele
+historikken dersom den er kortere). Denne nye varianten bruker ikke objektfilteret
+eller fordelingen ved 3/6/12/24 steg. Positive bidrag beholdes når straffen fordeles.
+Vektene oppdateres etter hvert avsluttet forsøk med policygradient og en lært
+baseline. Historikken er tom ved neste start.
+
+Etter 100 treningsforsøk per bil fryses alle fem nettverk. Hvert testes i 20
+felles scenarier i **hver av de fem bilposisjonene/fartene**, altså 100 testforsøk
+per nettverk. De andre bilene bruker en fast referansemodell. Alle kandidater
+møter de samme startforskyvningene fra en separat seedet generator. Testene
+bruker ingen læring eller tilfeldig styring. Summen av trygg kjøring, fremdrift
+og kollisjonsstraff avgjør vinneren. Også den uendrede forelderen testes under
+samme forhold, så en bedre eksisterende modell ikke forkastes. Ved lik poengsum
+beholdes forelderen. Vinneren kopieres til neste generasjon: én uendret kopi og
+fire muterte kopier (sigma 0,03), med nye uavhengige lærere. To ekstra
+startforskyvninger rapporteres separat og brukes ikke i utvelgelsen.
+
+En første teknisk pilot brukte 30 forsøk og én test per bilposisjon over to
+generasjoner. Forelderen vant begge ganger. Den er avsluttet. Etter brukerens
+presisering kjører en ny første generasjon med **100 treningsforsøk og 20 tester
+per bilposisjon**, fra samme faste generasjon-55-modell som tidligere piloter.
+Dette gir 500 treningsforsøk og 500 tester av de fem nye nettverkene, pluss 100
+tester av forelderen. Den opprinnelige 1000-generasjoners evolusjonskjøringen
+fortsetter separat.
+
+```bash
+.venv-training/bin/python -m games.car.hybrid \
+  --initial-model .ai-service/car-temporal-pilot/initial.json \
+  --output .ai-service/car-hybrid-100train-20test \
+  --generations 1 --rounds 100 --test-rounds 20 --steps 1000
+```
+
+Kjøringen lagrer `settings.json`, `metrics.jsonl`, startmodellen, alle fem
+kandidater og vinneren. `complete.json` skrives først når test og utvelgelse er
+ferdig. Nye kjøringer krever ny outputmappe. Full optimizer-/RNG-gjenopptakelse
+er foreløpig ikke støttet. Historikk, evolusjon og positiv belønning er her
+kombinert, men en gevinst må fortsatt måles; denne metoden er ikke dokumentert
+bedre enn referansemodellen.
+
+
+Første generasjon med oppsettet 100/20 er nå ferdig. Hvert nettverk fullførte
+100 treningsforsøk og ble testet 100 ganger (20 scenarier × fem bilposisjoner).
+Resultatene under er summer fra testene, med høyere poengsum som bedre:
+
+| Kandidat | Testpoeng | Kollisjoner / 100 tester |
+| --- | ---: | ---: |
+| Uendret forelder | 5699,41 | 84 |
+| Nettverk 1 | −204,60 | 100 |
+| Nettverk 2 | 415,07 | 100 |
+| Nettverk 3 | 1614,58 | 98 |
+| Nettverk 4 | −1388,66 | 100 |
+| Nettverk 5 | 3879,61 | 100 |
+
+Forelderen vant og er beholdt som `model.json`. Det nye oppsettet ga altså
+ikke en forbedring i denne første generasjonen, til tross for både belønning,
+historikkstraff og mutasjoner. Piloten er avsluttet etter én full generasjon;
+den opprinnelige evolusjonstreningen kjører videre separat. Resultatene gir
+ikke grunnlag for å konkludere om flere generasjoner eller andre innstillinger.
+Kompakt resultatfil: `.ai-service/car-hybrid-100train-20test/summary.json`.
+63 biltester passerer, inkludert uavhengige vekter, positiv belønning, 50-stegs
+straff, avslutning ved første kollisjon og 20 testscenarier per nettverk.
+
+
+### Oppfølging: 30 nye hybridgenerasjoner
+
+5. november 2026 ba prosjekteieren om 30 generasjoner med det nye oppsettet.
+Kjøringen er startet fra `.ai-service/car-hybrid-100train-20test/model.json`.
+Alle læringsregler beholdes, med 100 treningsforsøk per bil, 20 tester per
+bilposisjon og steggrense 1000. Ny seed er 20261106; optimizerne starter på nytt.
+Generasjonstallene 1–30 gjelder denne nye kjøringen. Ingen sluttevaluering er
+rapportert ved oppstart.
+
+```bash
+.venv-training/bin/python -u -m games.car.hybrid \
+  --initial-model .ai-service/car-hybrid-100train-20test/model.json \
+  --output .ai-service/car-hybrid-100train-20test-30generations \
+  --generations 30 --rounds 100 --test-rounds 20 --steps 1000 --seed 20261106
+```
+
+Målinger, kandidater og vinnere lagres per generasjon. `complete.json` markerer
+at alle 30 generasjonene er ferdige. Prosessinformasjon finnes i
+`.ai-service/car-hybrid-30generations-process.json`; standardutdata i
+`.ai-service/car-hybrid-30generations.log`.

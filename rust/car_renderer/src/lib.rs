@@ -94,6 +94,7 @@ fn road_mesh(points: &[[f32; 3]], half: f32) -> Mesh {
             }
         }
         for side in [-1., 1.] {
+            // Low visual curb; road boundaries remain the sensor/collision geometry.
             let wall = if i % 6 < 3 {
                 [0.65, 0.71, 0.72]
             } else {
@@ -103,17 +104,17 @@ fn road_mesh(points: &[[f32; 3]], half: f32) -> Mesh {
                 [
                     edge(i, side * (half + 1.), 0.),
                     edge(j, side * (half + 1.), 0.),
-                    edge(j, side * (half + 1.), 26.),
-                    edge(i, side * (half + 1.), 26.),
+                    edge(j, side * (half + 1.), 2.),
+                    edge(i, side * (half + 1.), 2.),
                 ],
                 wall,
             );
             mesh.quad(
                 [
-                    edge(i, side * (half + 1.), 26.),
-                    edge(j, side * (half + 1.), 26.),
-                    edge(j, side * (half + 3.), 26.),
-                    edge(i, side * (half + 3.), 26.),
+                    edge(i, side * (half + 1.), 2.),
+                    edge(j, side * (half + 1.), 2.),
+                    edge(j, side * (half + 3.), 2.),
+                    edge(i, side * (half + 3.), 2.),
                 ],
                 [0.81, 0.86, 0.85],
             );
@@ -122,8 +123,8 @@ fn road_mesh(points: &[[f32; 3]], half: f32) -> Mesh {
                 [
                     edge(i, side * (half + 3.), 0.),
                     edge(j, side * (half + 3.), 0.),
-                    edge(j, side * (half + 3.), 26.),
-                    edge(i, side * (half + 3.), 26.),
+                    edge(j, side * (half + 3.), 2.),
+                    edge(i, side * (half + 3.), 2.),
                 ],
                 wall.map(|v| v * 0.75),
             );
@@ -656,7 +657,7 @@ mod tests {
         ];
         let mesh = road_mesh(&points, 38.);
         assert!(mesh.vertices.iter().any(|v| v.position[2] == 150.));
-        assert!(mesh.vertices.iter().any(|v| v.position[2] == 186.));
+        assert!(mesh.vertices.iter().any(|v| v.position[2] == 162.));
         assert!(mesh
             .vertices
             .iter()

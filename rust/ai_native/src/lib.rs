@@ -1,3 +1,4 @@
+mod track;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rand::{Rng, SeedableRng};
@@ -190,6 +191,7 @@ fn check_sigma(sigma: f64) -> PyResult<()> {
 
 #[pymodule]
 fn bilspill_ai_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<track::RoadGeometry>()?;
     m.add_class::<DenseNetwork>()?;
     m.add_class::<EvolutionRng>()?;
     Ok(())

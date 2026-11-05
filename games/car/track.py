@@ -20,6 +20,7 @@ class Track:
             raise ValueError('A road needs at least three points and a positive width')
         if any(len(p) != 3 or not all(map(math.isfinite, p)) for p in self.points):
             raise ValueError('Road coordinates must be finite xyz points')
+        self.native = None
         self.cones = []
         self.name, self.half_width = name, float(half_width)
         self.segments, self.starts = [], []
@@ -112,12 +113,23 @@ class Track:
                 result.append(s)
         return result
 
+    def set_backend(self, backend):
+        if backend == "rust":
+            from ai.rust_backend import native_module
+            self.native = native_module().RoadGeometry(self.segments, self.half_width)
+        else:
+            self.native = None
+        return self
+
     def locate(self, x, y, z=0.):
         """Return (horizontal distance, 3D arc distance, road z, segment).
 
         Elevation disambiguates crossing branches. Projection onto each road
         segment is horizontal so driving up a ramp does not create lateral error.
         """
+        if self.native is not None:
+            distance, along, height, index = self.native.locate(x, y, z)
+            return distance, along, height, self.segments[index]
         best, hit = float('inf'), None
         for s in self._candidates(math.floor(x/32), math.floor(y/32), math.floor(z/32)):
             square, t = project(x, y, s)
@@ -132,9 +144,13 @@ class Track:
         return self.locate(x, y, z)[:2]
 
     def clearance(self, x, y, z=0.):
+        if self.native is not None:
+            return self.native.clearance(x, y, z)
         return self.half_width - self.locate(x, y, z)[0]
 
     def progress(self, x, y, z=0.):
+        if self.native is not None:
+            return self.native.progress(x, y, z)
         return self.locate(x, y, z)[1]
 
     def pitch(self, x, y, z, heading):

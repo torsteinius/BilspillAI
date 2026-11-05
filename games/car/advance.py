@@ -24,13 +24,13 @@ def main():
     try:
         if args.fresh and args.model.exists():
             raise ValueError('--fresh requires a new model path; existing weights are preserved')
-        network = (NeuralNetwork(app.ARCHITECTURE, seed=args.seed) if args.fresh else NeuralNetwork.load(args.model)).set_backend(args.backend)
+        network = (NeuralNetwork([11, 8, 8, 1], seed=args.seed) if args.fresh else NeuralNetwork.load(args.model)).set_backend(args.backend)
         if args.fresh:
-            network.metadata.update(track='training', traffic='convoy', radar_mode='spatial', radar_scale=3.)
-        elif network.metadata.get('radar_occlusion') != 'road_edges_v1':
+            network.metadata.update(track='training', traffic='convoy', radar_mode='cone', radar_scale=3.)
+        elif network.metadata.get('observation_version') != 'seven_rays_cone_motion_v4':
             raise ValueError('Radar visibility changed; use --fresh with a new model path')
-        if network.architecture[0] != app.INPUTS or network.architecture[-1] != 1:
-            raise ValueError('Car models need nine inputs and one output')
+        if network.architecture[0] != 11 or network.architecture[-1] != 1:
+            raise ValueError('Car models need eleven inputs and one output')
     except (ValueError, KeyError, OSError, TypeError, RuntimeError) as error:
         parser.error(str(error))
     saved_track = network.metadata.get('track', 's_curve')
@@ -39,6 +39,7 @@ def main():
     if steps is None and selected_track == saved_track:
         steps = network.metadata.get('simulation_steps')
     app.configure_track(selected_track, steps)
+    app.TRACK.set_backend(args.backend)
     app.configure_traffic(args.traffic or network.metadata.get('traffic', 'opposite'))
     app.RADAR_MODE = network.metadata.get('radar_mode', 'legacy')
     app.configure_radar(network.metadata.get('radar_scale', 1.))
@@ -48,11 +49,11 @@ def main():
     backup = args.model.with_name(args.model.stem + '_before_advance.json')
     if not args.fresh:
         network.save(backup)
-    network.metadata.update(game='car', training_backend=args.backend, collision_penalty=app.COLLISION_PENALTY,
+    network.metadata.update(game='car', training_backend=args.backend, geometry_backend=args.backend, collision_penalty=app.COLLISION_PENALTY,
                             objective='obstacle_penalties_only', simulation_steps=app.SIMULATION_STEPS,
                             track=app.TRACK.name, traffic=app.TRAFFIC, radar_mode=app.RADAR_MODE, radar_scale=app.RADAR_SCALE,
                             speed_factors=list(app.SPEED_FACTORS) if app.TRAFFIC == 'convoy' else [1.,1.],
-                            radar_occlusion='road_edges_v1', observation_version='seven_rays_spatial_radar_occluded_v3' if app.RADAR_MODE == 'spatial' else 'seven_rays_circular_radar_v1')
+                            radar_occlusion='none', observation_version='seven_rays_cone_motion_v4')
     network.metadata.pop('validation', None)
     network.save(args.model)
     start = network.generation

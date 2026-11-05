@@ -65,7 +65,11 @@ async function update(){
   $('mode').textContent=s.reason || (s.training?'Opptak fra treningen':'Avspilling · trening ferdig');
   let rays='',radars='';s.cars.forEach((c,i)=>{
    const r=c.radar, color=r.detected?'#ff865f':carColors[i];
-   if(!c.crashed)radars+=`<circle cx="${r.center_x}" cy="${r.center_y}" r="${r.radius}" fill="${color}" fill-opacity="${r.detected?.16:.035}" stroke="${color}" stroke-opacity=".65" stroke-width="1.5"/>`;
+   if(!c.crashed && r.shape==='cone'){
+    const a=c.heading-r.half_angle,b=c.heading+r.half_angle;
+    radars+=`<path d="M ${c.x} ${c.y} L ${c.x+r.range*Math.cos(a)} ${c.y+r.range*Math.sin(a)} A ${r.range} ${r.range} 0 0 1 ${c.x+r.range*Math.cos(b)} ${c.y+r.range*Math.sin(b)} Z" fill="${color}" fill-opacity=".06" stroke="${color}" stroke-opacity=".65"/>`;
+   }
+   else if(!c.crashed)radars+=`<circle cx="${r.center_x}" cy="${r.center_y}" r="${r.radius}" fill="${color}" fill-opacity="${r.detected?.16:.035}" stroke="${color}" stroke-opacity=".65" stroke-width="1.5"/>`;
    $('car'+i).setAttribute('opacity',c.crashed?'0.25':'1');
    $('car'+i).setAttribute('transform',`translate(${c.x} ${c.y}) rotate(${c.heading*180/Math.PI})`);
    rays+=c.sensors.map((d,k)=>`<line stroke="${carColors[i]}" x1="${c.x}" y1="${c.y}" x2="${c.x+Math.cos(c.heading+s.angles[k])*d}" y2="${c.y+Math.sin(c.heading+s.angles[k])*d}"/>`).join('');
@@ -119,7 +123,7 @@ function drawCockpit(){
  const id=Number($('driver').value),car=cockpitState.cars[id];
  const chase=$('cameraMode').value==='chase';
  const radar=car.radar;
- $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
+ $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · fart ${radar.speed.toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
  $('elevationInfo').textContent=`Høyde ${Math.round(car.z||0)} · Stigning ${(100*Math.tan(car.pitch||0)).toFixed(1)} %`;
  if(window.carGpu?.ready&&window.carGpu.render(cockpitState,id,chase))return;
  const pitch=(car.pitch||0)+(chase?-.18:0),cp=Math.cos(pitch),sp=Math.sin(pitch);
@@ -155,8 +159,8 @@ function drawCockpit(){
   }
   for(const side of [-1,1]){
    polygon([edge(a,side*(h-1)),edge(b,side*(h-1)),edge(b,side*h),edge(a,side*h)],i%6<3?'#e3e8de':'#cc6a52');
-   // Walls rise well above the driver's eye height (9 world units).
-   const wallHeight=26;
+   // Low visual curb; sensors still use the road boundary.
+   const wallHeight=2;
    polygon([edge(a,side*(h+1)),edge(b,side*(h+1)),edge(b,side*(h+1),wallHeight),edge(a,side*(h+1),wallHeight)],i%6<3?'#a4b4b5':'#91a3a5');
    polygon([edge(a,side*(h+1),wallHeight),edge(b,side*(h+1),wallHeight),edge(b,side*(h+3),wallHeight),edge(a,side*(h+3),wallHeight)],'#cfdbd9');
   }

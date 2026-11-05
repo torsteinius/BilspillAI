@@ -1,0 +1,299 @@
+{
+  "date": "2026-11-05",
+  "note": "Faste snapshots fra avsluttede lokale piloter, ikke live treningsstatus. Ulike testoppsett og poengsummer må ikke sammenlignes direkte.",
+  "geometry_benchmark": {
+    "python": {
+      "seconds": [
+        3.5178276672959328,
+        3.193807458039373,
+        3.278671874664724
+      ],
+      "results": [
+        [
+          -3899.039006805753,
+          0.002656200320612357,
+          "500 steg fullført · omstarter: 8 / 15 / 21 / 13 / 19"
+        ],
+        [
+          -3899.039006805753,
+          0.002656200320612357,
+          "500 steg fullført · omstarter: 8 / 15 / 21 / 13 / 19"
+        ],
+        [
+          -3899.039006805753,
+          0.002656200320612357,
+          "500 steg fullført · omstarter: 8 / 15 / 21 / 13 / 19"
+        ]
+      ]
+    },
+    "rust": {
+      "seconds": [
+        0.19527637492865324,
+        0.1945615829899907,
+        0.19408066617324948
+      ],
+      "results": [
+        [
+          -3899.039006805753,
+          0.002656200320612357,
+          "500 steg fullført · omstarter: 8 / 15 / 21 / 13 / 19"
+        ],
+        [
+          -3899.039006805753,
+          0.002656200320612357,
+          "500 steg fullført · omstarter: 8 / 15 / 21 / 13 / 19"
+        ],
+        [
+          -3899.039006805753,
+          0.002656200320612357,
+          "500 steg fullført · omstarter: 8 / 15 / 21 / 13 / 19"
+        ]
+      ]
+    }
+  },
+  "temporal_pilot": {
+    "settings": {
+      "credit": "delayed",
+      "distribution": [
+        [
+          0,
+          0.1
+        ],
+        [
+          3,
+          0.3
+        ],
+        [
+          6,
+          0.3
+        ],
+        [
+          12,
+          0.15
+        ],
+        [
+          24,
+          0.15
+        ]
+      ],
+      "history": 100,
+      "steps": 1000,
+      "episodes": 20,
+      "seed": 20261105,
+      "learning_rate": 0.001,
+      "exploration_sigma": 0.25,
+      "progress_reward": 0.05,
+      "collision_penalty": 50.0,
+      "initial_generation": 55,
+      "method": "policy_gradient_with_redistributed_reward_and_state_baseline",
+      "limitation": "Heuristic action credit, not a causal estimate or Bellman critic"
+    },
+    "evaluation": {
+      "initial": {
+        "steps": 2542,
+        "offsets": [
+          -8,
+          0,
+          8
+        ],
+        "collisions": 77,
+        "distance": 112404.36876337611,
+        "collisions_per_1000": 0.6850267551619251,
+        "runs": [
+          {
+            "collisions": 24,
+            "distance": 37496.89218946135,
+            "collisions_per_1000": 0.640053044362575,
+            "reward": 674.8446094730665,
+            "unobserved_object_events": 0,
+            "samples": 12700
+          },
+          {
+            "collisions": 22,
+            "distance": 37537.6195574905,
+            "collisions_per_1000": 0.5860787194112307,
+            "reward": 776.8809778745226,
+            "unobserved_object_events": 0,
+            "samples": 12708
+          },
+          {
+            "collisions": 31,
+            "distance": 37369.85701642427,
+            "collisions_per_1000": 0.8295455876744543,
+            "reward": 318.4928508212126,
+            "unobserved_object_events": 2,
+            "samples": 12710
+          }
+        ]
+      },
+      "delayed": {
+        "steps": 2542,
+        "offsets": [
+          -8,
+          0,
+          8
+        ],
+        "collisions": 133,
+        "distance": 112033.33136273365,
+        "collisions_per_1000": 1.1871467034161642,
+        "runs": [
+          {
+            "collisions": 44,
+            "distance": 37367.1948609776,
+            "collisions_per_1000": 1.17750342683467,
+            "reward": -331.6402569511147,
+            "unobserved_object_events": 0,
+            "samples": 12710
+          },
+          {
+            "collisions": 44,
+            "distance": 37361.70294894125,
+            "collisions_per_1000": 1.177676511697839,
+            "reward": -331.9148525529357,
+            "unobserved_object_events": 0,
+            "samples": 12710
+          },
+          {
+            "collisions": 45,
+            "distance": 37304.4335528148,
+            "collisions_per_1000": 1.2062909341939205,
+            "reward": -384.7783223592583,
+            "unobserved_object_events": 0,
+            "samples": 12710
+          }
+        ]
+      },
+      "immediate": {
+        "steps": 2542,
+        "offsets": [
+          -8,
+          0,
+          8
+        ],
+        "collisions": 197,
+        "distance": 112270.28683619732,
+        "collisions_per_1000": 1.7546940116704572,
+        "runs": [
+          {
+            "collisions": 58,
+            "distance": 37396.209022997886,
+            "collisions_per_1000": 1.5509593489631854,
+            "reward": -1030.189548850101,
+            "unobserved_object_events": 0,
+            "samples": 12710
+          },
+          {
+            "collisions": 58,
+            "distance": 37358.864294863604,
+            "collisions_per_1000": 1.5525097214471346,
+            "reward": -1032.056785256829,
+            "unobserved_object_events": 0,
+            "samples": 12710
+          },
+          {
+            "collisions": 81,
+            "distance": 37515.21351833583,
+            "collisions_per_1000": 2.159124056708638,
+            "reward": -2174.23932408321,
+            "unobserved_object_events": 3,
+            "samples": 12710
+          }
+        ]
+      }
+    }
+  },
+  "hybrid_100_20": {
+    "settings": {
+      "test_rounds": 20,
+      "test_offsets": [
+        3.568935164510716,
+        -9.879808342412145,
+        -6.3580752597505334,
+        2.8207912176295658,
+        -4.198318110851715,
+        11.953522553183433,
+        9.157456338994216,
+        -11.721482876136644,
+        -11.402165310644127,
+        -9.28367753951478,
+        -5.456703552943801,
+        -8.705123989950069,
+        -4.579875544558508,
+        -8.798940657560415,
+        9.363720896192365,
+        -11.938913719263308,
+        5.135731239355792,
+        4.65819499007096,
+        -11.871077821688012,
+        1.7719904621705176
+      ],
+      "generations": 1,
+      "rounds": 100,
+      "steps": 1000,
+      "seed": 20261105,
+      "learners": 5,
+      "history": 50,
+      "credit": "uniform50",
+      "safe_reward": 0.02,
+      "progress_reward": 0.05,
+      "collision_penalty": 50.0,
+      "exploration_sigma": 0.15,
+      "learning_rate": 0.0003,
+      "mutation_sigma": 0.03,
+      "initial_generation": 55,
+      "protected_parent": true,
+      "selection": "20 test scenarios by default, each in all five slots/speeds against fixed initial-model opponents; no learning or exploration",
+      "holdout": "Offsets -8 and +8, reported only, not used for selection"
+    },
+    "summary": {
+      "generation": 1,
+      "winner": "parent",
+      "training_attempts_per_network": 100,
+      "test_attempts_per_network": 100,
+      "evaluations": [
+        {
+          "candidate": "parent",
+          "score": 5699.411628927233,
+          "collisions": 84,
+          "distance": 173945.0325785451,
+          "attempts": 100
+        },
+        {
+          "candidate": "learner-0",
+          "score": -204.59973813199974,
+          "collisions": 100,
+          "distance": 84204.40523736001,
+          "attempts": 100
+        },
+        {
+          "candidate": "learner-1",
+          "score": 415.07173917065654,
+          "collisions": 100,
+          "distance": 95233.03478341317,
+          "attempts": 100
+        },
+        {
+          "candidate": "learner-2",
+          "score": 1614.5797420639276,
+          "collisions": 98,
+          "distance": 114710.7948412787,
+          "attempts": 100
+        },
+        {
+          "candidate": "learner-3",
+          "score": -1388.6558585186365,
+          "collisions": 100,
+          "distance": 63989.6828296272,
+          "attempts": 100
+        },
+        {
+          "candidate": "learner-4",
+          "score": 3879.6090759776803,
+          "collisions": 100,
+          "distance": 156244.1815195539,
+          "attempts": 100
+        }
+      ]
+    }
+  }
+}

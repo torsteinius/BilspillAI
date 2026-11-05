@@ -249,12 +249,12 @@ function takeFromExternrefTable0(idx) {
     wasm.__externref_table_dealloc(idx);
     return value;
 }
-function wasm_bindgen_f0cd39f1508ddffc___convert__closures_____invoke___wgpu_88218f2ca1cfdcda___backend__webgpu__webgpu_sys__gen_GpuUncapturedErrorEvent__GpuUncapturedErrorEvent_____(arg0, arg1, arg2) {
-    wasm.wasm_bindgen_f0cd39f1508ddffc___convert__closures_____invoke___wgpu_88218f2ca1cfdcda___backend__webgpu__webgpu_sys__gen_GpuUncapturedErrorEvent__GpuUncapturedErrorEvent_____(arg0, arg1, arg2);
-}
-
 function wasm_bindgen_f0cd39f1508ddffc___convert__closures_____invoke___wasm_bindgen_f0cd39f1508ddffc___JsValue_____(arg0, arg1, arg2) {
     wasm.wasm_bindgen_f0cd39f1508ddffc___convert__closures_____invoke___wasm_bindgen_f0cd39f1508ddffc___JsValue_____(arg0, arg1, arg2);
+}
+
+function wasm_bindgen_f0cd39f1508ddffc___convert__closures_____invoke___wgpu_88218f2ca1cfdcda___backend__webgpu__webgpu_sys__gen_GpuUncapturedErrorEvent__GpuUncapturedErrorEvent_____(arg0, arg1, arg2) {
+    wasm.wasm_bindgen_f0cd39f1508ddffc___convert__closures_____invoke___wgpu_88218f2ca1cfdcda___backend__webgpu__webgpu_sys__gen_GpuUncapturedErrorEvent__GpuUncapturedErrorEvent_____(arg0, arg1, arg2);
 }
 
 function wasm_bindgen_f0cd39f1508ddffc___convert__closures_____invoke___wasm_bindgen_f0cd39f1508ddffc___JsValue__wasm_bindgen_f0cd39f1508ddffc___JsValue_____(arg0, arg1, arg2, arg3) {

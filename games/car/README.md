@@ -1,5 +1,7 @@
 # Bilspill i AI-spill
 
+[Utviklingslogg: forslag, metodeendringer og resultater steg for steg](../../docs/UTVIKLINGSLOGG_BIL.md).
+
 **Pågående eksperiment:** [Begrenset synsfelt og hukommelse](../../docs/BIL_HUKOMMELSE.md). Den lange banen med overpass er implementert, og eksisterende vekter er prøvd uten videre trening. Fargeavlesing og hukommelse tilhører fortsatt steg 2.
 
 ## Treningsbane med kjegler og større radar
@@ -206,3 +208,27 @@ Radaren blokkeres nå av veikantene (`road_edges_v1`). Gamle radarvekter er
 beholdt, men den nye 1000-generasjoners kjøringen starter fra tilfeldige vekter
 uten visning. Se [eksperimentstatus](../../docs/BIL_HUKOMMELSE.md#ny-radar-og-ny-trening-1000-generasjoner-uten-visning).
 Videoene over er tatt før siktsperringen ble lagt til.
+
+
+Gjeldende radar er nå en 120° kjegle med rekkevidde 540, uten veggsperring.
+Den gir nærhet, sideposisjon, objektfart og relativ tilnærmingsfart til nærmeste
+objekt. Nettverket har 11 input; ny trening kjøres fra tilfeldige vekter.
+Se siste avsnitt i [eksperimentloggen](../../docs/BIL_HUKOMMELSE.md).
+
+
+Med `--backend rust` kjøres også veigeometri og kantfølere i Rust. Installer
+den oppdaterte `rust/ai_native`-modulen før kjøring. En kontrollmåling med fem
+biler ga ca. 17× raskere evaluering med identiske resultater; se eksperimentloggen.
+
+
+Eksperimentet med straff for tidligere handlinger finnes i `games.car.temporal`.
+Det er kjørt som en separat pilot med 100 stegs historikk per bil. Første pilot
+forverret startmodellen; den erstatter ikke evolusjonstreningen. Se resultatene
+i [eksperimentloggen](../../docs/BIL_HUKOMMELSE.md#pilot-kollisjonsstraff-tilbake-i-tid-5-november-2026).
+
+
+Ny hybridvariant: `python -m games.car.hybrid --initial-model <modell.json>
+--output <ny-mappe> --rounds 100 --test-rounds 20`. Fem nettverk lærer
+uavhengig med belønning for kollisjonsfri kjøring og fremdrift, samt straff
+fordelt på de siste 50 handlingene. Etter 100 forsøk testes hvert nettverk
+20 ganger i hver bilposisjon før en vinner velges. Se eksperimentloggen.
