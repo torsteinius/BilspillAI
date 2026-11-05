@@ -1,0 +1,23 @@
+<!doctype html><html lang="nb"><meta charset="utf-8"><title>Rust/WebGPU · geometri-kontroll</title>
+<style>body{background:#101820;color:#e9eff4;font:16px system-ui;margin:24px}canvas{width:100%;border-radius:12px}p{line-height:1.5}a{color:#72e4b0}</style>
+<h1>Kontroll av GPU-rendereren</h1><p>Statiske kontrollbilder fra den samme banegeometrien. Dette er ikke en treningskjøring.</p>
+<label>Kameraposisjon <select id="view"><option value="under">Under broen</option><option value="upper">På broen</option><option value="ramp">I rampen</option></select></label>
+<p id="result">Laster Rust/WebGPU …</p><canvas id="canvas" width="1200" height="650"></canvas><p><a href="/">Tilbake til kjøringen</a></p>
+<script type="module">
+import init,{Renderer} from './car_renderer.js';
+const result=document.getElementById('result'),canvas=document.getElementById('canvas');
+try {
+ if(!navigator.gpu)throw Error('WebGPU er ikke tilgjengelig');
+ const track=await (await fetch('/api/track')).json();
+ if(track.name!=='figure_eight')throw Error('Kontrollbildene krever figure_eight-banen');
+ await init();const renderer=await Renderer.create(canvas,new Float32Array(track.points.flat()),track.width/2);
+ const pose=i=>{const p=track.points[i],q=track.points[(i+1)%track.points.length];return [...p,Math.atan2(q[1]-p[1],q[0]-p[0]),Math.atan2(q[2]-p[2],Math.hypot(q[0]-p[0],q[1]-p[1])),0,.45,.89,.69];};
+ function draw(){
+  const indices={under:1480,upper:3185,ramp:2900};
+  const car=pose(indices[document.getElementById('view').value]);
+  renderer.render(new Float32Array(car),0,true);
+  result.textContent=`Rust + WebGPU · Bilde tegnet · Høyde ${car[2].toFixed(1)}`;
+ }
+ document.getElementById('view').onchange=draw;draw();
+}catch(error){result.textContent='Feil: '+error;console.error(error);}
+</script></html>

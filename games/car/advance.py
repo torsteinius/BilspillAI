@@ -9,25 +9,52 @@ from . import app
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('generations', type=int, nargs='?', default=100)
+    parser.add_argument('--fresh', action='store_true', help='Train from random weights in a new model file')
+    parser.add_argument('--seed', type=int, default=20261105)
+    parser.add_argument('--backend', choices=('python', 'rust'), default='python')
+    parser.add_argument('--traffic', choices=('convoy', 'opposite'))
+    parser.add_argument('--track', choices=app.Track.NAMES, help='Defaults to the model’s saved track')
+    parser.add_argument('--steps', type=int, help='Simulation steps per attempt')
     parser.add_argument('--model', type=Path, default=app.MODEL)
     args = parser.parse_args()
+    if args.steps is not None and args.steps < 1:
+        parser.error('--steps must be positive')
     if args.generations < 1:
         parser.error('Generations must be positive')
     try:
-        network = NeuralNetwork.load(args.model)
+        if args.fresh and args.model.exists():
+            raise ValueError('--fresh requires a new model path; existing weights are preserved')
+        network = (NeuralNetwork(app.ARCHITECTURE, seed=args.seed) if args.fresh else NeuralNetwork.load(args.model)).set_backend(args.backend)
+        if args.fresh:
+            network.metadata.update(track='training', traffic='convoy', radar_mode='spatial', radar_scale=3.)
+        elif network.metadata.get('radar_occlusion') != 'road_edges_v1':
+            raise ValueError('Radar visibility changed; use --fresh with a new model path')
         if network.architecture[0] != app.INPUTS or network.architecture[-1] != 1:
             raise ValueError('Car models need nine inputs and one output')
-    except (ValueError, KeyError, OSError, TypeError) as error:
+    except (ValueError, KeyError, OSError, TypeError, RuntimeError) as error:
         parser.error(str(error))
+    saved_track = network.metadata.get('track', 's_curve')
+    selected_track = args.track or saved_track
+    steps = args.steps
+    if steps is None and selected_track == saved_track:
+        steps = network.metadata.get('simulation_steps')
+    app.configure_track(selected_track, steps)
+    app.configure_traffic(args.traffic or network.metadata.get('traffic', 'opposite'))
+    app.RADAR_MODE = network.metadata.get('radar_mode', 'legacy')
+    app.configure_radar(network.metadata.get('radar_scale', 1.))
     app.network = network
     app.ARCHITECTURE = list(network.architecture)
     app.WEIGHT_COUNT = network.weight_count
     backup = args.model.with_name(args.model.stem + '_before_advance.json')
-    network.save(backup)
-    network.metadata.update(game='car', collision_penalty=app.COLLISION_PENALTY,
-                            objective='obstacle_penalties_only', simulation_steps=650,
-                            track='s_curve', observation_version='seven_rays_circular_radar_v1')
+    if not args.fresh:
+        network.save(backup)
+    network.metadata.update(game='car', training_backend=args.backend, collision_penalty=app.COLLISION_PENALTY,
+                            objective='obstacle_penalties_only', simulation_steps=app.SIMULATION_STEPS,
+                            track=app.TRACK.name, traffic=app.TRAFFIC, radar_mode=app.RADAR_MODE, radar_scale=app.RADAR_SCALE,
+                            speed_factors=list(app.SPEED_FACTORS) if app.TRAFFIC == 'convoy' else [1.,1.],
+                            radar_occlusion='road_edges_v1', observation_version='seven_rays_spatial_radar_occluded_v3' if app.RADAR_MODE == 'spatial' else 'seven_rays_circular_radar_v1')
     network.metadata.pop('validation', None)
+    network.save(args.model)
     start = network.generation
 
     def report(trained):
@@ -36,7 +63,7 @@ def main():
                   f'generation={trained.generation}, score={trained.score:.2f}', flush=True)
 
     network.train(lambda weights: app.evaluate(weights)[0], args.generations,
-                  resume=True, checkpoint=args.model, on_generation=report)
+                  resume=not args.fresh, mutation_sigma=lambda gen: .12 if gen < 40 else .05, checkpoint=args.model, on_generation=report)
     network.metadata['validation'] = [app.evaluate(network.weights, offset) for offset in (-8, 0, 8)]
     network.save(args.model)
     print(json.dumps(network.metadata['validation']), flush=True)

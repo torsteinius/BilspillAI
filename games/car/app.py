@@ -26,51 +26,144 @@ COLLISION_PENALTY = 50.
 MODEL = Path(__file__).parent / 'models' / 'model_radar_9_8_8_1.json'
 
 
-from .track import clearance, progress, PERIMETER, PATH
+from .track import Track, DEFAULT_TRACK
+
+TRACK = DEFAULT_TRACK
+clearance, progress = TRACK.clearance, TRACK.progress
+PERIMETER, PATH = TRACK.perimeter, TRACK.path
+SIMULATION_STEPS = 650
+TRAFFIC = 'opposite'
+RADAR_MODE = 'legacy'
+RADAR_SCALE = 1.
+SPEED_FACTORS = (.8, .9, 1., 1.1, 1.2)
+
+
+def configure_track(name='s_curve', steps=None):
+    global TRACK, clearance, progress, PERIMETER, PATH, HALF_WIDTH, SIMULATION_STEPS, cars
+    TRACK = Track.generate(name)
+    clearance, progress = TRACK.clearance, TRACK.progress
+    PERIMETER, PATH, HALF_WIDTH = TRACK.perimeter, TRACK.path, TRACK.half_width
+    SIMULATION_STEPS = steps or (max(650, math.ceil(PERIMETER / 3 * 1.5)) if name in ('figure_eight', 'training') else 650)
+    cars = initial()
+    status.update(track=name, simulation_steps=SIMULATION_STEPS)
+
+
+def configure_radar(scale=3.):
+    global RADAR_RANGE, RADAR_RADIUS, RADAR_OFFSET, RADAR_SCALE
+    if not math.isfinite(scale) or scale <= 0:
+        raise ValueError('Radar scale must be positive and finite')
+    RADAR_SCALE = scale
+    RADAR_RANGE, RADAR_RADIUS, RADAR_OFFSET = 180*scale, 90*scale, 90*scale
+    status['radar_scale'] = scale
+
+
+def configure_traffic(mode):
+    global TRAFFIC, cars
+    if mode not in ('opposite', 'convoy'):
+        raise ValueError('Unknown traffic mode')
+    TRAFFIC = mode
+    cars = initial()
+    status.update(traffic=mode)
+
+
+def others(car, traffic):
+    return [c for c in ([traffic] if isinstance(traffic, dict) else traffic) if c is not car]
+
+
+def same_level(a, b):
+    if abs(a.get('z', 0.) - b.get('z', 0.)) < 2*CAR_RADIUS:
+        return True
+    # Road-following sensors must still see traffic ahead on a ramp. The
+    # two crossing decks are far apart along the road, unlike ramp neighbours.
+    first = progress(a['x'], a['y'], a.get('z', 0.))
+    second = progress(b['x'], b['y'], b.get('z', 0.))
+    delta = abs(first-second)
+    return min(delta, PERIMETER-delta) <= RADAR_RANGE * 1.5
 
 
 def sensors(car, other):
+    obstacles = [c for c in others(car, other)+TRACK.cones if not c.get('crashed', False)
+                 and math.hypot(c['x']-car['x'], c['y']-car['y']) <= 180+c.get('radius', CAR_RADIUS)
+                 and same_level(car, c)]
     readings = []
     for angle in ANGLES:
         dx, dy = math.cos(car['heading'] + angle), math.sin(car['heading'] + angle)
         distance = 0.
         for _ in range(55):
-            gap = clearance(car['x'] + distance * dx, car['y'] + distance * dy)
+            gap = clearance(car['x'] + distance * dx, car['y'] + distance * dy, car.get('z', 0.))
             if gap < .15 or distance >= 180:
                 break
             distance = min(180, distance + max(.1, gap * .95))
-        # Exact ray/circle intersection with the other car.
-        ox, oy = other['x'] - car['x'], other['y'] - car['y']
-        projection = ox * dx + oy * dy
-        discriminant = CAR_RADIUS ** 2 - (ox * ox + oy * oy - projection ** 2)
-        if not other.get('crashed', False) and discriminant >= 0:
-            near = projection - math.sqrt(discriminant)
-            far = projection + math.sqrt(discriminant)
-            if far >= 0:
-                distance = min(distance, max(0., near))
+        # Every ray reports the nearest car body or wall.
+        for obstacle in obstacles:
+            ox, oy = obstacle['x'] - car['x'], obstacle['y'] - car['y']
+            projection = ox * dx + oy * dy
+            discriminant = obstacle.get('radius', CAR_RADIUS) ** 2 - (ox * ox + oy * oy - projection ** 2)
+            if discriminant >= 0:
+                near = projection - math.sqrt(discriminant)
+                far = projection + math.sqrt(discriminant)
+                if far >= 0:
+                    distance = min(distance, max(0., near))
         readings.append(distance)
     return readings
 
 
 def radar(car, other):
+    detections = [_radar_one(car, c) for c in others(car, other)+TRACK.cones]
+    visible = [r for r in detections if r['detected']]
+    if visible:
+        nearest = min(visible, key=lambda r: r['distance']).copy()
+        nearest['targets'] = [dict(distance=r['distance'], forward=r['forward'], lateral=r['lateral'], kind=r['kind']) for r in sorted(visible,key=lambda r:r['distance'])]
+        return nearest
+    # Keep exactly two radar inputs, even for an empty traffic list.
+    return _radar_one(car, dict(car, crashed=True))
+
+
+def radar_line_of_sight(car, target):
+    """March towards the target's near surface; road edges block radar.
+
+    Interpolate elevation so ramp neighbours remain visible. same_level()
+    separately rejects traffic on the other deck of an overpass.
+    """
+    dx, dy = target['x']-car['x'], target['y']-car['y']
+    length = math.hypot(dx, dy)
+    end = max(0., length-target.get('radius', CAR_RADIUS))
+    distance = 0.
+    while distance < end:
+        fraction = distance / length
+        z = car.get('z', 0.) + fraction*(target.get('z', 0.)-car.get('z', 0.))
+        gap = clearance(car['x']+fraction*dx, car['y']+fraction*dy, z)
+        if gap < .15:
+            return False
+        distance += max(.1, min(8., gap*.9))
+    return True
+
+
+def _radar_one(car, other):
     dx, dy = other['x']-car['x'], other['y']-car['y']
     distance = math.hypot(dx, dy)
     angle = (math.atan2(dy, dx)-car['heading']+math.pi) % (2*math.pi)-math.pi
     # Circle in front of the car: detect overlap with the other car body.
     center_x = car['x'] + RADAR_OFFSET*math.cos(car['heading'])
     center_y = car['y'] + RADAR_OFFSET*math.sin(car['heading'])
-    gap = max(0., distance-CAR_RADIUS)
-    detected = (not car['crashed'] and not other['crashed'] and gap < RADAR_RANGE
-                and math.hypot(other['x']-center_x, other['y']-center_y) <= RADAR_RADIUS + CAR_RADIUS)
+    target_radius = other.get('radius', CAR_RADIUS)
+    gap = max(0., distance-target_radius)
+    detected = (not car['crashed'] and not other['crashed'] and gap < RADAR_RANGE and same_level(car, other)
+                and math.hypot(other['x']-center_x, other['y']-center_y) <= RADAR_RADIUS + target_radius
+                and radar_line_of_sight(car, other))
     proximity = max(0., 1-gap/RADAR_RANGE) if detected else 0.
     bearing = max(-1., min(1., angle/RADAR_HALF_ANGLE))*proximity
     return dict(detected=detected, distance=gap if detected else None,
+                forward=(dx*math.cos(car['heading'])+dy*math.sin(car['heading'])) if detected else None,
+                lateral=(-dx*math.sin(car['heading'])+dy*math.cos(car['heading'])) if detected else None,
+                kind=other.get('kind', 'car') if detected else None,
                 proximity=proximity, bearing=bearing, range=RADAR_RANGE, radius=RADAR_RADIUS, offset=RADAR_OFFSET, center_x=center_x, center_y=center_y)
 
 
 def observations(car, other):
     detection = radar(car, other)
-    return sensors(car, other) + [detection['proximity'], detection['bearing']]
+    lateral = max(-1.,min(1.,detection['lateral']/RADAR_RADIUS)) if detection['detected'] else 0.
+    return sensors(car, other) + [detection['proximity'], lateral if RADAR_MODE == 'spatial' else detection['bearing']]
 
 
 def migrate_sensor_weights(weights):
@@ -87,16 +180,33 @@ def policy(weights, readings):
 
 
 def initial(offset=0):
+    if TRAFFIC == 'convoy':
+        start = TRACK.perimeter * .12
+        return [dict(TRACK.pose(start-TRACK.perimeter*i/len(SPEED_FACTORS), offset), direction=1, speed_factor=factor,
+                     travel=0., crashed=False, restarts=0)
+                for i,factor in enumerate(SPEED_FACTORS)]
+    if TRACK.name != 's_curve':
+        # Start away from the crossing, side by side in opposite directions.
+        along = TRACK.perimeter * .12 if TRACK.name == 'figure_eight' else 140.
+        result = []
+        for direction, lateral in ((1, -18-offset), (-1, 18-offset)):
+            pose = TRACK.pose(along, lateral)
+            pose['heading'] += math.pi if direction == -1 else 0.
+            result.append(dict(pose, direction=direction, travel=0., crashed=False, restarts=0))
+        return result
     return [dict(x=400., y=428. + offset, heading=math.pi, direction=1, travel=0., crashed=False, restarts=0),
             dict(x=400., y=392. + offset, heading=0., direction=-1, travel=0., crashed=False, restarts=0)]
 
 
 def swept_distance(old, cars):
-    rx, ry = old[0][0] - old[1][0], old[0][1] - old[1][1]
-    vx = cars[0]['x'] - cars[1]['x'] - rx
-    vy = cars[0]['y'] - cars[1]['y'] - ry
-    t = max(0., min(1., -(rx * vx + ry * vy) / (vx * vx + vy * vy))) if vx * vx + vy * vy else 0.
-    return math.hypot(rx + t * vx, ry + t * vy)
+    # Continuous relative motion in xyz; old 2D callers retain z=0.
+    positions = [(c['x'], c['y'], c.get('z', 0.)) for c in cars]
+    previous = [tuple(p) + (0.,)*(3-len(p)) for p in old]
+    relative = [previous[0][i]-previous[1][i] for i in range(3)]
+    velocity = [positions[0][i]-positions[1][i]-relative[i] for i in range(3)]
+    square = sum(v*v for v in velocity)
+    t = max(0., min(1., -sum(r*v for r,v in zip(relative,velocity))/square)) if square else 0.
+    return math.sqrt(sum((r+t*v)**2 for r,v in zip(relative,velocity)))
 
 
 def restart_crashed(cars, offset=0):
@@ -104,9 +214,12 @@ def restart_crashed(cars, offset=0):
     for i, car in enumerate(cars):
         if not car['crashed']:
             continue
-        start, other = starts[i], cars[1-i]
-        # Wait off track if the surviving car is passing the spawn point.
-        if not other['crashed'] and math.hypot(start['x']-other['x'], start['y']-other['y']) < 2*CAR_RADIUS + 6:
+        start = starts[i]
+        if any(math.dist((start['x'],start['y'],start.get('z',0.)),(c['x'],c['y'],c['z'])) < CAR_RADIUS+c['radius']+2 for c in TRACK.cones):
+            continue
+        # Every active car must clear the spawn point.
+        if any(not c['crashed'] and math.dist((start['x'],start['y'],start.get('z',0.)),
+               (c['x'],c['y'],c.get('z',0.))) < 2*CAR_RADIUS+6 for c in cars if c is not car):
             continue
         start['restarts'] = car['restarts'] + 1
         car.clear()
@@ -114,36 +227,49 @@ def restart_crashed(cars, offset=0):
 
 
 def step(cars, weights):
-    # Both decisions use the same pre-movement state.
-    controls = [policy(weights, observations(cars[i], cars[1-i])) if not cars[i]['crashed'] else 0. for i in range(2)]
+    # All decisions use the same pre-movement state.
+    controls = [policy(weights, observations(c, cars)) if not c['crashed'] else 0. for c in cars]
     active = [not c['crashed'] for c in cars]
-    old = [(c['x'], c['y']) for c in cars]
+    old = [(c['x'], c['y'], c.get('z', 0.)) for c in cars]
     reward = 0.
     reason = ''
-    for c, steer in zip(cars, controls):
+    for idx, (c, steer) in enumerate(zip(cars, controls)):
         if c['crashed']:
             continue
-        before = progress(c['x'], c['y'])
+        before = progress(c['x'], c['y'], c.get('z', 0.))
         c['heading'] += steer * .045
-        c['x'] += 3 * math.cos(c['heading'])
-        c['y'] += 3 * math.sin(c['heading'])
-        delta = ((progress(c['x'], c['y']) - before + PERIMETER / 2) % PERIMETER - PERIMETER / 2) * c['direction']
+        speed = 3 * c.get('speed_factor', 1.)
+        c['x'] += speed * math.cos(c['heading'])
+        c['y'] += speed * math.sin(c['heading'])
+        c['z'] = TRACK.locate(c['x'], c['y'], c.get('z', 0.))[2]
+        delta = ((progress(c['x'], c['y'], c['z']) - before + PERIMETER / 2) % PERIMETER - PERIMETER / 2) * c['direction']
         c['travel'] += delta
-        gap = clearance(c['x'], c['y']) - CAR_RADIUS
+        gap = clearance(c['x'], c['y'], c['z']) - CAR_RADIUS
         reward -= .4 * max(0., (12 - gap) / 12) ** 2
         # Check the movement segment as well as its endpoint.
-        idx = 0 if c is cars[0] else 1
         if min(clearance(old[idx][0] + (c['x']-old[idx][0])*t,
-                         old[idx][1] + (c['y']-old[idx][1])*t) for t in (0,.5,1)) <= CAR_RADIUS:
+                         old[idx][1] + (c['y']-old[idx][1])*t,
+                         old[idx][2] + (c['z']-old[idx][2])*t) for t in (0,.5,1)) <= CAR_RADIUS:
             c['crashed'] = True
             reason = 'Veggkontakt'
-    separation = swept_distance(old, cars) - 2 * CAR_RADIUS
-    if all(active):
-        reward -= 2 * max(0., (20 - separation) / 20) ** 2
-    if all(active) and separation <= 0:
-        reason = 'Bilene kolliderte'
-        for c in cars:
-            c['crashed'] = True
+    for i, car in enumerate(cars):
+        if not active[i]:
+            continue
+        for cone in TRACK.cones:
+            separation = swept_distance([old[i],(cone['x'],cone['y'],cone['z'])], [car,cone])-CAR_RADIUS-cone['radius']
+            reward -= .4*max(0.,(12-separation)/12)**2
+            if separation <= 0:
+                car['crashed'] = True
+                reason = 'Kjeglekontakt'
+    for i in range(len(cars)):
+        for j in range(i+1, len(cars)):
+            if not (active[i] and active[j]):
+                continue
+            separation = swept_distance([old[i],old[j]], [cars[i],cars[j]]) - 2*CAR_RADIUS
+            reward -= 2 * max(0., (20 - separation) / 20) ** 2
+            if separation <= 0:
+                reason = 'Bilene kolliderte'
+                cars[i]['crashed'] = cars[j]['crashed'] = True
     if reason:
         reward -= COLLISION_PENALTY
     return reward, reason
@@ -158,14 +284,14 @@ def evaluate(weights, offset=0, live=False):
     frames = []
     with lock:
         label = dict(display_generation=status['generation'], display_candidate=status['candidate'])
-    for tick in range(650):
+    for tick in range(SIMULATION_STEPS):
         restart_crashed(attempt, offset)
         reward, outcome = step(attempt, weights)
         score += reward
         if outcome:
             last_event, event_ticks = outcome, 20
-        if tick == 649:
-            outcome = '650 steg fullført · omstarter: ' + ' / '.join(str(c['restarts'] + int(c['crashed'])) for c in attempt)
+        if tick == SIMULATION_STEPS - 1:
+            outcome = f'{SIMULATION_STEPS} steg fullført · omstarter: ' + ' / '.join(str(c['restarts'] + int(c['crashed'])) for c in attempt)
         if live:
             frames.append(([c.copy() for c in attempt],
                            outcome or (last_event if event_ticks > 0 else ''), tick + 1, round(score, 1)))
@@ -197,8 +323,8 @@ def train(additional=GENERATIONS, fast=False, training_speed=0):
         best = network.weights[:]
     start = network.generation if resume else 0
     network.metadata.update(game='car', collision_penalty=COLLISION_PENALTY,
-                            objective='obstacle_penalties_only', simulation_steps=650,
-                            track='s_curve', observation_version='seven_rays_circular_radar_v1')
+                            objective='obstacle_penalties_only', simulation_steps=SIMULATION_STEPS,
+                            track=TRACK.name, traffic=TRAFFIC, radar_mode=RADAR_MODE, radar_scale=RADAR_SCALE, speed_factors=list(SPEED_FACTORS) if TRAFFIC == 'convoy' else [1.,1.], radar_occlusion='road_edges_v1', observation_version='seven_rays_spatial_radar_occluded_v3' if RADAR_MODE == 'spatial' else 'seven_rays_circular_radar_v1')
     network.metadata.pop('validation', None)
     with lock:
         status.update(fast=True, speed=training_speed or 1, generations=start + additional)
@@ -228,6 +354,24 @@ def train(additional=GENERATIONS, fast=False, training_speed=0):
 
 def animate():
     evaluate(best, live=True)
+
+
+def replay_live():
+    """Run saved weights directly, without waiting for a full recorded lap."""
+    global cars, reason
+    while True:
+        attempt, score = initial(), 0.
+        for tick in range(SIMULATION_STEPS):
+            started = time.monotonic()
+            restart_crashed(attempt)
+            reward, event = step(attempt, best)
+            score += reward
+            with lock:
+                cars = [c.copy() for c in attempt]
+                reason = event
+                status.update(step=tick+1, current_score=round(score, 1))
+                speed = status['speed']
+            time.sleep(max(0., 1/(30*speed) - (time.monotonic()-started)))
 
 
 def display_recordings():
@@ -273,12 +417,22 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == '/api/track':
-            data, kind = json.dumps(dict(path=PATH, width=2*HALF_WIDTH)).encode(), 'application/json'
+            data, kind = json.dumps(TRACK.payload()).encode(), 'application/json'
         elif self.path == '/api/state':
             with lock:
                 payload = dict(status, reason=reason, angles=ANGLES,
-                    cars=[dict(c, sensors=sensors(c, cars[1-i]), radar=radar(c, cars[1-i]), lap=round(100*max(0,c['travel'])/PERIMETER,1)) for i,c in enumerate(cars)])
+                    cars=[dict(c, sensors=sensors(c, cars), radar=radar(c, cars),
+                               pitch=TRACK.pitch(c['x'], c['y'], c.get('z', 0.), c['heading']),
+                               lap=round(100*max(0,c['travel'])/PERIMETER,1)) for i,c in enumerate(cars)])
             data, kind = json.dumps(payload).encode(), 'application/json'
+        elif self.path.startswith('/renderer/'):
+            name = self.path.removeprefix('/renderer/')
+            kinds = {'.js': 'text/javascript', '.wasm': 'application/wasm', '.html': 'text/html; charset=utf-8'}
+            asset = Path(__file__).with_name('renderer') / name
+            if Path(name).name != name or asset.suffix not in kinds or not asset.is_file():
+                self.send_error(404)
+                return
+            data, kind = asset.read_bytes(), kinds[asset.suffix]
         elif self.path == '/':
             data, kind = Path(__file__).with_name('demo.html').read_bytes(), 'text/html; charset=utf-8'
         else:
@@ -296,8 +450,13 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL
+    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE
     parser = argparse.ArgumentParser()
+    parser.add_argument('--radar-scale', type=float, default=3., help='Radar radius and range multiplier')
+    parser.add_argument('--radar-mode', choices=('legacy', 'spatial'), help='spatial: independent distance and lateral position; requires matching training')
+    parser.add_argument('--traffic', choices=('convoy', 'opposite'), default='convoy')
+    parser.add_argument('--track', choices=Track.NAMES, default='s_curve')
+    parser.add_argument('--steps', type=int, help='Simulation steps per attempt')
     parser.add_argument('--backend', choices=('python', 'rust'), default='python')
     parser.add_argument('--port', type=int, default=8766)
     parser.add_argument('--replay', action='store_true', help='Show saved model instead of live training')
@@ -307,15 +466,29 @@ def main():
     parser.add_argument('--model', type=Path, help='Separate checkpoint path for an experiment')
     parser.add_argument('--seed', type=int, help='Random seed for a new experiment')
     args = parser.parse_args()
+    if args.steps is not None and args.steps < 1:
+        parser.error('--steps must be positive')
+    if not math.isfinite(args.radar_scale) or args.radar_scale <= 0:
+        parser.error('--radar-scale must be positive and finite')
+    configure_radar(args.radar_scale)
+    configure_track(args.track, args.steps)
+    configure_traffic(args.traffic)
     try:
         ARCHITECTURE = [INPUTS, *args.hidden, 1]
         network = NeuralNetwork(ARCHITECTURE, seed=args.seed)
         WEIGHT_COUNT = network.weight_count
         best = network.weights[:]
-        MODEL = args.model or Path(__file__).parent / 'models' / ('model_radar_' + '_'.join(map(str, ARCHITECTURE)) + '.json')
+        prefix = 'model_radar_' if args.replay or (args.track == 's_curve' and args.traffic == 'opposite') else f'model_{args.track}_{args.traffic}_'
+        MODEL = args.model or Path(__file__).parent / 'models' / (prefix + '_'.join(map(str, ARCHITECTURE)) + '.json')
         status['architecture'] = ARCHITECTURE
-        if args.replay or (args.fast_generations and MODEL.exists()):
+        resuming = args.replay or bool(args.fast_generations and MODEL.exists())
+        if resuming:
             network = NeuralNetwork.load(MODEL, expected_architecture=ARCHITECTURE)
+        saved_mode = network.metadata.get('radar_mode', 'legacy')
+        RADAR_MODE = args.radar_mode or (saved_mode if resuming else ('spatial' if args.track == 'training' else 'legacy'))
+        if resuming and RADAR_MODE != saved_mode:
+            raise ValueError('Radar input differs from saved weights; use matching radar mode or train a new model')
+        status['radar_mode'] = RADAR_MODE
         network.set_backend(args.backend)
         status['backend'] = args.backend
     except (ValueError, KeyError, OSError, TypeError, RuntimeError) as error:
@@ -323,14 +496,14 @@ def main():
     if args.fast_generations < 0:
         parser.error('--fast-generations must be positive')
     server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
-    threading.Thread(target=display_recordings, daemon=True).start()
     if MODEL.exists() and args.replay:
         best = network.weights[:]
         status.update(generation=network.generation, generations=max(GENERATIONS, network.generation),
                       best_score=round(network.score, 1) if network.score is not None else None,
-                      training=False, phase='replay', validation=network.metadata.get('validation', []))
-        threading.Thread(target=animate, daemon=True).start()
+                      training=False, phase='replay', validation=network.metadata.get('validation', []) if network.metadata.get('track') == TRACK.name and network.metadata.get('traffic', 'opposite') == TRAFFIC else [])
+        threading.Thread(target=replay_live, daemon=True).start()
     else:
+        threading.Thread(target=display_recordings, daemon=True).start()
         threading.Thread(target=train, args=(args.fast_generations or GENERATIONS, bool(args.fast_generations), args.training_speed), daemon=True).start()
     print(f'AI-spill · Bilspill: http://127.0.0.1:{args.port}', flush=True)
     try:

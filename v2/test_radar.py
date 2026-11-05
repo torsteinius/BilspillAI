@@ -1,6 +1,7 @@
 import math
 import random
 import unittest
+from unittest.mock import patch
 import demo
 
 class RadarTests(unittest.TestCase):
@@ -23,7 +24,8 @@ class RadarTests(unittest.TestCase):
         a,b=self.pair();b['crashed']=True
         self.assertEqual(demo.radar(a,b)['proximity'],0)
 
-    def test_circle_boundary_and_rotation(self):
+    @patch('games.car.app.clearance', return_value=1000.)
+    def test_circle_boundary_and_rotation(self, _clearance):
         a,b=self.pair()
         b.update(x=490, y=226)  # 96 from bubble centre, touching car radius 7.
         self.assertTrue(demo.radar(a,b)['detected'])
