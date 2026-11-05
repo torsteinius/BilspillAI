@@ -1,6 +1,68 @@
 # Bilspill i AI-spill
 
-**Pågående eksperiment (planlegging):** [Begrenset synsfelt og hukommelse](../../docs/BIL_HUKOMMELSE.md). Steg 1 undersøker en mer avansert bane, begrensede observasjoner og eventuelt saktere biler å passere. Steg 2 undersøker rundetider og fordelen av å huske løypa; hypotesene for hukommelsesmekanismen kommer senere.
+**Pågående eksperiment:** [Begrenset synsfelt og hukommelse](../../docs/BIL_HUKOMMELSE.md). Den lange banen med overpass er implementert, og eksisterende vekter er prøvd uten videre trening. Fargeavlesing og hukommelse tilhører fortsatt steg 2.
+
+## Treningsbane med kjegler og større radar
+
+`--track training` velger en egen lukket bane på omtrent 5083 lengdeenheter, med gjentatte venstre-/høyresvinger og 11 kjegler plassert på ulike sider og midt i veien. Kjeglene er faste og reproduserbare. De vises i kartet, Rust/WebGPU og Canvas-reserven, oppdages av stråler og radar og gir kollisjonsstraff ved kontakt.
+
+```sh
+python3 -m games.car.app --track training --traffic convoy --radar-scale 3 --replay
+```
+
+Dette viser de eksisterende vektene; det starter ikke trening. Den nye standarden i appen er radar med **540 rekkevidde, radius 270 og sentrum 270 foran bilen**, tre ganger tidligere lineære mål. `--radar-scale 1` gjenoppretter det tidligere feltet. Avstandsstrålene har fortsatt rekkevidde 180. Større radarfelt endrer observasjonene selv med samme vekter.
+
+Radaren rapporterer alle oppdagede biler og kjegler i `targets`, sortert etter avstand. For hvert treff leveres avstand fra eget bilsenter til målets kant, plassering fremover og sideavstand i bilens koordinatsystem: negativt er venstre og positivt er høyre. Nettverket bruker fortsatt bare det nærmeste radartreffet. Radaren skjermes ikke av vegger.
+
+To inputformater finnes:
+
+- `legacy`: eksisterende nærhet og nærhetsvektet retning; brukes automatisk ved avspilling av gamle modeller.
+- `spatial`: nærhet `1-avstand/rekkevidde` og uavhengig sideplassering `sideavstand/radarradius`, begrenset til −1…1. Ingen treff gir 0,0. Fortsatt ni inputverdier totalt. Dette er standard for **ny trening** på treningsbanen.
+
+Inputformat og radarstørrelse lagres i nye modeller. Avspilling avviser et inputformat som ikke samsvarer med modellens metadata. `games.car.advance` bruker modellens lagrede format og radarstørrelse; gamle modeller uten metadata bruker tidligere radarstørrelse. Nytt radarformat må trenes med egne vekter, og gamle vekter gir ikke dokumentert mestring av kjegler eller forbikjøringer.
+
+## GPU-rendering
+
+3D-visningen bruker nå **Rust → WebAssembly → wgpu/WebGPU**. GPU-en tegner bane, biler, overpass og førermiljø direkte i nettleseren. JavaScript håndterer grensesnitt og overføring av biltilstand. Statusfeltet over bildet viser «Rust + WebGPU · GPU-rendering aktiv» når dette kjører. Canvas-visningen beholdes som reserve ved manglende støtte eller rendererfeil. Oversiktskart og videoopptak er fortsatt separate fra GPU-rendereren.
+
+De ferdigbygde filene følger repoet. [Byggeinstruksjoner, tester og tekniske begrensninger](../../rust/car_renderer/README.md).
+
+## Fem biler i samme retning
+
+Vanlig oppstart bruker nå `--traffic convoy`: fem biler med faste fartsfaktorer **80, 90, 100, 110 og 120 %** (2,4–3,6 lengdeenheter per steg). De starter jevnt fordelt rundt hele banen, med en femtedels runde mellom hver (omtrent 1432 lengdeenheter på åttetallsbanen). Hver bil har sin egen startplass også etter kollisjon. Alle bruker samme nettverk. Ingen forbikjøringsregel er programmert inn.
+
+```sh
+python3 -m games.car.app --track figure_eight --traffic convoy --replay
+```
+
+Avspilling kjører nå simuleringen direkte og starter uten å vente på opptak av en hel runde. Den endrer ikke vektene. Velg mellom alle fem biler i 3D-visningen; hver har egen farge og oppgitt fart. `--traffic opposite` gjenoppretter forsøket med to biler i motsatt retning.
+
+Alle sensorstråler finner nærmeste vegg eller aktive bil. De to radarinputene gjelder den nærmeste oppdagede bilen, slik at de lagrede vektene fortsatt passer til ni inputverdier. Kollisjon kontrolleres for alle bilpar; bare involverte biler starter på nytt, og alle andre biler tas med når startplassen kontrolleres. Trafikkoppsettet lagres i metadata ved trening. Et resultat med to biler kan ikke uten videre overføres til dette forsøket.
+
+## Genererte baner med høyde
+
+`Track` i `games/car/track.py` samler banegeometri, høyde, avstand til veikant, framdrift, startposisjoner og data til visningen. `Track.generate(name)` lager tre deterministiske baner:
+
+| Navn | Bane |
+| --- | --- |
+| `s_curve` | Dagens S-bane med samme geometri og bredde, z=0. Fortsatt standard. |
+| `oval` | Ovalen fra V1, representert med samme type samplede senterlinje som de andre banene. V1-arkivet er uendret. |
+| `training` | Treningsbane med vekslende svinger og 11 kjegler. |
+| `figure_eight` | Lang åttetallsbane med ekstra svinger begge veier, ramper og ett overpass. |
+
+Den nye banen er omtrent **7159 lengdeenheter**, mot **1690** på S-banen: **4,24 ganger så lang** med samme veibredde (76) og bilstørrelse. I krysset er nedre veibane på z=0 og øvre på z=40. Banen har nøyaktig samme senterlinjeform som før, skalert til ¼ i x, y og z. Veien er gjort fire ganger bredere før nedskaleringen, slik at endelig bredde fortsatt er 76. Minste samplede svingradius er omtrent 26 og største stigning omtrent 19 %. Høyden brukes til å velge riktig veidel for sensorer, kollisjoner og framdrift. Bilene følger veihøyden; dette er en enkel kinematisk modell med fast fart i xy-planet, uten tyngdekraft, fjæring eller hopp.
+
+Prøv de eksisterende vektene uten trening:
+
+```sh
+python3 -m games.car.app --track figure_eight --replay
+```
+
+Åpne <http://127.0.0.1:8766/>. Velg «Hele banen», «Følg valgt bil» eller «Overpasset» under kartutsnitt. Både førerplassen og oversiktskartet bruker den samme geometrien; førerplassen viser også veihøyden. 3D-kameraet følger veiens stigning og bilens høyde. Velg «Førerplass» eller «Bak bilen · 3D», og bruk «Fullskjerm 3D» for større bilde. Brodekket har også underside og sidekanter, slik at det er synlig fra undergangen. Høyde og stigningsprosent vises ved kameraet. Oversiktskartets bil- og sensormarkører tegnes over banen for lesbarhet, også når bilen er under broen.
+
+Den lange banen får som standard 3580 steg per forsøk, nok til omtrent halvannen runde ved dagens fart. `--steps 650` gir en kortere prøve. Nettverket har fortsatt ni inputverdier; fargeavlesing er ikke lagt til. `--replay` bruker den gamle standardmodellfilen hvis `--model` ikke er oppgitt, og endrer ikke vektene. Ny trening på andre baner får et eget standardmodellnavn. `games.car.advance` bruker banens navn og antall steg fra modellens metadata, med mulighet for å overstyre via `--track` og `--steps`.
+
+Egne baner kan opprettes med `Track([(x, y, z), ...], half_width=38, name='...')`. Siste punkt kobles automatisk til det første. Baneklassen avviser ugyldige koordinater og segmenter uten horisontal lengde; den gjør ikke full geometrisk validering av vilkårlige egendefinerte baner.
 
 Bilspillet er en simulering sett ovenfra i 2D. En bane bygges automatisk bit for bit, og en bil uten innebygd kunnskap om kjøring skal lære å følge banen ved hjelp av et nevralt nettverk. Bilen får fire avstandsmålinger til banekanten. Å komme nær kanten gir straff, og å treffe kanten gir en betydelig strengere straff.
 
@@ -127,8 +189,20 @@ Trykk «Ta opp banevideo» over banen og deretter «Stopp opptak». Opptaket kan
 
 ### Førerplass i 3D
 
-V2 har en enkel 3D-perspektivvisning fra førersetet over oversiktskartet. Velg grønn eller blå bil med «Følg». Banen og den møtende bilen projiseres fra samme geometri og posisjoner som i Python-simuleringen. Frontrute, dashbord og ratt gir følelsen av å sitte inne i bilen. Rattutslaget illustrerer endring i kjøreretning, ikke nettverkets eksakte styreutslag. Bruk 1× for rolig avspilling. Visningen bruker Canvas uten ekstra biblioteker. Videoopptaket gjelder fortsatt oversiktskartet.
+3D-visningen over oversiktskartet kan følge alle fem bilene, fra førerplassen eller bak bilen. Rust/WebGPU bruker samme geometri og bilposisjoner som Python-simuleringen. Førermiljøet har en enkel ramme, dashbord og statisk ratt; høyde og stigning vises over bildet. Canvas-reservevisningen har fortsatt et illustrert rattutslag basert på endring i kjøreretning. Bruk 1× for rolig avspilling. Videoopptaket gjelder fortsatt oversiktskartet. Klippene nedenfor viser den tidligere Canvas-versjonen.
 
 [![3D-førerplass med banekart under trening](../../docs/media/bilspill-3d-preview.gif)](../../docs/media/bilspill-3d-training.mp4)
 
 [Se 3D-videoen (ca. 28 sekunder)](../../docs/media/bilspill-3d-training.mp4). Klippet viser faktiske treningsforsøk med et lite oversiktskart som følger begge bilene.
+
+## Videoer fra den aktuelle treningsbanen
+
+Opptak 5. november 2026, første generasjon: [oversiktskart, 31 sekunder](../../docs/media/training-cones-overview.mp4) og [Rust/WebGPU i 3D, 60 sekunder](../../docs/media/training-cones-3d.mp4). Oversiktsklippet viser kandidat 7 og 3D-klippet kandidat 13 ved 1× avspilling, inkludert feil og omstarter. Dette er treningskandidater, ikke en evaluering av en ferdig modell.
+
+Treningsvideoer skal som standard vise hele banen ovenfra, slik at alle fem bilene er synlige samtidig. Kartet får plass mellom tekstfeltene uten at disse dekker biler. «3D-kamera» finnes som et valgfritt supplement. Generasjon, kandidat, steg og avspillingshastighet merkes i bildet. Opptaket følger valgt kameramodus ved 3D-opptak.
+
+
+Radaren blokkeres nå av veikantene (`road_edges_v1`). Gamle radarvekter er
+beholdt, men den nye 1000-generasjoners kjøringen starter fra tilfeldige vekter
+uten visning. Se [eksperimentstatus](../../docs/BIL_HUKOMMELSE.md#ny-radar-og-ny-trening-1000-generasjoner-uten-visning).
+Videoene over er tatt før siktsperringen ble lagt til.

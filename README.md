@@ -8,16 +8,26 @@ Et felles prosjekt for spill som lærer med nevrale nettverk. Bilspillet og laby
 
 **Labyrintspillet undersøker læring med historikk.** Målet er å bruke informasjon om tidligere besøkte steder og valg til å lære rutevalg, utforske labyrinten og finne veien ut. Prosjektet har prøvd både nevrale hukommelsesmekanismer og deterministisk lagret historikk. I det nåværende forsøket får beslutningsnettet dagens sensorverdier sammen med lagrede målinger fra tidligere registrerte hjørner og forgreninger. Dette er et forsøk på å lære å bruke historikken, ikke en påstand om at nettet allerede har lært pålitelig ruteplanlegging.
 
+## Nå: trening på svinger, kjegler og trafikk
+
+Vi trener på en egen bane med vekslende svinger, 11 kjegler og fem biler som kjører samme vei med 80–120 % fart. Radaren har rekkevidde 540 og gir separat nærhet og sideplassering til modellen. 3D-visningen bruker Rust/WebGPU. [Status, oppsett og begrensninger](docs/BIL_HUKOMMELSE.md#status-ved-dokumentasjons--og-videooppdatering).
+
+| Oversiktskart · 31 sekunder | Rust/WebGPU i 3D · 60 sekunder |
+| --- | --- |
+| [![Treningsbanen med biler, kjegler og radar](docs/media/training-cones-overview-preview.gif)](docs/media/training-cones-overview.mp4) | [![3D-kjøring under tidlig trening](docs/media/training-cones-3d-preview.gif)](docs/media/training-cones-3d.mp4) |
+
+Opptak fra **første generasjon**, kandidat 7 og 13, i **1× avspilling**. De viser faktiske forsøk med feil og omstarter, ikke en ferdigtrent modell. Begge klipp er tatt 5. november 2026. Klikk på forhåndsvisningene for MP4-videoene.
+
 ## Bilspillet i aksjon
 
-Et [pågående eksperiment med begrenset synsfelt og hukommelse](docs/BIL_HUKOMMELSE.md) er nå i planleggingsfasen: først en mer avansert bane og eventuelt forbikjøring av saktere biler med dagens treningsmetode, deretter rundetider og mulig nytte av å huske kommende svinger.
+Et [pågående eksperiment med begrenset synsfelt og hukommelse](docs/BIL_HUKOMMELSE.md) har nå en lang åttetallsbane med overpass og en første evaluering med eksisterende vekter. Prøv den med `python3 -m games.car.app --track figure_eight --replay`. Fargeavlesing, rundetider og hukommelse følger i steg 2.
 
 | Oversiktskart med biler og sensorer | 3D fra førerplassen med banekart |
 | --- | --- |
 | [![Bilspillets trening sett ovenfra](docs/media/bilspill-preview.gif)](docs/media/bilspill-training.mp4) | [![3D-førerplass under trening](docs/media/bilspill-3d-preview.gif)](docs/media/bilspill-3d-training.mp4) |
 | [Se hele videoen · 1 minutt og 40 sekunder](docs/media/bilspill-training.mp4) | [Se 3D-videoen · ca. 28 sekunder](docs/media/bilspill-3d-training.mp4) |
 
-Begge videoene viser faktiske treningsforsøk. 3D-visningen bruker samme bane og bilposisjoner som oversiktskartet. Den er laget med en enkel perspektivrenderer i JavaScript og Canvas, mens Python beregner fysikk og læring. Se [kjøreinstruksjoner og beskrivelse av 3D-visningen](games/car/README.md#førerplass-i-3d).
+Begge videoene viser faktiske treningsforsøk. 3D-visningen bruker samme bane og bilposisjoner som oversiktskartet. Klippene viser den tidligere perspektivrendereren i JavaScript og Canvas. Dagens 3D-visning bruker Rust/WebAssembly og WebGPU, mens Python fortsatt beregner fysikk og læring. Se [kjøreinstruksjoner og beskrivelse av 3D-visningen](games/car/README.md#førerplass-i-3d).
 
 ## Labyrintforsøk i aksjon
 
@@ -110,3 +120,8 @@ python3 -m unittest discover -s v2 -p 'test_*.py' -v
 ```
 
 Detaljer og tidligere designnotater for bilspillet finnes i [games/car/README.md](games/car/README.md). Den historiske V1-demoen kjøres med `python3 versions/v1/demo.py` på port 8765.
+
+
+Nyeste bilforsøk: radaren blokkeres av veikantene, og 1000 generasjoner er
+startet fra nye vekter uten visning. Videoene fra treningsbanen er fra før
+denne radarendringen. Se [status og kjørekommando](docs/BIL_HUKOMMELSE.md#ny-radar-og-ny-trening-1000-generasjoner-uten-visning).
