@@ -53,8 +53,16 @@ class Track:
                     a = (-math.pi/2 if side == 0 else math.pi/2)+math.pi*i/160
                     points.append(((1800 if side == 0 else 0)+200*math.cos(a), 200*math.sin(a), 0.))
             track = cls(points, name=name)
-            for fraction, lateral in ((.04,-15),(.09,12),(.17,0),(.23,-18),(.34,16),
-                                      (.47,0),(.55,18),(.63,-12),(.71,0),(.84,-18),(.94,14)):
+            original = ((.04,-15),(.09,12),(.17,0),(.23,-18),(.34,16),
+                        (.47,0),(.55,18),(.63,-12),(.71,0),(.84,-18),(.94,14))
+            placements = list(original)
+            # Keep the original 11 and add two in each intervening road interval.
+            for i,(fraction, _) in enumerate(original):
+                following = original[(i+1)%len(original)][0]
+                gap = (following-fraction)%1.
+                for j in (1,2):
+                    placements.append(((fraction+gap*j/3)%1., (-18.,18.)[(i+j)%2]))
+            for fraction, lateral in sorted(placements):
                 pose = track.pose(track.perimeter*fraction, lateral)
                 track.cones.append(dict(x=pose['x'],y=pose['y'],z=pose['z'],radius=6.,kind='cone',crashed=False))
             return track

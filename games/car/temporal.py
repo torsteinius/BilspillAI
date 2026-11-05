@@ -20,8 +20,10 @@ CREDIT = ((0, .10), (3, .30), (6, .30), (12, .15), (24, .15))
 HISTORY = 100
 
 
-def forward_gradient(network, inputs):
+def forward_gradient(network, inputs, output_index=0):
     """Tanh hidden layers, linear final output; gradient of that output."""
+    if network.backend == "rust":
+        return network._native.gradient(inputs, network.weights, output_index)
     activations = [inputs]
     offsets = []
     offset = 0
@@ -34,7 +36,7 @@ def forward_gradient(network, inputs):
         activations.append(output if layer == len(network.architecture)-2 else [math.tanh(v) for v in output])
         offset += width*stride
     gradient = [0.]*network.weight_count
-    delta = [1.]
+    delta = [float(i == output_index) for i in range(network.architecture[-1])]
     for layer in reversed(range(len(offsets))):
         values = activations[layer]
         stride = len(values)+1
@@ -46,19 +48,38 @@ def forward_gradient(network, inputs):
         if layer:
             delta = [(1-v*v)*sum(network.weights[offset+n*stride+i]*d for n,d in enumerate(delta))
                      for i,v in enumerate(values)]
-    return activations[-1][0], gradient
+    return activations[-1][output_index], gradient
+
+
+def forward_latent(network, inputs):
+    """Unbounded action means without computing discarded gradients."""
+    if network.backend == 'rust':
+        return network._native.latent(inputs, network.weights)
+    values = list(inputs)
+    offset = 0
+    for layer, width in enumerate(network.architecture[1:]):
+        stride = len(values)+1
+        values = [sum(network.weights[offset+n*stride+i]*v for i,v in enumerate(values))
+                  + network.weights[offset+n*stride+stride-1] for n in range(width)]
+        if layer < len(network.architecture)-2:
+            values = [math.tanh(v) for v in values]
+        offset += width*stride
+    return values
 
 
 @dataclass
 class Experience:
     tick: int
     inputs: list
-    action: float
+    action: float | tuple
     target_id: str | None
     policy_gradient: list
     baseline: float
     baseline_gradient: list
     reward: float = 0.
+    committed: bool = False
+    latent: float | tuple = 0.
+    behavior_mean: float | tuple = 0.
 
 
 def distribute_collision(history, target_id=None, penalty=50., mode='delayed'):

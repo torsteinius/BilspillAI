@@ -397,3 +397,91 @@ og videreføringen kjører generasjon 10–30 med 33 kjegler og 60° radar.
 Startvektene er kontrollert identiske med vinneren fra generasjon 9; ingen
 vekter ble nullstilt. Den nye videoen i README viser generasjon-8-vekter
 på det nye oppsettet, før videreføringen.
+
+
+### Fire radarobjekter — utvid nettet, behold vektene
+
+Ny `cone4`-modus gir fire objekter sortert etter avstand. Hver plass gir
+nærhet, sideposisjon, fart og tilnærmingsfart; manglende objekter gir nuller.
+Arkitekturen utvides fra 11 → 8 → 8 → 1 til 23 → 8 → 8 → 1. De gamle
+inputene og vektene beholdes, mens de tolv nye inputene får nullvekter.
+Utvidelsen er testet for identisk styring før videre trening. Overgangen
+logges i `.ai-service/car-hybrid-radar4-transition.json` ved en generasjonsgrense.
+Biler som ikke har krasjet fortsetter uavhengig av andres kollisjoner, fram
+til egen kollisjon eller steggrensen.
+
+
+### Sammenhengende kjøring og historikk mellom oppdateringer
+
+Prosjekteieren presiserte at biler uten krasj skal fortsette der de slapp.
+Hybridtreningen beholder nå posisjon, retning, fart og de siste 50 erfaringene
+mellom treningsdeler og generasjoner i samme prosess. Belønning læres én gang;
+en senere kollisjons nye straff kan nå eldre handlinger med ny gradient og
+begrenset importance-vekt. Krasj tømmer køen og beholder tidligere gjenstartregel.
+Standardiserte teststarter brukes fortsatt kun til evaluering. Detaljer og
+begrensninger står i utviklingsloggens oppføring 14. 70 biltester og en kort
+togenerasjoners kontrollkjøring er gjennomført, men læringseffekt er ikke målt.
+
+
+### Vurderingsgrense etter fem sammenhengende generasjoner
+
+På prosjekteierens ønske begrenses dette forsøket nå til generasjon 16–20.
+Stoppkontrollen avslutter etter evaluering og lagring av generasjon 20.
+Deretter vurderes eventuell ny trening fra tilfeldige vekter; ingen slik
+omstart skjer automatisk. Tidligere mål 30 gjelder dermed ikke lenger denne
+hybridkjøringen. Se `stop-control.json` i kjøringens mappe for faktisk status.
+
+
+### Nytt forsøk fra tilfeldige vekter: styring og brems
+
+Etter prosjekteierens beslutning startes 23 → 8 → 8 → 2 fra tilfeldige vekter.
+Brems i [0,1] reduserer normalfarten med 0–50 %, og fremdriftspremien følger
+faktisk distanse. Historikken inneholder begge handlinger. Fire radarobjekter
+gir nå relativ fart langs kjøreretningen og tilnærmingsfart, begge målt mot
+bilens egen faktiske hastighet. Den gamle absolutte fartsinputen inngår ikke
+i ny modus `cone4relative`. Se utviklingsloggens oppføring 16 for rekkefølge,
+kontroller og den korte første oppstarten som ble erstattet.
+
+```bash
+.venv-training/bin/python -u -m games.car.hybrid --fresh-brake \
+  --output .ai-service/car-brake-relative-fresh-5generations \
+  --generations 5 --rounds 100 --test-rounds 20 --steps 1000 --seed 20261110
+```
+
+Gamle vekter beholdes, men brukes ikke som utgangspunkt. 77 biltester og en
+togenerasjoners teknisk kontroll er gjennomført. Læringsresultater kommer
+fra den nye kjøringens `metrics.jsonl`; oppstart er ikke dokumentert forbedring.
+
+
+### Fire skjulte lag: nytt 100-generasjoners forsøk
+
+Etter prosjekteierens ønske utvides nettet til 23 → 8 → 8 → 8 → 8 → 2.
+Alle vekter initialiseres på nytt; tidligere modeller beholdes separat.
+Budsjettet ble økt fra planlagte 20 til 100 under oppstart. De øvrige
+treningsreglene beholdes. 78 tester og en kort ende-til-ende-kjøring passerer.
+
+```bash
+.venv-training/bin/python -u -m games.car.hybrid --fresh-brake \
+  --hidden 8 8 8 8 --output .ai-service/car-brake-deep-100generations \
+  --generations 100 --rounds 100 --test-rounds 20 --steps 1000 --seed 20261110
+```
+
+Se utviklingsloggens oppføring 18 for beslutningshistorikk og begrensninger.
+
+
+## 5. november 2026 — Videreføring med 120° radar
+
+Etter prosjekteierens observasjon av manglende sidesyn utvides radaren fra
+60° til 120°. Vektene fra generasjon 100 beholdes; 300 nye generasjoner
+(101–400) er startet uten rendering. Se utviklingsloggens oppføring 22 for
+metode, avgrensninger og [løpende målinger](experiments/wide-300-generation-progress.md).
+
+
+## 5. november 2026 — Flere beregninger i Rust
+
+Etter prosjekteierens spørsmål om flaskehalsen er gradienter, radarberegning
+og kontinuerlige kollisjonsavstander flyttet til Rust. Målingen viser omtrent
+3,6× raskere trening og 3,5× raskere testing med bevart numerisk resultat
+innenfor flyttallstoleranse. Se utviklingsloggens oppføring 23 og
+[målingene](experiments/2026-11-05-rust-training-kernels.json).
+Videre trening beholder vektene og målet om generasjon 400.

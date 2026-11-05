@@ -1,0 +1,110 @@
+{
+  "settings": {
+    "radar_speed_reference": "ego_longitudinal_and_radial_relative_velocity",
+    "fresh_initialization": true,
+    "action_outputs": 2,
+    "brake_max_reduction": 0.5,
+    "training_continuation": "survivors_keep_pose_and_history_v2",
+    "delayed_credit": "current_policy_gradient_with_importance_ratio_capped_at_2",
+    "radar_targets": 4,
+    "network_inputs": 23,
+    "radar_angle_degrees": 59.99999999999999,
+    "cone_count": 33,
+    "generation_offset": 0,
+    "test_rounds": 20,
+    "test_offsets": [
+      -1.3338813393356173,
+      11.245768416143704,
+      -3.710272880217813,
+      -1.0014221702956583,
+      7.228539464064262,
+      9.152338489785173,
+      -9.347110000573345,
+      6.079324377863678,
+      -10.971379374088855,
+      -0.5364791302789662,
+      -8.604055906078493,
+      -5.098853702130423,
+      -9.191704866860254,
+      2.701391507181249,
+      1.3274429790268005,
+      -10.185367470891602,
+      -7.219597268039061,
+      -10.057885220329261,
+      -0.7031137920770831,
+      3.2542311911845694
+    ],
+    "generations": 5,
+    "rounds": 100,
+    "steps": 1000,
+    "seed": 20261110,
+    "learners": 5,
+    "history": 50,
+    "credit": "uniform50",
+    "safe_reward": 0.02,
+    "progress_reward": 0.05,
+    "collision_penalty": 50.0,
+    "exploration_sigma": 0.15,
+    "learning_rate": 0.0003,
+    "mutation_sigma": 0.03,
+    "initial_generation": 0,
+    "protected_parent": true,
+    "selection": "20 test scenarios by default, each in all five slots/speeds against fixed initial-model opponents; no learning or exploration",
+    "holdout": "Offsets -8 and +8, reported only, not used for selection"
+  },
+  "results": [
+    {
+      "generation": 0,
+      "winner": "initial",
+      "score": -3473.052312978192,
+      "collisions": 100,
+      "distance": 26346.15374043616,
+      "attempts": 100
+    },
+    {
+      "generation": 1,
+      "winner": "learner-3",
+      "score": -3428.06122694629,
+      "collisions": 100,
+      "distance": 27048.375461074193,
+      "attempts": 100
+    },
+    {
+      "generation": 2,
+      "winner": "learner-2",
+      "score": -3068.6100825105455,
+      "collisions": 100,
+      "distance": 33039.39834978907,
+      "attempts": 100
+    },
+    {
+      "generation": 3,
+      "winner": "learner-3",
+      "score": -2669.3523077516493,
+      "collisions": 100,
+      "distance": 39956.953844966985,
+      "attempts": 100
+    },
+    {
+      "generation": 4,
+      "winner": "learner-1",
+      "score": -2629.1498523814116,
+      "collisions": 100,
+      "distance": 40576.60295237174,
+      "attempts": 100
+    },
+    {
+      "generation": 5,
+      "winner": "learner-0",
+      "score": -2595.0976546559023,
+      "collisions": 100,
+      "distance": 41176.04690688192,
+      "attempts": 100
+    }
+  ],
+  "completion": {
+    "generations": 5,
+    "last_generation": 5,
+    "elapsed_seconds": 373.94985933275893
+  }
+}

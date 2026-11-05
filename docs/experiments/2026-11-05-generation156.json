@@ -1,0 +1,5307 @@
+{
+  "generation": 156,
+  "winner": "learner-1",
+  "evaluations": [
+    {
+      "score": -628.7911156189584,
+      "collisions": 100,
+      "distance": 76718.17768762082,
+      "test_rounds": 20,
+      "attempts": 100,
+      "runs": [
+        {
+          "offset": -1.3338813393356173,
+          "score": -26.56910388966989,
+          "collisions": 5,
+          "distance": 3921.417922206601,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1069735054435625,
+              "distance": 734.6605298911277,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.10362201764714,
+              "distance": 430.7275596470572,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.980123603975514,
+              "distance": 1458.0024720795109,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.82288307168946,
+              "distance": 411.1423385662106,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5157488988652403,
+              "distance": 886.8850220226946,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 11.245768416143704,
+          "score": -49.36037243763288,
+          "collisions": 5,
+          "distance": 3516.39255124734,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.084312915768599,
+              "distance": 734.7137416846272,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.117416778063053,
+              "distance": 430.8516644387387,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.76963073361735,
+              "distance": 1453.392614672347,
+              "steps": 506,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.50774211122451,
+              "distance": 9.045157775509779,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4205313661940693,
+              "distance": 888.3893726761175,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -3.710272880217813,
+          "score": -26.633321316799446,
+          "collisions": 5,
+          "distance": 3920.5335736640104,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.106939187939979,
+              "distance": 734.6612162411998,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.104128762238574,
+              "distance": 430.7174247552284,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.8731531477615,
+              "distance": 1456.263062955231,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.777125361653276,
+              "distance": 412.05749276693405,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5182811527291165,
+              "distance": 886.8343769454173,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -1.0014221702956583,
+          "score": -26.591218006405484,
+          "collisions": 5,
+          "distance": 3920.9756398718896,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.10944316720569,
+              "distance": 734.6111366558853,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.101610199598255,
+              "distance": 430.76779600803457,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.96116273653999,
+              "distance": 1457.623254730801,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.825925851511037,
+              "distance": 411.08148296977924,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5154015246304908,
+              "distance": 886.8919695073896,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 7.228539464064262,
+          "score": -77.83999334298434,
+          "collisions": 5,
+          "distance": 3028.4001331403133,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -35.785416408973425,
+              "distance": 242.29167182053152,
+              "steps": 106,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.11380869995378,
+              "distance": 430.92382600092424,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.78168024706059,
+              "distance": 1454.033604941213,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.3351728672477,
+              "distance": 12.09654265504605,
+              "steps": 4,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.38727561387003107,
+              "distance": 889.0544877225984,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 9.152338489785173,
+          "score": -49.07367127999303,
+          "collisions": 5,
+          "distance": 3521.7265744001406,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.17842915687136,
+              "distance": 733.2314168625721,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.010908448202564,
+              "distance": 432.58183103594865,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 33.014791996213134,
+              "distance": 1457.8958399242651,
+              "steps": 507,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.50701747253273,
+              "distance": 9.059650549345406,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.39210819859950874,
+              "distance": 888.9578360280093,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.347110000573345,
+          "score": -26.449319465207616,
+          "collisions": 5,
+          "distance": 3923.813610695847,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.083765985687656,
+              "distance": 735.1246802862452,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.99566987860449,
+              "distance": 432.48660242790993,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.964791545313744,
+              "distance": 1458.0958309062767,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.914917720149926,
+              "distance": 409.7016455970015,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.41975742607928623,
+              "distance": 888.4048514784135,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 6.079324377863678,
+          "score": -26.844320200488298,
+          "collisions": 5,
+          "distance": 3916.313595990234,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.249237959285587,
+              "distance": 732.215240814287,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.135695410140958,
+              "distance": 430.48609179718096,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.78003828720905,
+              "distance": 1454.000765744183,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.722605516445594,
+              "distance": 412.74788967108816,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5168196018252118,
+              "distance": 886.8636079634948,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.971379374088855,
+          "score": -26.59568759322875,
+          "collisions": 5,
+          "distance": 3921.286248135423,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.08254743671413,
+              "distance": 735.1490512657165,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.02090070898269,
+              "distance": 431.9819858203459,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.84259898557957,
+              "distance": 1456.0519797115912,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.89794853853156,
+              "distance": 410.0410292293691,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.43688989457994154,
+              "distance": 888.0622021084005,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.5364791302789662,
+          "score": -26.653577210871106,
+          "collisions": 5,
+          "distance": 3919.7284557825774,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.172439395489803,
+              "distance": 733.3512120902028,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.09720295618305,
+              "distance": 430.85594087633854,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.96284468836819,
+              "distance": 1457.6568937673665,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.831702269625882,
+              "distance": 410.9659546074822,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5150772779405628,
+              "distance": 886.8984544411874,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -8.604055906078493,
+          "score": -26.604539715086734,
+          "collisions": 5,
+          "distance": 3921.109205698264,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.268640377919603,
+              "distance": 731.8271924416067,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.990039050686917,
+              "distance": 432.59921898626135,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.956521317937344,
+              "distance": 1457.9304263587478,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.909591357322835,
+              "distance": 409.80817285354306,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.3927902470947231,
+              "distance": 888.9441950581049,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -5.098853702130423,
+          "score": -26.738059001226834,
+          "collisions": 5,
+          "distance": 3918.838819975464,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.09736439148557,
+              "distance": 734.8527121702878,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.11236015237336,
+              "distance": 430.55279695253284,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.73575952957762,
+              "distance": 1453.915190591555,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.743117097068122,
+              "distance": 412.7376580586374,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.520976889877403,
+              "distance": 886.780462202451,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.191704866860254,
+          "score": -26.441881697841367,
+          "collisions": 5,
+          "distance": 3923.9623660431703,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.083927295506562,
+              "distance": 735.1214540898682,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.993996303130757,
+              "distance": 432.5200739373845,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.96527531958833,
+              "distance": 1458.105506391767,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.90817108603723,
+              "distance": 409.83657827925526,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4210623327551488,
+              "distance": 888.3787533448954,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 2.701391507181249,
+          "score": -26.689654904291498,
+          "collisions": 5,
+          "distance": 3919.4069019141684,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.130032257742961,
+              "distance": 734.5993548451397,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.052286296761846,
+              "distance": 431.75427406476274,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.886172679187695,
+              "distance": 1456.1234535837543,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.87746229598737,
+              "distance": 410.0507540802523,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5160467329870144,
+              "distance": 886.8790653402593,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 1.3274429790268005,
+          "score": -26.812118642020152,
+          "collisions": 5,
+          "distance": 3917.357627159596,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.112473004416813,
+              "distance": 734.9505399116624,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.090988315134545,
+              "distance": 430.9802336973089,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.76128086904447,
+              "distance": 1454.0256173808907,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.856422154590568,
+              "distance": 410.47155690818863,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5135160369226952,
+              "distance": 886.9296792615455,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.185367470891602,
+          "score": -26.46933258180234,
+          "collisions": 5,
+          "distance": 3923.413348363955,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.083239640698729,
+              "distance": 735.1352071860256,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.00985889669226,
+              "distance": 432.20282206615457,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.956482120041926,
+              "distance": 1457.9296424008412,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.90516694196761,
+              "distance": 409.89666116064745,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4275492224856663,
+              "distance": 888.249015550286,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -7.219597268039061,
+          "score": -26.55450363072555,
+          "collisions": 5,
+          "distance": 3922.10992738549,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.097000785145163,
+              "distance": 734.8599842970957,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.121289660810017,
+              "distance": 430.3742067837993,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.92636072614897,
+              "distance": 1457.3272145229826,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.740025989704517,
+              "distance": 412.79948020590973,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.522547921214823,
+              "distance": 886.7490415757029,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.057885220329261,
+          "score": -26.513743188834734,
+          "collisions": 5,
+          "distance": 3922.5251362233043,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.083274500698323,
+              "distance": 735.1345099860328,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.07010925106529,
+              "distance": 430.9978149786939,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.96599199108775,
+              "distance": 1458.1198398217562,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.906114689994535,
+              "distance": 409.87770620010906,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.42023673816433416,
+              "distance": 888.3952652367125,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.7031137920770831,
+          "score": -26.66023271984198,
+          "collisions": 5,
+          "distance": 3919.595345603161,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.171995787722487,
+              "distance": 733.3600842455489,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.10838729907239,
+              "distance": 430.632254018552,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.964201249515085,
+              "distance": 1457.6840249903053,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.828778883363178,
+              "distance": 411.0244223327363,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5152719991990082,
+              "distance": 886.8945600160187,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 3.2542311911845694,
+          "score": -26.696464794006445,
+          "collisions": 5,
+          "distance": 3919.27070411987,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.136456365288474,
+              "distance": 734.470872694229,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.04198630395014,
+              "distance": 431.96027392099677,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.88606784283604,
+              "distance": 1456.1213568567223,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.887391475605746,
+              "distance": 409.85217048788536,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5166984919981275,
+              "distance": 886.8660301600366,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "score": -608.1715089711945,
+      "collisions": 100,
+      "distance": 77063.7698205761,
+      "test_rounds": 20,
+      "attempts": 100,
+      "runs": [
+        {
+          "offset": -1.3338813393356173,
+          "score": -27.059079385394664,
+          "collisions": 5,
+          "distance": 3912.418412292106,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.218181940920211,
+              "distance": 732.4363611815947,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.06324983533685,
+              "distance": 431.5350032932629,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.604573080623226,
+              "distance": 1451.2914616124658,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.89152512143164,
+              "distance": 409.7694975713671,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4906955683291869,
+              "distance": 887.3860886334155,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 11.245768416143704,
+          "score": -49.53808619171899,
+          "collisions": 5,
+          "distance": 3513.2382761656195,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.014660332686766,
+              "distance": 735.7067933462631,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.098993939934726,
+              "distance": 431.2201212013051,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.62012327961051,
+              "distance": 1450.8024655922127,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.509609108148595,
+              "distance": 9.007817837028142,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5349460905594157,
+              "distance": 886.5010781888104,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -3.710272880217813,
+          "score": -26.96540843500285,
+          "collisions": 5,
+          "distance": 3914.2918312999404,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.129691145959697,
+              "distance": 734.2061770808045,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.062189837095104,
+              "distance": 431.5562032580974,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.56647508125357,
+              "distance": 1450.5295016250725,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.85307460029376,
+              "distance": 410.53850799412476,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48692793290786085,
+              "distance": 887.4614413418412,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -1.0014221702956583,
+          "score": -27.079615830762418,
+          "collisions": 5,
+          "distance": 3912.0076833847506,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.212758039713293,
+              "distance": 732.5448392057328,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.076965432972933,
+              "distance": 431.26069134054114,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.59454188943404,
+              "distance": 1451.0908377886826,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.894022689596273,
+              "distance": 409.71954620807446,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4904115579139585,
+              "distance": 887.3917688417196,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 7.228539464064262,
+          "score": -49.50801071047765,
+          "collisions": 5,
+          "distance": 3514.6397857904467,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.157017859255646,
+              "distance": 733.6596428148864,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.0920111355553,
+              "distance": 431.35977728889384,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.566990504245254,
+              "distance": 1450.1398100849065,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.33763997676027,
+              "distance": 12.047200464794514,
+              "steps": 4,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48833224315168167,
+              "distance": 887.4333551369655,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 9.152338489785173,
+          "score": -49.836389974120905,
+          "collisions": 5,
+          "distance": 3508.4722005175813,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.217605280221207,
+              "distance": 732.4478943955746,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.216886437031217,
+              "distance": 429.26227125937567,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.60431367517522,
+              "distance": 1450.4862735035053,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.50889110192964,
+              "distance": 9.022177961407124,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4973208301140559,
+              "distance": 887.2535833977186,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.347110000573345,
+          "score": -27.06943251662109,
+          "collisions": 5,
+          "distance": 3912.611349667579,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.174253257397503,
+              "distance": 733.3149348520492,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.109055729572265,
+              "distance": 430.61888540855443,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.57468368695564,
+              "distance": 1451.0936737391153,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.81237126498929,
+              "distance": 411.35257470021406,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5484359516176696,
+              "distance": 886.231280967646,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 6.079324377863678,
+          "score": -26.882528834088177,
+          "collisions": 5,
+          "distance": 3915.549423318237,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.072146912175761,
+              "distance": 735.3570617564842,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.115376163886495,
+              "distance": 430.8924767222702,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.600065201864226,
+              "distance": 1450.8013040372866,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.8081430269824,
+              "distance": 411.03713946035214,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48692793290774716,
+              "distance": 887.461441341844,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.971379374088855,
+          "score": -26.995429320344055,
+          "collisions": 5,
+          "distance": 3913.6914135931183,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.176429821728036,
+              "distance": 733.2714035654385,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.14813385181498,
+              "distance": 429.83732296370044,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.544943609307566,
+              "distance": 1450.4988721861523,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.803300451633916,
+              "distance": 411.53399096732164,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4125088044746903,
+              "distance": 888.5498239105054,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.5364791302789662,
+          "score": -27.02352485087763,
+          "collisions": 5,
+          "distance": 3913.1295029824464,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.206956912364397,
+              "distance": 732.6608617527108,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.196486890277583,
+              "distance": 429.27026219444815,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.58151790600357,
+              "distance": 1450.8303581200726,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.710738810075323,
+              "distance": 412.9852237984933,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.49086014416389645,
+              "distance": 887.3827971167216,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -8.604055906078493,
+          "score": -27.08356864187045,
+          "collisions": 5,
+          "distance": 3912.3286271625902,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.177463688214289,
+              "distance": 733.2507262357135,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.10124080715331,
+              "distance": 430.7751838569334,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.5749953657039,
+              "distance": 1451.0999073140792,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.838770417659646,
+              "distance": 410.8245916468072,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5410890945471039,
+              "distance": 886.3782181090569,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -5.098853702130423,
+          "score": -27.040007263287485,
+          "collisions": 5,
+          "distance": 3913.1998547342487,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.126890850376192,
+              "distance": 734.2621829924751,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.074323242128685,
+              "distance": 431.31353515742603,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.50637005562025,
+              "distance": 1449.727401112406,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.858235293495063,
+              "distance": 410.43529413009855,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4869279329077969,
+              "distance": 887.461441341843,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.191704866860254,
+          "score": -27.054623257569673,
+          "collisions": 5,
+          "distance": 3912.9075348486062,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.174715317700517,
+              "distance": 733.305693645988,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.10777695826804,
+              "distance": 430.6444608346392,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.588343735697364,
+              "distance": 1451.366874713949,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.813586603821598,
+              "distance": 411.3282679235681,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5468881134768822,
+              "distance": 886.262237730462,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 2.701391507181249,
+          "score": -26.982047409814772,
+          "collisions": 5,
+          "distance": 3913.959051803705,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.226608036631362,
+              "distance": 732.6678392673716,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.189858078337302,
+              "distance": 429.4028384332537,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.66895957416553,
+              "distance": 1452.179191483313,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.747612936103774,
+              "distance": 412.24774127792443,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48692793290786085,
+              "distance": 887.4614413418421,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 1.3274429790268005,
+          "score": -27.059742090031424,
+          "collisions": 5,
+          "distance": 3912.8051581993705,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.197201952679357,
+              "distance": 733.2559609464115,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.18727807675864,
+              "distance": 429.45443846482704,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.549097853270524,
+              "distance": 1450.1819570654125,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.730657864390118,
+              "distance": 412.58684271219727,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.493702049473832,
+              "distance": 887.3259590105222,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.185367470891602,
+          "score": -26.916529268120232,
+          "collisions": 5,
+          "distance": 3915.2694146375943,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1761508836604335,
+              "distance": 733.2769823267904,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.12588037437609,
+              "distance": 430.2823925124776,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.59151325868463,
+              "distance": 1451.430265173694,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.805401137967188,
+              "distance": 411.49197724065607,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.40061013080114805,
+              "distance": 888.7877973839763,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -7.219597268039061,
+          "score": -27.057144098432094,
+          "collisions": 5,
+          "distance": 3912.8571180313543,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.176685006165997,
+              "distance": 733.2662998766787,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.07722643205802,
+              "distance": 431.25547135883926,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.55308971402518,
+              "distance": 1450.6617942805028,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.823851144416746,
+              "distance": 411.122977111665,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5324712298165082,
+              "distance": 886.5505754036685,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.057885220329261,
+          "score": -26.911410046541043,
+          "collisions": 5,
+          "distance": 3915.3717990691775,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.176709874050786,
+              "distance": 733.265802518983,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.125214042725386,
+              "distance": 430.29571914549206,
+              "steps": 169,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.59706177277825,
+              "distance": 1451.5412354555665,
+              "steps": 502,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.806400654387854,
+              "distance": 411.47198691224276,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4001472481552639,
+              "distance": 888.7970550368932,
+              "steps": 259,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.7031137920770831,
+          "score": -27.032450660378124,
+          "collisions": 5,
+          "distance": 3912.950986792436,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.224925371542405,
+              "distance": 732.3014925691514,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.19239726239303,
+              "distance": 429.35205475213934,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.58468725900171,
+              "distance": 1450.8937451800343,
+              "steps": 503,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.7087933660764,
+              "distance": 413.02413267847214,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4910219193680021,
+              "distance": 887.379561612639,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 3.2542311911845694,
+          "score": -27.076480185740742,
+          "collisions": 5,
+          "distance": 3912.0703962851853,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.233262647900304,
+              "distance": 732.5347470419929,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.177813218345072,
+              "distance": 429.64373563309846,
+              "steps": 168,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.5766791202055,
+              "distance": 1450.3335824041114,
+              "steps": 504,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.75515550679298,
+              "distance": 412.0968898641404,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48692793290788217,
+              "distance": 887.4614413418421,
+              "steps": 258,
+              "collision": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "score": -599.9009769840914,
+      "collisions": 100,
+      "distance": 77137.18046031815,
+      "test_rounds": 20,
+      "attempts": 100,
+      "runs": [
+        {
+          "offset": -1.3338813393356173,
+          "score": -26.83565501695972,
+          "collisions": 5,
+          "distance": 3913.286899660804,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.172287144257943,
+              "distance": 732.95425711484,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.88820429735295,
+              "distance": 433.83591405294055,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.60432314558636,
+              "distance": 1450.0864629117286,
+              "steps": 506,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.871550634002162,
+              "distance": 410.1689873199566,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5079360869330287,
+              "distance": 886.2412782613383,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 11.245768416143704,
+          "score": -49.13373828233837,
+          "collisions": 5,
+          "distance": 3516.9252343532307,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.146248455391337,
+              "distance": 732.6750308921723,
+              "steps": 312,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.869960429504665,
+              "distance": 434.6007914099064,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.77788673958524,
+              "distance": 1452.3577347917044,
+              "steps": 509,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.509458489546574,
+              "distance": 9.010830209068445,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.38595764748103534,
+              "distance": 888.2808470503792,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -3.710272880217813,
+          "score": -26.785298116421448,
+          "collisions": 5,
+          "distance": 3913.894037671568,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.17208950694215,
+              "distance": 732.5582098611553,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.903176851654823,
+              "distance": 433.5364629669034,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.663444210651605,
+              "distance": 1451.268884213032,
+              "steps": 506,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.863236505328715,
+              "distance": 410.33526989342545,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5102394631473643,
+              "distance": 886.1952107370521,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -1.0014221702956583,
+          "score": -26.818859774855216,
+          "collisions": 5,
+          "distance": 3913.622804502896,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.173105122247783,
+              "distance": 732.9378975550435,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.87497371967165,
+              "distance": 434.10052560656686,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.61465101417603,
+              "distance": 1450.2930202835223,
+              "steps": 506,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.87782137358713,
+              "distance": 410.0435725282573,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.507610573524687,
+              "distance": 886.2477885295061,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 7.228539464064262,
+          "score": -49.0572504550302,
+          "collisions": 5,
+          "distance": 3518.854990899396,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.170167484256716,
+              "distance": 732.5966503148643,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.942918107051835,
+              "distance": 433.14163785896335,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.73969610441813,
+              "distance": 1451.9939220883643,
+              "steps": 508,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.3373589208342,
+              "distance": 12.052821583316017,
+              "steps": 4,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.3465020473055773,
+              "distance": 889.0699590538879,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 9.152338489785173,
+          "score": -49.28112028200853,
+          "collisions": 5,
+          "distance": 3514.777594359828,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.197846095087385,
+              "distance": 732.0430780982515,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.90012366938753,
+              "distance": 433.9975266122492,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.67444405999541,
+              "distance": 1450.6888811999092,
+              "steps": 508,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.50871032598889,
+              "distance": 9.025793480222092,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.34888425154013447,
+              "distance": 889.022314969196,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.347110000573345,
+          "score": -26.785077249173494,
+          "collisions": 5,
+          "distance": 3914.298455016529,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.170665851878816,
+              "distance": 732.586682962422,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.956585797427504,
+              "distance": 432.4682840514497,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.62621865295428,
+              "distance": 1450.924373059087,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.777572777857614,
+              "distance": 412.04854444284774,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5064714749638384,
+              "distance": 886.2705705007224,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 6.079324377863678,
+          "score": -26.696140514703533,
+          "collisions": 5,
+          "distance": 3914.8771897059287,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.141671301674741,
+              "distance": 733.1665739665041,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.958369061868382,
+              "distance": 432.83261876263214,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.742495286671,
+              "distance": 1452.0499057334218,
+              "steps": 508,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.827233622110587,
+              "distance": 410.65532755778804,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5113618157208251,
+              "distance": 886.1727636855826,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.971379374088855,
+          "score": -26.430327411264823,
+          "collisions": 5,
+          "distance": 3920.5934517747028,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.146032412866639,
+              "distance": 733.079351742666,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.82777681213672,
+              "distance": 434.6444637572654,
+              "steps": 173,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.67369888622002,
+              "distance": 1451.8739777244023,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.742160034837294,
+              "distance": 412.75679930325396,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.3880570376441952,
+              "distance": 888.2388592471152,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.5364791302789662,
+          "score": -26.48069742046035,
+          "collisions": 5,
+          "distance": 3919.586051590795,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.173035465238598,
+              "distance": 732.9392906952271,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.871511635032384,
+              "distance": 434.1697672993523,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.766865777614484,
+              "distance": 1452.9373155522926,
+              "steps": 507,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.695659820004753,
+              "distance": 413.28680359990494,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5073562777990972,
+              "distance": 886.2528744440178,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -8.604055906078493,
+          "score": -26.751723327006182,
+          "collisions": 5,
+          "distance": 3914.9655334598756,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.172535834018802,
+              "distance": 732.5492833196236,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.908017049514708,
+              "distance": 433.4396590097058,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.615024082552196,
+              "distance": 1450.7004816510444,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.784245734166884,
+              "distance": 411.91508531666204,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5019487918579841,
+              "distance": 886.3610241628398,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -5.098853702130423,
+          "score": -26.574619080278403,
+          "collisions": 5,
+          "distance": 3917.707618394429,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.147146845943261,
+              "distance": 733.0570630811335,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.904985829416756,
+              "distance": 433.50028341166444,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.68074518263708,
+              "distance": 1451.6149036527422,
+              "steps": 506,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.856134291110816,
+              "distance": 410.4773141777837,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.3470972964446517,
+              "distance": 889.0580540711053,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.191704866860254,
+          "score": -26.732028482849017,
+          "collisions": 5,
+          "distance": 3915.3594303430173,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.170605985985034,
+              "distance": 732.5878802802981,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.90036457778759,
+              "distance": 433.5927084442478,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.62133931460566,
+              "distance": 1450.8267862921134,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.77728605145989,
+              "distance": 412.054278970802,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5051111822221657,
+              "distance": 886.2977763555559,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 2.701391507181249,
+          "score": -26.21569222740761,
+          "collisions": 5,
+          "distance": 3918.8861554518458,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -6.805536393668135,
+              "distance": 734.2892721266362,
+              "steps": 325,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.97942767930625,
+              "distance": 432.4114464138752,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.66192654927117,
+              "distance": 1450.838530985423,
+              "steps": 507,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.74546498612557,
+              "distance": 412.29070027748867,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.34718971757882855,
+              "distance": 889.0562056484227,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 1.3274429790268005,
+          "score": -26.574781354312087,
+          "collisions": 5,
+          "distance": 3917.704372913757,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.191314007256608,
+              "distance": 732.5737198548672,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.854537263252528,
+              "distance": 434.5092547349491,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.70054248797601,
+              "distance": 1451.6108497595214,
+              "steps": 507,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.722929050595052,
+              "distance": 412.74141898809876,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5065435211839073,
+              "distance": 886.2691295763207,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.185367470891602,
+          "score": -26.429714580374128,
+          "collisions": 5,
+          "distance": 3920.6057083925175,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1499555708603,
+              "distance": 733.0008885827929,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.818200848135984,
+              "distance": 434.83598303728013,
+              "steps": 173,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.638699189503654,
+              "distance": 1451.1739837900755,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.75311989000931,
+              "distance": 412.5376021998136,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.3471374608721902,
+              "distance": 889.0572507825555,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -7.219597268039061,
+          "score": -26.608852357031896,
+          "collisions": 5,
+          "distance": 3917.42295285936,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.165521665944603,
+              "distance": 732.6895666811074,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.904047356777333,
+              "distance": 433.519052864453,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.74541912703066,
+              "distance": 1452.9083825406142,
+              "steps": 506,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.773631310471284,
+              "distance": 412.127373790574,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5110711508693342,
+              "distance": 886.1785769826115,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.057885220329261,
+          "score": -26.588754412780695,
+          "collisions": 5,
+          "distance": 3917.824911744385,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.146438616158569,
+              "distance": 733.0712276768277,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.964063267817377,
+              "distance": 432.31873464365253,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.621405728827014,
+              "distance": 1450.8281145765413,
+              "steps": 505,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.75380486111734,
+              "distance": 412.5239027776529,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.34585339651442126,
+              "distance": 889.0829320697108,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.7031137920770831,
+          "score": -26.509178598315692,
+          "collisions": 5,
+          "distance": 3919.016428033684,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.187940743885811,
+              "distance": 732.6411851222833,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.88671096983908,
+              "distance": 433.86578060321835,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.76596029814087,
+              "distance": 1452.9192059628172,
+              "steps": 507,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.693057556978054,
+              "distance": 413.3388488604387,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5074296257536162,
+              "distance": 886.2514074849264,
+              "steps": 260,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 3.2542311911845694,
+          "score": -26.61146804051994,
+          "collisions": 5,
+          "distance": 3916.9706391896007,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.208284471414956,
+              "distance": 732.2343105717,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.96597097600977,
+              "distance": 432.6805804798041,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.66739986886063,
+              "distance": 1450.9479973772145,
+              "steps": 507,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.756779544234252,
+              "distance": 412.0644091153149,
+              "steps": 133,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.34783291772158975,
+              "distance": 889.0433416455671,
+              "steps": 261,
+              "collision": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "score": -1968.5751056517295,
+      "collisions": 100,
+      "distance": 53056.497886965364,
+      "test_rounds": 20,
+      "attempts": 100,
+      "runs": [
+        {
+          "offset": -1.3338813393356173,
+          "score": -94.86549985744347,
+          "collisions": 5,
+          "distance": 2716.290002851129,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.160048742076334,
+              "distance": 733.9990251584723,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.002029835749678,
+              "distance": 431.5594032850063,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.727709680890719,
+              "distance": 603.0458063821852,
+              "steps": 207,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.771102845300256,
+              "distance": 412.9779430939948,
+              "steps": 130,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.204608753426484,
+              "distance": 534.7078249314704,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 11.245768416143704,
+          "score": -117.67629385160342,
+          "collisions": 5,
+          "distance": 2310.0741229679293,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.105424982532561,
+              "distance": 734.2915003493476,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.069639907698555,
+              "distance": 431.0072018460287,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.75079986090072,
+              "distance": 601.7840027819848,
+              "steps": 209,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.67322292473846,
+              "distance": 6.135541505230776,
+              "steps": 2,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.077206175733117,
+              "distance": 536.8558764853374,
+              "steps": 155,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -3.710272880217813,
+          "score": -95.30230134859279,
+          "collisions": 5,
+          "distance": 2708.7539730281414,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.266172087281184,
+              "distance": 732.2765582543752,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.03006356004368,
+              "distance": 430.9987287991262,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.844415831053297,
+              "distance": 601.1116833789329,
+              "steps": 206,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.958817741948078,
+              "distance": 409.62364516103844,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.202832128266554,
+              "distance": 534.7433574346687,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -1.0014221702956583,
+          "score": -94.87312050719855,
+          "collisions": 5,
+          "distance": 2716.1375898560264,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.166492798765056,
+              "distance": 733.8701440246973,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.9851086492001,
+              "distance": 431.8978270159978,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.737151846525158,
+              "distance": 602.8569630694965,
+              "steps": 207,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.778324087090006,
+              "distance": 412.83351825819955,
+              "steps": 130,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.206043125618226,
+              "distance": 534.6791374876352,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 7.228539464064262,
+          "score": -117.46011231270111,
+          "collisions": 5,
+          "distance": 2314.397753745976,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.173386234441068,
+              "distance": 733.3322753111779,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.132438387944788,
+              "distance": 429.75123224110393,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.791210220432795,
+              "distance": 601.3757955913434,
+              "steps": 208,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.32537471242969,
+              "distance": 12.292505751406225,
+              "steps": 4,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.037702757452777,
+              "distance": 537.6459448509445,
+              "steps": 155,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 9.152338489785173,
+          "score": -117.53402579285016,
+          "collisions": 5,
+          "distance": 2312.919484142995,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.209707413830635,
+              "distance": 732.6058517233864,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.092694359333546,
+              "distance": 430.5461128133288,
+              "steps": 170,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.677589188601331,
+              "distance": 603.248216227973,
+              "steps": 209,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.49947290898609,
+              "distance": 9.210541820278195,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.054561922098557,
+              "distance": 537.3087615580284,
+              "steps": 155,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.347110000573345,
+          "score": -95.07951583868737,
+          "collisions": 5,
+          "distance": 2712.8096832262504,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.210124534497659,
+              "distance": 732.9975093100456,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.072875180783758,
+              "distance": 430.14249638432466,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.7124844858144,
+              "distance": 603.7503102837118,
+              "steps": 206,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.874222621700337,
+              "distance": 411.31554756599326,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.20980901589122,
+              "distance": 534.6038196821751,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 6.079324377863678,
+          "score": -94.84119512577072,
+          "collisions": 5,
+          "distance": 2715.976097484583,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.155369939811209,
+              "distance": 733.6926012037743,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.004133693752483,
+              "distance": 431.91732612495025,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.750850869852265,
+              "distance": 602.1829826029543,
+              "steps": 208,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.899755766005406,
+              "distance": 410.4048846798919,
+              "steps": 130,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.03108485634937,
+              "distance": 537.7783028730123,
+              "steps": 155,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.971379374088855,
+          "score": -95.15315884074826,
+          "collisions": 5,
+          "distance": 2711.736823185033,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.206685521440669,
+              "distance": 733.0662895711857,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.075597203102184,
+              "distance": 430.08805593795614,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.842239542069173,
+              "distance": 601.555209158616,
+              "steps": 205,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.820576921170762,
+              "distance": 412.38846157658463,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.208059652965474,
+              "distance": 534.6388069406903,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.5364791302789662,
+          "score": -94.8922438381732,
+          "collisions": 5,
+          "distance": 2715.7551232365345,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.169325500319772,
+              "distance": 733.813489993604,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.978817969179193,
+              "distance": 432.0236406164163,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.750547439464263,
+              "distance": 602.5890512107144,
+              "steps": 207,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.78645051762753,
+              "distance": 412.670989647449,
+              "steps": 130,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.20710241158244,
+              "distance": 534.6579517683508,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -8.604055906078493,
+          "score": -95.1098970363953,
+          "collisions": 5,
+          "distance": 2712.202059272092,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.2256767575247025,
+              "distance": 732.6864648495048,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.069095473799297,
+              "distance": 430.2180905240134,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.722904947970427,
+              "distance": 603.5419010405913,
+              "steps": 206,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.881514225437645,
+              "distance": 411.1697154912472,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.210705631663217,
+              "distance": 534.5858873667353,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -5.098853702130423,
+          "score": -95.21564062818757,
+          "collisions": 5,
+          "distance": 2710.0871874362465,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.242219785193797,
+              "distance": 732.3556042961227,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.03361570347035,
+              "distance": 430.9276859305928,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.802633466095209,
+              "distance": 601.9473306780956,
+              "steps": 206,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.935416300160266,
+              "distance": 410.0916739967947,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.201755373267957,
+              "distance": 534.7648925346407,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.191704866860254,
+          "score": -95.08777768785771,
+          "collisions": 5,
+          "distance": 2712.6444462428435,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.214535116058073,
+              "distance": 732.9092976788379,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.07614118162949,
+              "distance": 430.0771763674097,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.715781135486907,
+              "distance": 603.6843772902612,
+              "steps": 206,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.87412289375743,
+              "distance": 411.3175421248511,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.207197360925814,
+              "distance": 534.6560527814836,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 2.701391507181249,
+          "score": -94.94671570064509,
+          "collisions": 5,
+          "distance": 2713.8656859870953,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.232557051737935,
+              "distance": 732.5488589652396,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.088255811322856,
+              "distance": 430.2348837735426,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.663631855493279,
+              "distance": 603.9273628901337,
+              "steps": 208,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.745109300999157,
+              "distance": 412.6978139800167,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.217161681091852,
+              "distance": 534.4567663781627,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 1.3274429790268005,
+          "score": -95.24093311779255,
+          "collisions": 5,
+          "distance": 2708.781337644147,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.206154567568234,
+              "distance": 733.0769086486343,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.10303125411818,
+              "distance": 429.9393749176361,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.803003377692228,
+              "distance": 601.539932446155,
+              "steps": 207,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.912786371535436,
+              "distance": 409.7442725692913,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.215957546878478,
+              "distance": 534.48084906243,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.185367470891602,
+          "score": -95.2208644207644,
+          "collisions": 5,
+          "distance": 2710.38271158471,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.2055970664817295,
+              "distance": 733.0880586703643,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.08132492793786,
+              "distance": 429.97350144124266,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.86584115785653,
+              "distance": 601.0831768428689,
+              "steps": 205,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.863038933905923,
+              "distance": 411.53922132188154,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.205062334582365,
+              "distance": 534.6987533083525,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -7.219597268039061,
+          "score": -95.13362464640304,
+          "collisions": 5,
+          "distance": 2711.7275070719365,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.228347137168242,
+              "distance": 732.633057256634,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.03982134414669,
+              "distance": 430.80357311706575,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.755837391155652,
+              "distance": 602.8832521768863,
+              "steps": 206,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.898352779593395,
+              "distance": 410.8329444081319,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.211265994339048,
+              "distance": 534.5746801132186,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.057885220329261,
+          "score": -95.21197819995034,
+          "collisions": 5,
+          "distance": 2710.56043600099,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.203963562856742,
+              "distance": 733.1207287428638,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.069985154368567,
+              "distance": 430.20029691262835,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.868873457727183,
+              "distance": 601.0225308454555,
+              "steps": 205,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.86455274599709,
+              "distance": 411.50894508005786,
+              "steps": 129,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.20460327900075,
+              "distance": 534.7079344199847,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.7031137920770831,
+          "score": -94.88435781245892,
+          "collisions": 5,
+          "distance": 2715.9128437508202,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.168555570416899,
+              "distance": 733.8288885916613,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -24.979246267291064,
+              "distance": 432.01507465417853,
+              "steps": 172,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.746428542409255,
+              "distance": 602.6714291518147,
+              "steps": 207,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.783459560540607,
+              "distance": 412.7308087891879,
+              "steps": 130,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.206667871801088,
+              "distance": 534.6666425639778,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 3.2542311911845694,
+          "score": -94.84584908750543,
+          "collisions": 5,
+          "distance": 2715.483018249889,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1187365620642495,
+              "distance": 734.4252687587136,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.07710135145827,
+              "distance": 430.45797297083436,
+              "steps": 171,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -15.674696473726677,
+              "distance": 603.7060705254662,
+              "steps": 208,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.757106412994144,
+              "distance": 412.45787174011684,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -20.218208287262087,
+              "distance": 534.435834254758,
+              "steps": 154,
+              "collision": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "score": -2715.274566475413,
+      "collisions": 100,
+      "distance": 39866.10867049171,
+      "test_rounds": 20,
+      "attempts": 100,
+      "runs": [
+        {
+          "offset": -1.3338813393356173,
+          "score": -132.1576388280099,
+          "collisions": 5,
+          "distance": 2057.2472234397997,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.162459816733488,
+              "distance": 733.9508036653287,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.173061084857366,
+              "distance": 430.1387783028522,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.726924092830046,
+              "distance": 163.0615181433991,
+              "steps": 57,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.764939069789644,
+              "distance": 412.70121860420704,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.330254763799374,
+              "distance": 317.3949047240126,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 11.245768416143704,
+          "score": -154.9329299066479,
+          "collisions": 5,
+          "distance": 1652.1414018670412,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.15741114886773,
+              "distance": 733.6517770226446,
+              "steps": 309,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.211161315563956,
+              "distance": 429.7767736887208,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.531181755084546,
+              "distance": 165.7763648983091,
+              "steps": 60,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.67600913739516,
+              "distance": 6.0798172520967455,
+              "steps": 2,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.35716654973651,
+              "distance": 316.85666900526985,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -3.710272880217813,
+          "score": -132.23380746137056,
+          "collisions": 5,
+          "distance": 2056.123850772587,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.297324001662723,
+              "distance": 731.6535199667442,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.18178491843782,
+              "distance": 429.9643016312434,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.83642898492301,
+              "distance": 161.27142030153982,
+              "steps": 56,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.593989450781006,
+              "distance": 415.7202109843797,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.32428010556599,
+              "distance": 317.5143978886799,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -1.0014221702956583,
+          "score": -132.11727632945627,
+          "collisions": 5,
+          "distance": 2058.054473410873,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1609813974958385,
+              "distance": 733.9803720500822,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.31041605922812,
+              "distance": 427.79167881543754,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.73271823935364,
+              "distance": 162.9456352129273,
+              "steps": 57,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.583800966801306,
+              "distance": 415.92398066397345,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.329359666577375,
+              "distance": 317.4128066684525,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 7.228539464064262,
+          "score": -155.18625001558203,
+          "collisions": 5,
+          "distance": 1648.274999688359,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.295731705444567,
+              "distance": 731.6853658911082,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.254407094933974,
+              "distance": 428.9118581013204,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.76048474887767,
+              "distance": 161.9903050224466,
+              "steps": 58,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.32964469736561,
+              "distance": 12.207106052687777,
+              "steps": 4,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.5459817689602,
+              "distance": 313.4803646207961,
+              "steps": 90,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 9.152338489785173,
+          "score": -155.16939209151565,
+          "collisions": 5,
+          "distance": 1648.2121581696856,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.252117649600031,
+              "distance": 732.1576470079981,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.223541396284254,
+              "distance": 429.52917207431483,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.64308862532611,
+              "distance": 163.93822749347783,
+              "steps": 59,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.50323362055379,
+              "distance": 9.135327588924156,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.54741079975146,
+              "distance": 313.4517840049707,
+              "steps": 90,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.347110000573345,
+          "score": -132.3409224313053,
+          "collisions": 5,
+          "distance": 2054.3815513738928,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.2749186562257435,
+              "distance": 732.1016268754847,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.248762237793365,
+              "distance": 428.6247552441323,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.71675699405162,
+              "distance": 163.66486011896768,
+              "steps": 56,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.725536891412947,
+              "distance": 413.48926217174085,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.374947651821635,
+              "distance": 316.5010469635672,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 6.079324377863678,
+          "score": -132.51967418509793,
+          "collisions": 5,
+          "distance": 2050.40651629804,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.260326247329623,
+              "distance": 732.3934750534063,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.27922206416989,
+              "distance": 428.41555871660194,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.731803336320596,
+              "distance": 162.5639332735882,
+              "steps": 58,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.70618977479405,
+              "distance": 413.47620450411887,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.54213276248375,
+              "distance": 313.5573447503248,
+              "steps": 90,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.971379374088855,
+          "score": -132.50714806501878,
+          "collisions": 5,
+          "distance": 2051.4570386996234,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.259985271975545,
+              "distance": 732.4002945604884,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.28402724835427,
+              "distance": 427.91945503291436,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.84644794352541,
+              "distance": 161.47104112949182,
+              "steps": 55,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.71964954479044,
+              "distance": 413.6070091041911,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.39703805637312,
+              "distance": 316.05923887253766,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.5364791302789662,
+          "score": -132.32112833894988,
+          "collisions": 5,
+          "distance": 2054.377433221001,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.16031764486614,
+              "distance": 733.9936471026758,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.310675230599212,
+              "distance": 427.7864953880153,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.74425060365205,
+              "distance": 162.7149879269591,
+              "steps": 57,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.77762631557627,
+              "distance": 412.4474736884745,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.3282585442562,
+              "distance": 317.43482911487627,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -8.604055906078493,
+          "score": -132.3288914029415,
+          "collisions": 5,
+          "distance": 2054.6221719411683,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.25961866433564,
+              "distance": 732.4076267132864,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.236501105335574,
+              "distance": 428.86997789328825,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.73281352118079,
+              "distance": 163.34372957638425,
+              "steps": 56,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.7336973370347,
+              "distance": 413.3260532593058,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.36626077505482,
+              "distance": 316.6747844989036,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -5.098853702130423,
+          "score": -132.38724357383168,
+          "collisions": 5,
+          "distance": 2053.4551285233647,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.298122659023456,
+              "distance": 731.6375468195292,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.19244160140704,
+              "distance": 429.7511679718591,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.80515475371779,
+              "distance": 161.89690492564432,
+              "steps": 56,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.7571578094207,
+              "distance": 412.8568438115858,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.33436675026269,
+              "distance": 317.3126649947462,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.191704866860254,
+          "score": -132.34373279901078,
+          "collisions": 5,
+          "distance": 2054.325344019783,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.275193740246671,
+              "distance": 732.0961251950657,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.247298520935225,
+              "distance": 428.65402958129516,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.71948662129583,
+              "distance": 163.61026757408354,
+              "steps": 56,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.728842809606782,
+              "distance": 413.4231438078641,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.37291110692627,
+              "distance": 316.54177786147466,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 2.701391507181249,
+          "score": -132.467734128666,
+          "collisions": 5,
+          "distance": 2051.845317426679,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.190819303594353,
+              "distance": 733.7836139281121,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.2975898833635,
+              "distance": 428.04820233272994,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.81949727137244,
+              "distance": 161.21005457255114,
+              "steps": 57,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.627848141130805,
+              "distance": 415.04303717738367,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.5319795292049,
+              "distance": 313.7604094159019,
+              "steps": 90,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 1.3274429790268005,
+          "score": -132.40860142567772,
+          "collisions": 5,
+          "distance": 2052.6279714864445,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.170049193875485,
+              "distance": 733.7990161224898,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.312835871756104,
+              "distance": 427.7432825648775,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.78650320726322,
+              "distance": 161.86993585473556,
+              "steps": 57,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.610568565211604,
+              "distance": 415.3886286957677,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.52864458757129,
+              "distance": 313.82710824857395,
+              "steps": 90,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.185367470891602,
+          "score": -132.52367151119682,
+          "collisions": 5,
+          "distance": 2051.1265697760628,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.27544915355039,
+              "distance": 732.0910169289918,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.269006754321456,
+              "distance": 428.21986491357075,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.86542210530785,
+              "distance": 161.09155789384295,
+              "steps": 55,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.72748496894349,
+              "distance": 413.4503006211303,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.38630852907365,
+              "distance": 316.27382941852693,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -7.219597268039061,
+          "score": -132.2865454684852,
+          "collisions": 5,
+          "distance": 2055.469090630295,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.261140821785112,
+              "distance": 732.377183564297,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.217549575294477,
+              "distance": 429.24900849411006,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.76078759112272,
+              "distance": 162.78424817754558,
+              "steps": 56,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.695073651790583,
+              "distance": 414.0985269641883,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.3519938284923,
+              "distance": 316.960123430154,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.057885220329261,
+          "score": -132.52030783552186,
+          "collisions": 5,
+          "distance": 2051.193843289562,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.2753862041108235,
+              "distance": 732.0922759177829,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.26546537590672,
+              "distance": 428.29069248186534,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.866929392522934,
+              "distance": 161.0614121495414,
+              "steps": 55,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.728005449870484,
+              "distance": 413.43989100259023,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.38452141311089,
+              "distance": 316.30957173778233,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.7031137920770831,
+          "score": -132.32310157446096,
+          "collisions": 5,
+          "distance": 2054.3379685107793,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.16079861583566,
+              "distance": 733.9840276832856,
+              "steps": 308,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.31463612847914,
+              "distance": 427.707277430417,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.741336073697,
+              "distance": 162.77327852606004,
+              "steps": 57,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.777694973590854,
+              "distance": 412.4461005281828,
+              "steps": 131,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.3286357828583,
+              "distance": 317.4272843428339,
+              "steps": 91,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 3.2542311911845694,
+          "score": -132.1985691026664,
+          "collisions": 5,
+          "distance": 2056.4286179466717,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.181903543086328,
+              "distance": 733.9619291382728,
+              "steps": 307,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.16709239216996,
+              "distance": 430.2581521566008,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": -40.66815606203298,
+              "distance": 163.83687875934038,
+              "steps": 58,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.648897824290042,
+              "distance": 414.62204351419905,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -32.532519281087076,
+              "distance": 313.7496143782587,
+              "steps": 90,
+              "collision": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "score": -635.7222774210605,
+      "collisions": 100,
+      "distance": 76615.55445157876,
+      "test_rounds": 20,
+      "attempts": 100,
+      "runs": [
+        {
+          "offset": -1.3338813393356173,
+          "score": -27.313498609644153,
+          "collisions": 5,
+          "distance": 3910.1300278071158,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.156029341704389,
+              "distance": 733.2794131659111,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.240453393796393,
+              "distance": 429.1909321240719,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.284537543693745,
+              "distance": 1446.4907508738752,
+              "steps": 499,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.72164678981888,
+              "distance": 413.16706420362243,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.47990662801823447,
+              "distance": 888.0018674396351,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 11.245768416143704,
+          "score": -50.095877456036284,
+          "collisions": 5,
+          "distance": 3505.2824508792733,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.139423777303357,
+              "distance": 733.2115244539323,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.242234919974948,
+              "distance": 429.555301600501,
+              "steps": 165,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.28696696985307,
+              "distance": 1445.7393393970624,
+              "steps": 501,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.508424817833415,
+              "distance": 9.031503643331689,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4927609107776334,
+              "distance": 887.7447817844459,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -3.710272880217813,
+          "score": -27.251740415533508,
+          "collisions": 5,
+          "distance": 3911.3651916893295,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.136932733297201,
+              "distance": 733.6613453340551,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.239141576941375,
+              "distance": 429.2171684611726,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.29905244995312,
+              "distance": 1446.7810489990643,
+              "steps": 499,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.69388442290768,
+              "distance": 413.72231154184647,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48083413234037664,
+              "distance": 887.9833173531911,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -1.0014221702956583,
+          "score": -27.308548132549923,
+          "collisions": 5,
+          "distance": 3910.2290373489986,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1580076343528845,
+              "distance": 733.2398473129415,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.229200768319366,
+              "distance": 429.4159846336124,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.28332604818263,
+              "distance": 1446.4665209636519,
+              "steps": 499,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.725592227706187,
+              "distance": 413.08815544587605,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4790735503541157,
+              "distance": 888.0185289929168,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 7.228539464064262,
+          "score": -50.13887825425829,
+          "collisions": 5,
+          "distance": 3504.8224349148313,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.220367201073337,
+              "distance": 731.9926559785326,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.322024287858685,
+              "distance": 427.9595142428261,
+              "steps": 165,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.22367560491293,
+              "distance": 1444.8735120982583,
+              "steps": 500,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.335761850554526,
+              "distance": 12.08476298890946,
+              "steps": 4,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48440051968466946,
+              "distance": 887.9119896063048,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 9.152338489785173,
+          "score": -50.01703740610308,
+          "collisions": 5,
+          "distance": 3506.8592518779374,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.102396216649247,
+              "distance": 733.952075667014,
+              "steps": 311,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.26851469713825,
+              "distance": 429.02970605723476,
+              "steps": 165,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.35173107032152,
+              "distance": 1447.0346214064307,
+              "steps": 501,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.50764605776518,
+              "distance": 9.047078844696443,
+              "steps": 3,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.49021150487192244,
+              "distance": 887.7957699025615,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.347110000573345,
+          "score": -27.304446494053135,
+          "collisions": 5,
+          "distance": 3910.7110701189363,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.137496024412407,
+              "distance": 733.6500795117508,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.301868110395453,
+              "distance": 427.96263779209085,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.29441612407132,
+              "distance": 1447.088322481428,
+              "steps": 498,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.679967781443953,
+              "distance": 414.00064437112087,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.47953070187264046,
+              "distance": 888.0093859625458,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 6.079324377863678,
+          "score": -49.22663363619833,
+          "collisions": 5,
+          "distance": 3521.067327276032,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -6.653224458604136,
+              "distance": 742.1355108279163,
+              "steps": 313,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.194148012454423,
+              "distance": 430.1170397509113,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.26211445418501,
+              "distance": 1445.6422890837011,
+              "steps": 500,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -49.161982716883834,
+              "distance": 15.16034566232338,
+              "steps": 5,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.47939290244094224,
+              "distance": 888.0121419511797,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.971379374088855,
+          "score": -27.26648056566178,
+          "collisions": 5,
+          "distance": 3911.4703886867605,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.119235926812401,
+              "distance": 734.0152814637504,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.18214656212581,
+              "distance": 429.9570687574833,
+              "steps": 167,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.23580690644468,
+              "distance": 1446.3161381288928,
+              "steps": 497,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.67028535941401,
+              "distance": 414.1942928117196,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5306196237542409,
+              "distance": 886.9876075249144,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.5364791302789662,
+          "score": -27.32889569220933,
+          "collisions": 5,
+          "distance": 3909.822086155814,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.163325939399321,
+              "distance": 733.1334812120126,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.231385508461724,
+              "distance": 429.37228983076557,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.27488956979687,
+              "distance": 1446.2977913959398,
+              "steps": 499,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.73100313386328,
+              "distance": 412.97993732273426,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.47807068028187416,
+              "distance": 888.0385863943616,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -8.604055906078493,
+          "score": -27.4098340537775,
+          "collisions": 5,
+          "distance": 3909.003318924451,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1364529232536995,
+              "distance": 733.6709415349251,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.29221912594934,
+              "distance": 428.155617481013,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.169938916905295,
+              "distance": 1444.9987783381084,
+              "steps": 497,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.680095997723672,
+              "distance": 413.9980800455264,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4710049237560838,
+              "distance": 888.179901524878,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -5.098853702130423,
+          "score": -27.360431102387363,
+          "collisions": 5,
+          "distance": 3909.5913779522516,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.134409596352064,
+              "distance": 733.711808072957,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.240831480668742,
+              "distance": 429.18337038662503,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.18255379971808,
+              "distance": 1444.8510759943624,
+              "steps": 498,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.684161849829422,
+              "distance": 413.9167630034117,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4835819752552126,
+              "distance": 887.9283604948955,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -9.191704866860254,
+          "score": -27.30176250020688,
+          "collisions": 5,
+          "distance": 3910.7647499958616,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.137196803535581,
+              "distance": 733.656063929287,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.2993699661799,
+              "distance": 428.0126006764017,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.29228094217949,
+              "distance": 1447.0456188435915,
+              "steps": 498,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.67961415798584,
+              "distance": 414.00771684028314,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.47786251468505014,
+              "distance": 888.0427497062983,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 2.701391507181249,
+          "score": -26.798043779149836,
+          "collisions": 5,
+          "distance": 3918.439124417001,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -6.6351264615601835,
+              "distance": 742.0974707687951,
+              "steps": 314,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.23188591191842,
+              "distance": 429.3622817616315,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.32163873510672,
+              "distance": 1446.8327747021344,
+              "steps": 500,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.777722220636953,
+              "distance": 412.0455555872609,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4749479201409983,
+              "distance": 888.1010415971791,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 1.3274429790268005,
+          "score": -27.433926832014023,
+          "collisions": 5,
+          "distance": 3907.7214633597173,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.171199416333039,
+              "distance": 732.9760116733382,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.235634188323424,
+              "distance": 429.2873162335313,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.204122141121005,
+              "distance": 1444.8824428224202,
+              "steps": 499,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.75622930154109,
+              "distance": 412.47541396917813,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.47498606693747547,
+              "distance": 888.1002786612494,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.185367470891602,
+          "score": -27.34980117645059,
+          "collisions": 5,
+          "distance": 3909.803976470986,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.1165471004577725,
+              "distance": 734.0690579908432,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.317529292390226,
+              "distance": 427.6494141521953,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.27939925116986,
+              "distance": 1446.787985023398,
+              "steps": 498,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.676718321757768,
+              "distance": 414.0656335648441,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.5184057130146869,
+              "distance": 887.2318857397054,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -7.219597268039061,
+          "score": -27.3170312999397,
+          "collisions": 5,
+          "distance": 3910.4593740012037,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.118935128417597,
+              "distance": 734.0212974316473,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.264268427444993,
+              "distance": 428.71463145109965,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.25955022682024,
+              "distance": 1446.3910045364041,
+              "steps": 498,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.69434326181562,
+              "distance": 413.7131347636873,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.49903470908172665,
+              "distance": 887.6193058183653,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -10.057885220329261,
+          "score": -27.39786963055908,
+          "collisions": 5,
+          "distance": 3909.242607388817,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.11559830369049,
+              "distance": 734.0880339261894,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.31629914470492,
+              "distance": 427.6740171059014,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.197605043626524,
+              "distance": 1445.552100872531,
+              "steps": 497,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.67723207396058,
+              "distance": 414.0553585207881,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.48634515182961024,
+              "distance": 887.8730969634071,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": -0.7031137920770831,
+          "score": -27.322019239272585,
+          "collisions": 5,
+          "distance": 3909.959615214548,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -7.161998511540858,
+              "distance": 733.1600297691821,
+              "steps": 310,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.230598564580845,
+              "distance": 429.388028708383,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.27806688137761,
+              "distance": 1446.3613376275534,
+              "steps": 499,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.729096356416363,
+              "distance": 413.01807287167276,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.4783926881121303,
+              "distance": 888.0321462377569,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        },
+        {
+          "offset": 3.2542311911845694,
+          "score": -26.779521145055167,
+          "collisions": 5,
+          "distance": 3918.8095770988966,
+          "roles": [
+            {
+              "role": 0,
+              "reward": -6.641653930822329,
+              "distance": 741.9669213835532,
+              "steps": 314,
+              "collision": true
+            },
+            {
+              "role": 1,
+              "reward": -25.22855636197647,
+              "distance": 429.4288727604703,
+              "steps": 166,
+              "collision": true
+            },
+            {
+              "role": 2,
+              "reward": 32.3422012653496,
+              "distance": 1447.244025306993,
+              "steps": 500,
+              "collision": true
+            },
+            {
+              "role": 3,
+              "reward": -26.773808551779396,
+              "distance": 412.12382896441204,
+              "steps": 132,
+              "collision": true
+            },
+            {
+              "role": 4,
+              "reward": -0.47770356582657314,
+              "distance": 888.045928683468,
+              "steps": 257,
+              "collision": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "holdout": [
+    {
+      "score": -26.802639769918667,
+      "collisions": 5,
+      "distance": 3913.9472046016263,
+      "roles": [
+        {
+          "role": 0,
+          "reward": -7.168648712752628,
+          "distance": 732.6270257449469,
+          "steps": 311,
+          "collision": true
+        },
+        {
+          "role": 1,
+          "reward": -24.90262084353229,
+          "distance": 433.5475831293538,
+          "steps": 172,
+          "collision": true
+        },
+        {
+          "role": 2,
+          "reward": 32.58536728572234,
+          "distance": 1450.107345714449,
+          "steps": 505,
+          "collision": true
+        },
+        {
+          "role": 3,
+          "reward": -26.81451683733628,
+          "distance": 411.30966325327427,
+          "steps": 132,
+          "collision": true
+        },
+        {
+          "role": 4,
+          "reward": -0.5022206620198091,
+          "distance": 886.3555867596024,
+          "steps": 260,
+          "collision": true
+        }
+      ]
+    },
+    {
+      "score": -49.09280347219885,
+      "collisions": 5,
+      "distance": 3518.1439305560207,
+      "roles": [
+        {
+          "role": 0,
+          "reward": -7.185197567631441,
+          "distance": 732.2960486473703,
+          "steps": 311,
+          "collision": true
+        },
+        {
+          "role": 1,
+          "reward": -24.933874554170846,
+          "distance": 433.3225089165826,
+          "steps": 171,
+          "collision": true
+        },
+        {
+          "role": 2,
+          "reward": 32.7141028328988,
+          "distance": 1451.4820566579765,
+          "steps": 508,
+          "collision": true
+        },
+        {
+          "role": 3,
+          "reward": -49.33779446409575,
+          "distance": 12.044110718084994,
+          "steps": 4,
+          "collision": true
+        },
+        {
+          "role": 4,
+          "reward": -0.3500397191996214,
+          "distance": 888.9992056160063,
+          "steps": 261,
+          "collision": true
+        }
+      ]
+    }
+  ],
+  "elapsed_seconds": 1422.9152743751183
+}

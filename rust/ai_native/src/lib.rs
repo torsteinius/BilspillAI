@@ -1,3 +1,4 @@
+mod car;
 mod track;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -49,6 +50,34 @@ impl DenseNetwork {
         values
     }
 
+    fn activations(&self, inputs: &[f64], weights: &[f64]) -> Vec<Vec<f64>> {
+        let mut result = vec![inputs.to_vec()];
+        let mut offset = 0;
+        for (layer, pair) in self.sizes.windows(2).enumerate() {
+            let (a, b) = (pair[0], pair[1]);
+            let values = result.last().unwrap();
+            let next = (0..b)
+                .map(|n| {
+                    let row = offset + n * (a + 1);
+                    let total = values
+                        .iter()
+                        .enumerate()
+                        .map(|(i, v)| weights[row + i] * v)
+                        .sum::<f64>()
+                        + weights[row + a];
+                    if layer == self.sizes.len() - 2 {
+                        total
+                    } else {
+                        total.tanh()
+                    }
+                })
+                .collect();
+            result.push(next);
+            offset += (a + 1) * b;
+        }
+        result
+    }
+
     fn validate(&self, inputs: &[f64], weights: &[f64]) -> PyResult<()> {
         if inputs.len() != self.sizes[0] || weights.len() != self.weight_count {
             return Err(invalid("Inputs and weights must match the architecture"));
@@ -83,6 +112,58 @@ impl DenseNetwork {
     fn forward(&self, inputs: Vec<f64>, weights: Vec<f64>, normalized: bool) -> PyResult<Vec<f64>> {
         self.validate(&inputs, &weights)?;
         Ok(self.calculate(&inputs, &weights, normalized))
+    }
+
+    /// Hidden tanh layers and a linear output: exploration happens before tanh.
+    fn latent(&self, inputs: Vec<f64>, weights: Vec<f64>) -> PyResult<Vec<f64>> {
+        self.validate(&inputs, &weights)?;
+        Ok(self.activations(&inputs, &weights).pop().unwrap())
+    }
+
+    fn gradient(
+        &self,
+        inputs: Vec<f64>,
+        weights: Vec<f64>,
+        output_index: usize,
+    ) -> PyResult<(f64, Vec<f64>)> {
+        self.validate(&inputs, &weights)?;
+        if output_index >= *self.sizes.last().unwrap() {
+            return Err(invalid("Output index out of range"));
+        }
+        let activations = self.activations(&inputs, &weights);
+        let mut offsets = vec![0];
+        for pair in self.sizes.windows(2) {
+            offsets.push(offsets.last().unwrap() + (pair[0] + 1) * pair[1]);
+        }
+        let mut gradient = vec![0.; self.weight_count];
+        let mut delta = vec![0.; *self.sizes.last().unwrap()];
+        delta[output_index] = 1.;
+        for layer in (0..self.sizes.len() - 1).rev() {
+            let values = &activations[layer];
+            let stride = values.len() + 1;
+            let offset = offsets[layer];
+            for (n, d) in delta.iter().enumerate() {
+                for (i, v) in values.iter().enumerate() {
+                    gradient[offset + n * stride + i] = d * v;
+                }
+                gradient[offset + n * stride + stride - 1] = *d;
+            }
+            if layer > 0 {
+                delta = values
+                    .iter()
+                    .enumerate()
+                    .map(|(i, v)| {
+                        (1. - v * v)
+                            * delta
+                                .iter()
+                                .enumerate()
+                                .map(|(n, d)| weights[offset + n * stride + i] * d)
+                                .sum::<f64>()
+                    })
+                    .collect();
+            }
+        }
+        Ok((activations.last().unwrap()[output_index], gradient))
     }
 
     fn forward_batch(
@@ -191,6 +272,8 @@ fn check_sigma(sigma: f64) -> PyResult<()> {
 
 #[pymodule]
 fn bilspill_ai_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(car::cone_targets, m)?)?;
+    m.add_function(wrap_pyfunction!(car::separations, m)?)?;
     m.add_class::<track::RoadGeometry>()?;
     m.add_class::<DenseNetwork>()?;
     m.add_class::<EvolutionRng>()?;

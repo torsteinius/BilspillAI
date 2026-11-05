@@ -38,7 +38,8 @@ class HybridTests(unittest.TestCase):
             results=train_round(learners,3,0)
         self.assertEqual([r['steps'] for r in results],[1,3,3,3,3])
         self.assertEqual([r['collision'] for r in results],[True,False,False,False,False])
-        self.assertTrue(all(l.attempts==1 and not l.history for l in learners))
+        self.assertTrue(all(l.attempts==1 for l in learners))
+        self.assertEqual([len(l.history) for l in learners],[0,3,3,3,3])
 
     def test_twenty_tests_cover_all_five_roles_and_preserve_weights(self):
         from games.car.hybrid import evaluate_suite
@@ -52,3 +53,50 @@ class HybridTests(unittest.TestCase):
         self.assertEqual(suite['attempts'],100)
         self.assertEqual(suite['score'],60.)
         self.assertEqual(actor.weights,[0.,0.])
+
+    def test_survivors_continue_from_previous_position_after_update(self):
+        from games.car import app
+        app.configure_track('training');app.configure_traffic('convoy')
+        cars=app.initial()
+        learners=[Learner(NeuralNetwork([1,1]),i) for i in range(5)]
+        first_x=cars[0]['x']
+        def step(cars,weights,controls):
+            for c in cars:
+                if not c['crashed']:
+                    c['x']+=1.;c['travel']+=1.
+        with patch('games.car.hybrid.features',return_value=[1.]), patch('games.car.hybrid.app.step',side_effect=step):
+            train_round(learners,3,0,cars=cars)
+            pose={k:cars[0][k] for k in ('x','y','heading','speed_factor')}
+            self.assertEqual(pose['x'],first_x+3.)
+            train_round(learners,3,0,cars=cars)
+            self.assertEqual(cars[0]['x'],first_x+6.)
+            for key in ('y','heading','speed_factor'):
+                self.assertEqual(cars[0][key],pose[key])
+            self.assertEqual(learners[0].attempts,2)
+        app.configure_track();app.configure_traffic('opposite')
+
+    def test_history_crosses_update_without_double_reward(self):
+        learner=Learner(NeuralNetwork([1,1]),42)
+        for i in range(49):
+            learner.choose(i,[1.]);learner.observe(3.,False)
+        first=learner.finish(False)
+        self.assertEqual(len(learner.history),49)
+        self.assertTrue(all(e.committed and e.reward==0 for e in learner.history))
+        learner.begin(preserve_history=True)
+        learner.choose(0,[1.]);learner.observe(0.,True)
+        self.assertEqual([e.tick for e in learner.history],list(range(50)))
+        self.assertTrue(all(e.reward==-1. for e in learner.history))
+        second=learner.finish(True)
+        self.assertAlmostEqual(first['reward'],49*driving_reward(3.,False))
+        self.assertAlmostEqual(second['reward'],-50.)
+        self.assertEqual(second['steps'],1)
+        self.assertEqual(len(learner.history),0)
+
+    def test_safe_continuation_does_not_relearn_old_rewards(self):
+        learner=Learner(NeuralNetwork([1,1]),44)
+        learner.choose(0,[1.]);learner.observe(3.,False);learner.finish(False)
+        learner.begin(preserve_history=True)
+        learner.choose(0,[1.]);learner.observe(3.,False)
+        result=learner.finish(False)
+        self.assertAlmostEqual(result['reward'],driving_reward(3.,False))
+        self.assertEqual(learner.count,1)

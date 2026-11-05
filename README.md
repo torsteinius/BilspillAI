@@ -16,11 +16,34 @@ utformer og utfordrer hypotesene; Codex implementerer, tester og bidrar med
 tekniske forslag. Loggen viser også forsøk som forverret kjøringen, og skiller
 mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid underveis.
 
+[Gjeldende logg: 120° radar og Rust-trening mot generasjon 400](docs/experiments/wide-rust-generation-progress.md).
+Nettverkene bytter nå bil mellom kjøringer; den forrige metoden er bevart nedenfor.
+
+[Forbedring per generasjon i det nye 100-generasjoners forsøket](docs/experiments/deep-100-generation-progress.md)
+viser testpoeng, kjørt distanse, kollisjoner og endring fra startmodellen.
+Loggen oppdateres lokalt under kjøringen; GitHub viser sist pushede versjon.
+
 ## Nå: trening på svinger, kjegler og trafikk
 
-Den oppdaterte treningsbanen har vekslende svinger, 33 kjegler og fem biler som kjører samme vei med 80–120 % fart. Radaren har 60° åpningsvinkel og rekkevidde 540, og gir nærhet, sideplassering, objektfart og relativ tilnærmingsfart til modellen. 3D-visningen bruker Rust/WebGPU. [Status, oppsett og begrensninger](docs/BIL_HUKOMMELSE.md#status-ved-dokumentasjons--og-videooppdatering).
+Den oppdaterte treningsbanen har vekslende svinger, 33 kjegler og fem biler som kjører samme vei med 80–120 % grunnfart. Radaren har 120° åpningsvinkel og rekkevidde 540. Den gir nærhet, sideplassering, relativ lengdehastighet og tilnærmingsfart for de fire nærmeste objektene; manglende objekter gir nuller. Sju sensorstråler måler avstand til vegger, kjegler og biler. Nettverket har 23 innganger, fire skjulte lag med åtte nevroner og to utganger: styring og brems (0–50 % fartsreduksjon). Rust beregner nettverk, gradienter, veigeometri, radar og kollisjonsavstander. [Metodehistorikk og resultater](docs/UTVIKLINGSLOGG_BIL.md).
 
-### Ny video: 33 kjegler og smalere radar
+### Ny video: generasjon 156 med styring og brems
+
+[![Generasjon 156 kjører ovenfra med fem biler, 33 kjegler og 120° radar](docs/media/hybrid-generation156-overhead-preview.gif)](docs/media/hybrid-generation156-overhead.mp4)
+
+[Se den nye videoen — 60 sekunder, MP4](docs/media/hybrid-generation156-overhead.mp4).
+Filmet 5. november 2026 i **1× avspilling**, ovenfra med hele banen synlig.
+Alle fem biler bruker den lagrede modellen fra **generasjon 156**. Vektene
+oppdateres ikke i opptaket; videre trening kjører separat uten visualisering.
+Kollisjoner og omstarter er med, og bare biler som krasjer starter på nytt.
+
+I de 100 utvelgelsestestene kjørte denne modellen i gjennomsnitt **771 banenheter
+før krasj**, mot **405** ved generasjon 110: omtrent **90 % lengre** under samme
+testoppsett. Alle 100 tester endte fortsatt i krasj. [Lagrede testresultater](docs/experiments/2026-11-05-generation156.json). Videoen er en illustrasjon,
+ikke selve testen: her bruker alle bilene samme modell og får starte på nytt.
+I testene prøves kandidaten i én bilrolle av gangen mot fast referansetrafikk.
+
+### Tidligere video: generasjon 8 med smalere radar
 
 [![Ny faktisk kjøring ovenfra med fem biler, 33 kjegler og 60° radar](docs/media/hybrid-33cones-60deg-overhead-preview.gif)](docs/media/hybrid-33cones-60deg-overhead.mp4)
 

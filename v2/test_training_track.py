@@ -12,7 +12,7 @@ class TrainingTrackTests(unittest.TestCase):
 
     def test_training_track_has_alternating_turns_and_cones_inside_road(self):
         track=Track.generate('training')
-        self.assertEqual(len(track.cones),11)
+        self.assertEqual(len(track.cones),33)
         signs=[]
         for i,p in enumerate(track.points):
             a,b=track.points[i-1],track.points[(i+1)%len(track.points)]
@@ -82,3 +82,18 @@ class TrainingTrackTests(unittest.TestCase):
         target = dict(x=350., y=0., z=35., crashed=False)
         with patch.object(app, 'clearance', track.clearance):
             self.assertTrue(app.radar_line_of_sight(car, target))
+
+    def test_dense_cones_leave_clear_starts_and_do_not_overlap(self):
+        app.configure_track('training')
+        previous_traffic=app.TRAFFIC
+        app.configure_traffic('convoy')
+        try:
+            for offset in (-12.,-8.,0.,8.,12.):
+                for car in app.initial(offset):
+                    for cone in app.TRACK.cones:
+                        self.assertGreater(math.hypot(car['x']-cone['x'],car['y']-cone['y']),app.CAR_RADIUS+cone['radius']+2)
+            for i,a in enumerate(app.TRACK.cones):
+                for b in app.TRACK.cones[i+1:]:
+                    self.assertGreater(math.hypot(a['x']-b['x'],a['y']-b['y']),a['radius']+b['radius']+2*app.CAR_RADIUS)
+        finally:
+            app.configure_traffic(previous_traffic)

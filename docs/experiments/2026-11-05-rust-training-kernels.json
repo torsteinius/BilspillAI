@@ -1,0 +1,36 @@
+{
+  "model": ".ai-service/car-brake-deep-wide-300/generation-101.json",
+  "generation": 101,
+  "training_attempts": 25,
+  "evaluation_attempts": 15,
+  "timings": {
+    "previous_python_kernels": {
+      "training_seconds": [
+        1.4760488327592611,
+        1.4738539578393102,
+        1.479604917112738
+      ],
+      "evaluation_seconds": [
+        0.9699795409105718,
+        0.9719876660965383,
+        0.9760602917522192
+      ]
+    },
+    "rust": {
+      "training_seconds": [
+        0.40220520831644535,
+        0.40990070812404156,
+        0.40485775005072355
+      ],
+      "evaluation_seconds": [
+        0.27957541728392243,
+        0.27812916692346334,
+        0.2781108748167753
+      ]
+    }
+  },
+  "max_trained_weight_difference": 1.1102230246251565e-16,
+  "evaluation_score_difference": 0.0,
+  "training_speedup": 3.6458455656939526,
+  "evaluation_speedup": 3.494734755251374
+}

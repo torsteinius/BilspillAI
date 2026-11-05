@@ -4,6 +4,10 @@
 <style>
 [hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:#101820;color:#e9eff4;font:16px system-ui,sans-serif}main{max-width:1100px;margin:40px auto;padding:0 24px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:32px;margin:0}p{color:#a9bac7;line-height:1.6}.tag{color:#72e4b0;border:1px solid #325648;padding:8px 14px;border-radius:30px}.stats{display:flex;gap:16px;margin:24px 0}.stat{background:#1b2935;padding:16px 22px;border-radius:12px;flex:1}.stat span{display:block;color:#a9bac7;font-size:13px}.stat strong{font-size:24px;font-variant-numeric:tabular-nums}#lap{display:grid;grid-auto-rows:1.3em;line-height:1.3;min-width:7ch}#lap b{display:block;white-space:nowrap;font:inherit}#lap b:first-child{color:#72e4b0}#lap b:last-child{color:#6fb9ff}svg{width:100%;background:#14242c;border:1px solid #30424e;border-radius:18px}.note{font-size:14px}a{color:#72e4b0}
 .recording-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:16px 0;min-height:44px}.recording-controls button{background:#72e4b0;color:#101820;border:0;border-radius:8px;padding:11px 16px;font:600 15px system-ui;cursor:pointer}.recording-controls button:disabled{opacity:.5;cursor:default}.recording-controls button[data-recording="true"]{background:#ff865f}#recordStatus{font-variant-numeric:tabular-nums;color:#a9bac7}#recordDownload[hidden]{display:none}
+.overhead-only section[aria-label="Førerplass i 3D"]{display:none}
+.overhead-only main{margin:16px auto;max-width:1400px}
+.overhead-only #recordPreview{max-height:260px}
+.overhead-only #trackView{max-height:65vh}
 </style><main><header><h1>AI-spill <small>Bilspill</small></h1><div class="tag" id="connection">Kobler til Python</div></header>
 <p><span id="trafficInfo">Laster trafikk</span> · sju sensorstråler og radar · felles nettverk: <span id="architecture">—</span>.</p>
 <div class="stats"><div class="stat"><span>Generasjon</span><strong id="gen">0 / 100</strong></div><div class="stat"><span>Beste poeng hittil</span><strong id="score">—</strong></div><div class="stat"><span>Runde per bil</span><strong id="lap"><b>0.0 %</b><b>0.0 %</b></strong></div></div>
@@ -35,6 +39,8 @@
 <p class="note">Alle bilene bruker samme nettverk; under trening følger visningen kandidaten som evalueres. Sensorstrålene måler nærmeste vegg eller bil, og radaren gir nærhet og retning til nærmeste synlige bil. Fem biler starter jevnt fordelt rundt hele banen, med en femtedels runde mellom hver. Fartsforskjellene gjør at de etter hvert tar igjen hverandre. Ved kollisjon starter bare involverte biler på nytt når startplassen er ledig. Modellen styrer selv; vellykkede forbikjøringer er ikke garantert. Fargene identifiserer bilene i visningen og er ikke sensorinput.</p><p id="validation" class="note"></p></main>
 <script type="module" src="/renderer/bridge.js"></script>
 <script>
+const overheadOnly=location.hash==='#ovenfra';
+if(overheadOnly)document.documentElement.classList.add('overhead-only');
 const $=id=>document.getElementById(id);
 let cockpitState=null, road=[], trackData=null;
 const carColors=['#72e4b0','#6fb9ff','#f3c969','#e69bff','#ff865f'];
@@ -118,12 +124,13 @@ $('driver').onchange=()=>{previousHeading=null;drawCockpit();};
 $('cameraMode').onchange=drawCockpit;
 $('fullscreen3d').onclick=()=>{(window.carGpu?.ready?$('gpuCanvas'):$('cockpit')).requestFullscreen().catch(()=>{});};
 function drawCockpit(){
+ if(overheadOnly)return;
  const ctx=cockpitContext,W=1200,H=650;
  if(!cockpitState||!road.length){ctx.fillStyle='#bacbd4';ctx.font='22px system-ui';ctx.fillText('Venter på banen og Python …',40,70);return;}
  const id=Number($('driver').value),car=cockpitState.cars[id];
  const chase=$('cameraMode').value==='chase';
  const radar=car.radar;
- $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · fart ${radar.speed.toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
+ $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · relativ fart ${(radar.relative_speed??0).toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
  $('elevationInfo').textContent=`Høyde ${Math.round(car.z||0)} · Stigning ${(100*Math.tan(car.pitch||0)).toFixed(1)} %`;
  if(window.carGpu?.ready&&window.carGpu.render(cockpitState,id,chase))return;
  const pitch=(car.pitch||0)+(chase?-.18:0),cp=Math.cos(pitch),sp=Math.sin(pitch);
@@ -230,6 +237,7 @@ async function paintVideoFrame(){
    videoContext.drawImage(source,0,90,1600,1600*source.height/source.width);
   }else{
   const svg=$('trackView').cloneNode(true);
+  if(trackData)svg.setAttribute('viewBox',trackData.view_box.join(' '));
   svg.setAttribute('width','1600');svg.setAttribute('height','1080');svg.setAttribute('font-family','Arial, sans-serif');
   // CSS outside the SVG is not part of the exported picture.
   url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)],{type:'image/svg+xml;charset=utf-8'}));
@@ -243,10 +251,10 @@ async function paintVideoFrame(){
   const s=cockpitState;
   videoContext.fillStyle='rgba(10,18,24,.92)';videoContext.fillRect(0,0,1600,86);videoContext.fillRect(0,1000,1600,80);
   videoContext.fillStyle='#e9eff4';videoContext.font='bold 28px system-ui';
-  videoContext.fillText(`Treningsbane · fem biler · kjegler · radar 3× · ${captureSource==='3d'?'3D':'oversiktskart'}`,28,36);
+  videoContext.fillText(`Treningsbane · fem biler · ${trackData?.cones?.length??0} kjegler · radar 3× · ${captureSource==='3d'?'3D':'oversiktskart'}`,28,36);
   videoContext.font='22px system-ui';
   videoContext.fillText(`Viser generasjon ${s?.display_generation??s?.generation??'—'}, kandidat ${s?.display_candidate??'—'} · steg ${s?.step??0} · ${s?.speed??1}× avspilling`,28,68);
-  videoContext.fillText('Faktisk treningsforsøk, inkludert feil og omstarter. Ikke en mestringstest.',28,1032);
+  videoContext.fillText(s?.training?'Treningsforsøk med feil og omstarter.':'Avspilling av lagret modell · styring og brems · vektene oppdateres ikke.',28,1032);
   videoContext.fillText(`Omstarter: ${s?.cars.map(c=>c.restarts).join(' / ')||'—'} · 5. november 2026`,28,1062);
  }finally{if(url)URL.revokeObjectURL(url);painting=false;}
 }

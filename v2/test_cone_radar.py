@@ -44,3 +44,34 @@ class ConeRadarTests(unittest.TestCase):
         with patch.object(app, 'sensors', return_value=[180.]*7):
             self.assertEqual(len(app.observations(self.car, cone)), 11)
             self.assertEqual(app.observations(self.car, [])[-4:], [0.]*4)
+
+    def test_one_twenty_degree_cone_boundary(self):
+        for degrees,expected in ((29,True),(45,True),(59,True),(61,False),(-45,True),(-59,True),(-61,False)):
+            angle=math.radians(degrees)
+            target=self.target(x=400+100*math.cos(angle),y=130+100*math.sin(angle))
+            self.assertEqual(app.radar(self.car,target)['detected'],expected)
+        self.assertAlmostEqual(app.radar(self.car,self.target())['half_angle'],math.pi/3)
+
+    def test_four_nearest_mixed_objects_and_zero_padding(self):
+        from unittest.mock import patch
+        app.RADAR_MODE='cone4'
+        objects=[self.target(x=400+d,kind='cone' if d==40 else 'car',radius=6. if d==40 else 7.) for d in (200,60,40,120,80)]
+        with patch.object(app.TRACK,'cones',[]), patch.object(app,'sensors',return_value=[180.]*7):
+            values=app.observations(self.car,objects)
+            self.assertEqual(len(values),23)
+            self.assertEqual([round((1-values[7+4*i])*540) for i in range(4)],[34,53,73,113])
+            self.assertEqual(values[9],0.) # cone speed
+            self.assertEqual(app.observations(self.car,[]) [7:],[0.]*16)
+            short=app.observations(self.car,objects[:2])
+            self.assertEqual(short[15:],[0.]*8)
+
+    def test_expanding_network_preserves_outputs_with_extra_targets(self):
+        import random
+        from ai.network import NeuralNetwork
+        rng=random.Random(82)
+        old=NeuralNetwork([11,8,8,1]);old.weights=[rng.uniform(-.3,.3) for _ in old.weights]
+        expanded=old.expand_inputs(12)
+        for _ in range(30):
+            inputs=[rng.uniform(-1,1) for _ in range(11)]
+            extra=[rng.uniform(-1,1) for _ in range(12)]
+            self.assertEqual(old.forward(inputs),expanded.forward(inputs+extra))
