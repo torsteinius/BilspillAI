@@ -2,7 +2,7 @@
 
 **Viktig:** Endringer fra forrige generasjon og fra start blander læring med endret vanskelighetsgrad. Bruk sammenligningen med forelderen på samme generasjons scenarioer nedenfor for å vurdere kandidatens gevinst.
 
-Sist fullførte generasjon: **422 av 800**. Hele kjøringen er ikke registrert ferdig.
+Sist fullførte generasjon: **431 av 800**. Hele kjøringen er ikke registrert ferdig.
 
 Denne loggen oppdateres automatisk fra lagrede testresultater. Generasjoner som fortsatt trener eller testes tas ikke med.
 Arkitektur: 23 → 8 → 8 → 8 → 8 → 2. Seed: 20261110. Bane, startsteder og felles retning endres hver generasjon; kandidater og forelder testes på identiske scenarioer innen generasjonen.
@@ -56,6 +56,15 @@ Testene i hovedtabellen brukes til å velge vinneren. De to ekstra tilfeldige te
 | 420 | learner-9 | 7137.24 | -1997.82 | +8367.10 | 1826.38 | -202.01 | +175.7 % | 64/100 | -16 | 36 |
 | 421 | learner-0 | 8111.38 | +974.13 | +9341.24 | 1987.25 | +160.86 | +199.9 % | 64/100 | +0 | 36 |
 | 422 | learner-8 | 13306.82 | +5195.44 | +14536.68 | 2558.16 | +570.91 | +286.1 % | 24/100 | +40 | 76 |
+| 423 | learner-6 | 2260.20 | -11046.61 | +3490.07 | 1221.44 | -1336.72 | +84.4 % | 94/100 | -70 | 6 |
+| 424 | learner-1 | 4570.49 | +2310.28 | +5800.35 | 1537.46 | +316.02 | +132.1 % | 83/100 | +11 | 17 |
+| 425 | learner-4 | 999.38 | -3571.11 | +2229.24 | 1046.83 | -490.63 | +58.0 % | 99/100 | -16 | 1 |
+| 426 | learner-8 | 10026.67 | +9027.29 | +11256.53 | 2151.75 | +1104.91 | +224.8 % | 43/100 | +56 | 57 |
+| 427 | learner-3 | 14695.65 | +4668.97 | +15925.51 | 2695.90 | +544.15 | +306.9 % | 12/100 | +31 | 88 |
+| 428 | learner-7 | 5904.57 | -8791.08 | +7134.43 | 1698.02 | -997.88 | +156.3 % | 75/100 | -63 | 25 |
+| 429 | learner-9 | 7968.20 | +2063.64 | +9198.07 | 1957.72 | +259.70 | +195.5 % | 63/100 | +12 | 37 |
+| 430 | learner-6 | 5868.80 | -2099.41 | +7098.66 | 1682.21 | -275.52 | +153.9 % | 73/100 | -10 | 27 |
+| 431 | learner-8 | 15403.85 | +9535.05 | +16633.71 | 2763.77 | +1081.57 | +317.1 % | 6/100 | +67 | 94 |
 
 ## Ekstra tilfeldige teststarter — ikke brukt til utvelgelse
 
@@ -102,6 +111,15 @@ Testene i hovedtabellen brukes til å velge vinneren. De to ekstra tilfeldige te
 | 420 | 508.33 | 8 |
 | 421 | 886.03 | 6 |
 | 422 | 1387.09 | 2 |
+| 423 | 142.40 | 9 |
+| 424 | -52.42 | 10 |
+| 425 | 40.89 | 10 |
+| 426 | 1328.40 | 2 |
+| 427 | 1683.59 | 0 |
+| 428 | 977.74 | 5 |
+| 429 | 524.60 | 8 |
+| 430 | 457.43 | 8 |
+| 431 | 1481.64 | 1 |
 
 Datakilde: lokal `metrics.jsonl` i kjøringen. CSV-en inneholder også samlet endring i kollisjoner fra start og registrert kjøretid. GitHub-versjonen oppdateres først ved en ny push; den lokale filen oppdateres mens kjøringen går.
 
@@ -150,3 +168,12 @@ Datakilde: lokal `metrics.jsonl` i kjøringen. CSV-en inneholder også samlet en
 | 420 | +422.83 | +56.79 | +2 |
 | 421 | +318.73 | +37.49 | +2 |
 | 422 | +8774.74 | +1072.03 | +54 |
+| 423 | +235.60 | +31.54 | +1 |
+| 424 | +3179.81 | +463.60 | +11 |
+| 425 | +537.12 | +94.84 | +0 |
+| 426 | +4886.52 | +565.97 | +34 |
+| 427 | +5093.66 | +608.05 | +33 |
+| 428 | +3013.29 | +361.49 | +19 |
+| 429 | +2647.43 | +354.03 | +13 |
+| 430 | +1813.00 | +248.97 | +8 |
+| 431 | +254.49 | +23.25 | +2 |

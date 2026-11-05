@@ -146,3 +146,23 @@ class RotatingTests(unittest.TestCase):
         self.assertEqual(len(result['assignments']),10)
         self.assertTrue(all(len(row)==5 and all(n>0 for n in row) for row in result['assignments']))
         self.assertTrue(all(c['travel']==20. for c in cars))
+
+    def test_wall_credit_is_shorter_and_preserves_total_penalty(self):
+        from games.car.rotating import collision_weights
+        w=collision_weights(50,'latest40_last25')
+        self.assertEqual(w[:26],[0.]*26)
+        self.assertAlmostEqual(w[-1],.4)
+        self.assertAlmostEqual(sum(w[25:-1]),.6)
+        for i in range(26,48):self.assertAlmostEqual(w[i+1]-w[i],w[i]-w[i-1])
+        for n in range(1,51):self.assertAlmostEqual(sum(collision_weights(n,'latest40_last25')),1.)
+
+    def test_wall_event_selects_short_credit_but_objects_keep_long_credit(self):
+        for kinds,expected in [(['wall'],'latest40_last25'),(['cone'],'latest20_linear'),(['car'],'latest20_linear'),(['wall','cone'],'latest20_linear')]:
+            actors=[NeuralNetwork([1,1])]
+            cars=[dict(travel=0.,crashed=False)]
+            def step(cars,weights,controls,events):
+                cars[0]['crashed']=True
+                events.extend((0,kind,None) for kind in kinds)
+            with patch('games.car.rotating.app.restart_crashed'),patch('games.car.rotating.features',return_value=[1.]),patch('games.car.rotating.app.step',side_effect=step),patch('games.car.rotating.clone_network',side_effect=lambda a:a),patch('games.car.rotating.credit_history',wraps=credit_history) as credit:
+                train_generation(actors,10,1,cars,[deque()],12,credit_mode='latest20_linear',wall_credit_mode='latest40_last25')
+            self.assertEqual(credit.call_args.kwargs['credit_mode'],expected)

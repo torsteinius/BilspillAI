@@ -39,6 +39,7 @@ Oppføringene følger utviklingsloggen. Hver lenke beskriver forslag, begrunnels
 | E33 | 361 / four_cones | [Ti nettverk; dobbelt antall treningsforsøk](../UTVIKLINGSLOGG_BIL.md#endring-33) |
 | E34 | 383 / random_scenarios | [Tilfeldige 4–8 kjegler og starter; felles retning veksler](../UTVIKLINGSLOGG_BIL.md#endring-34) |
 | E35 | Se logg; ingen bekreftet grafgrense | [1000 generasjoner: mål om passeringer og ulike hindringer](../UTVIKLINGSLOGG_BIL.md#endring-35) |
+| E36 | 432 / random_scenarios | [Veggkontakt: siste 25, 40 % til nyeste](../UTVIKLINGSLOGG_BIL.md#endring-36) |
 
 ## Sammenlignbar del av forsøket
 

@@ -517,3 +517,15 @@ ut fra sensorene og håndtere nye kombinasjoner. Banens geometri, sensorene
 og fartsfaktorene er fortsatt faste; retningen veksler systematisk.
 Dette er et mål om generalisering, ikke et allerede dokumentert resultat.
 Se [oppføring 34](UTVIKLINGSLOGG_BIL.md#endring-34).
+
+
+### Veggstraff fra generasjon 432 (5. november 2026)
+
+Siste 25 lagrede handlinger ved veggkontakt: 40 % nyeste, 60 % lineært bakover til null. Objektkontakt beholder 50/20 %-fordelingen. Vektene fra 431 beholdes, trening fortsetter til 1000. Se [endring 36](UTVIKLINGSLOGG_BIL.md#endring-36) for begrunnelse, avgrensninger og validering.
+
+Prosjekteierens observasjon etter visning av generasjon 434: Bilene virket
+for bundet til sentrum av veien, slik at passeringer ble nesten umulige.
+Hypotesen er at lang historikk ved veggkrasj også straffet tidligere, nyttig
+sidebevegelse før en forbikjøring. Den kortere vegghistorikken skal rette
+straffen mer mot den umiddelbare styringen. Dette er en kvalitativ forklaring
+som må undersøkes, ikke en bekreftet årsakssammenheng; se endring 36.

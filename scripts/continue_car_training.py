@@ -41,6 +41,7 @@ def main():
          '--learners',str(settings['learners']),'--rounds',str(settings['rounds']),'--test-rounds',str(settings['test_rounds']),
          '--steps',str(settings['steps']),'--seed',str(settings['seed']),
          '--history-stride',str(settings['history_stride']),'--collision-credit',settings['credit']]
+    if settings.get('wall_credit'):cmd += ['--wall-credit',settings['wall_credit']]
     if settings.get('random_scenarios'):cmd.append('--random-scenarios')
     else:cmd.extend(['--cone-count',str(settings['cone_count'])])
     if settings['rotating_networks']:cmd.append('--rotate')

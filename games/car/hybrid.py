@@ -209,6 +209,7 @@ def main():
     parser.add_argument('--traffic-model',type=Path,help='Keep fixed evaluation opponents when continuing a run')
     parser.add_argument('--hidden',type=int,nargs='+',help='Hidden layer widths for --fresh-brake; default: 8 8')
     parser.add_argument('--collision-credit',choices=('uniform50','latest20_linear','latest25_last10'),default='uniform50')
+    parser.add_argument('--wall-credit',choices=('latest40_last25',),help='Wall-only collision penalty over latest 25 records')
     parser.add_argument('--history-stride',type=int,default=1,help='Save one action per N steps; aggregate intervening rewards (rotating trainer)')
     parser.add_argument('--rotate',action='store_true',help='Asynchronous round-robin assignment across cars')
     parser.add_argument('--trained-only',action='store_true',help='Choose among trained candidates; keep parent as reference only')
@@ -221,6 +222,8 @@ def main():
     parser.add_argument('--seed',type=int,default=20261105)
     parser.add_argument('--generation-offset',type=int,default=0)
     args=parser.parse_args()
+    if args.wall_credit and not args.rotate:
+        parser.error('--wall-credit requires --rotate')
     if args.collision_credit != 'uniform50' and not args.rotate:
         parser.error('--collision-credit requires --rotate')
     if args.history_stride < 1 or (args.history_stride != 1 and not args.rotate):
@@ -264,7 +267,7 @@ def main():
     test_rng=random.Random(args.seed+1)
     test_offsets=[test_rng.uniform(-12.,12.) for _ in range(args.test_rounds)]
     settings=dict(random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake,action_outputs=parent.architecture[-1],brake_max_reduction=.5 if parent.architecture[-1]==2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=23,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
-                  learners=args.learners,training_attempts_per_generation=args.learners*args.rounds,history=50,history_stride=args.history_stride,history_reward='sum_between_samples',history_boundary='new_sample_on_new_session',credit=args.collision_credit,safe_reward=SAFE_REWARD,
+                  learners=args.learners,training_attempts_per_generation=args.learners*args.rounds,history=50,history_stride=args.history_stride,history_reward='sum_between_samples',history_boundary='new_sample_on_new_session',credit=args.collision_credit,wall_credit=args.wall_credit,safe_reward=SAFE_REWARD,
                   progress_reward=PROGRESS_REWARD,collision_penalty=COLLISION_PENALTY,
                   exploration_sigma=.15,learning_rate=.0003,mutation_sigma=.03,
                   initial_generation=source_generation,protected_parent=not args.trained_only,
@@ -317,7 +320,7 @@ def main():
                 def report_attempt(row):
                     log.write(json.dumps(dict(generation=gen,training_attempt=row))+'\n');log.flush()
                 rotation=train_generation([l.actor for l in learners],args.steps,args.rounds,
-                                          training_cars,car_histories,args.seed+gen*100,on_attempt=report_attempt,history_stride=args.history_stride,credit_mode=args.collision_credit,scenario=scenario)
+                                          training_cars,car_histories,args.seed+gen*100,on_attempt=report_attempt,history_stride=args.history_stride,credit_mode=args.collision_credit,scenario=scenario,wall_credit_mode=args.wall_credit)
                 log.write(json.dumps(dict(generation=gen,rotation_summary={k:v for k,v in rotation.items() if k!='records'}))+'\n');log.flush()
             else:
                 for round_index in range(args.rounds):

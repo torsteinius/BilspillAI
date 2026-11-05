@@ -21,7 +21,7 @@ lines += ['', '## Sammenlignbar del av forsøket', '',
           'Ved nye endringer: legg først inn begrunnelse og observasjon i utviklingsloggen, deretter hendelse i `car-training-timeline.json` med forsøksserie og første berørte generasjon. Bruk null når grensen er ukjent. Oppdater graf og tidslinje med `.venv-media/bin/python scripts/plot_car_training_progress.py`.', '']
 (ROOT/'docs/experiments/car-training-timeline.md').write_text('\n'.join(lines))
 rows=[]
-for name in ('car-brake-deep-wide-300','car-brake-deep-wide-rust','car-history3-weighted','car-no-cones','car-four-cones','car-last10','car-rollback286','car-continued800','car-best325-elite800','car-ten-models800','car-random800','car-random1000'):
+for name in ('car-brake-deep-wide-300','car-brake-deep-wide-rust','car-history3-weighted','car-no-cones','car-four-cones','car-last10','car-rollback286','car-continued800','car-best325-elite800','car-ten-models800','car-random800','car-random1000','car-wall1000'):
     metrics=ROOT/'.ai-service'/name/'metrics.jsonl'
     if not metrics.exists():continue
     for line in metrics.read_text().splitlines():
@@ -36,7 +36,9 @@ for name in ('car-brake-deep-wide-300','car-brake-deep-wide-rust','car-history3-
 rows=sorted({r['generation']:r for r in rows}.values(),key=lambda r:r['generation'])
 x=[r['generation'] for r in rows]
 plt.rcParams.update({'font.size':11,'axes.spines.top':False,'axes.spines.right':False})
-fig,axes=plt.subplots(2,1,figsize=(12,8),sharex=True,layout='constrained')
+fig,panels=plt.subplots(3,1,figsize=(14,11),sharex=True,layout='constrained',gridspec_kw={'height_ratios':[1.1,1,1]})
+label_ax=panels[0];axes=panels[1:]
+label_ax.set_ylim(0,1);label_ax.axis('off')
 for ax,key,title in zip(axes,('mean_steps','mean_distance'),('Kjøretid per test (simuleringssteg)','Kjørelengde per test (banenheter)')):
     y=[r[key] for r in rows]
     trend=[sum(y[i-9:i+1])/10 if i>=9 and not any(x[i-9]<boundary<=x[i] for boundary in (246,255,296,358,383)) else float('nan') for i in range(len(y))]
@@ -50,8 +52,13 @@ for ax,key,title in zip(axes,('mean_steps','mean_distance'),('Kjøretid per test
     ax.set_ylabel(title);ax.grid(axis='y',alpha=.2);ax.set_ylim(bottom=0)
     ax.annotate(f'{y[-1]:.0f}',(x[-1],y[-1]),xytext=(6,5),textcoords='offset points',color='#075985',fontweight='bold')
 axes[0].legend(loc='lower right',frameon=False)
-for i,event in enumerate(e for e in timeline if e['series'] in ('wide120','no_cones','four_cones','random_scenarios') and x[0]<=e['first_generation']<=x[-1]):
-    axes[0].text(event['first_generation']+.4,.97-.07*(i%2),f"{event['id']}: {event['chart_label']}",transform=axes[0].get_xaxis_transform(),va='top',color='#92400e',fontsize=10)
+last_label_x=float('-inf')
+for event in (e for e in timeline if e['series'] in ('wide120','no_cones','four_cones','random_scenarios') and x[0]<=e['first_generation']<=x[-1]):
+    boundary=event['first_generation']-.5
+    label_x=max(boundary,last_label_x+5)
+    last_label_x=label_x
+    label_ax.plot([boundary,label_x],[0,.09],color='#b45309',linewidth=.8)
+    label_ax.text(label_x,.11,f"{event['id']} · gen. {event['first_generation']}: {event['chart_label']}",rotation=90,ha='center',va='bottom',color='#92400e',fontsize=9)
 axes[1].set_xlabel('Generasjon');axes[1].set_xlim(100,x[-1]+8)
 fig.suptitle(f'Biltrening: utvikling fra generasjon 101 til {x[-1]}',fontsize=18,fontweight='bold')
 all_crashed=all(r['collisions']==r['attempts'] for r in rows)

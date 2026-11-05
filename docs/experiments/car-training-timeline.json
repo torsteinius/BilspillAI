@@ -288,6 +288,14 @@
       "chart_label": null,
       "status": "scheduled_continuation",
       "planned_first_generation": 801
+    },
+    {
+      "id": "E36",
+      "title": "Veggkontakt: siste 25, 40 % til nyeste",
+      "log_anchor": "endring-36",
+      "series": "random_scenarios",
+      "first_generation": 432,
+      "chart_label": "Vegg: 25 handlinger, 40 % nyeste"
     }
   ]
 }

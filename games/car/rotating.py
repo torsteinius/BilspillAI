@@ -76,13 +76,15 @@ def collision_weights(count, mode='uniform50'):
     """Oldest first; truncate the 50-slot schedule and renormalize short lives."""
     if not 0 <= count <= 50:
         raise ValueError('Expected up to 50 history records')
-    if mode not in ('uniform50', 'latest20_linear', 'latest25_last10'):
+    if mode not in ('uniform50', 'latest20_linear', 'latest25_last10', 'latest40_last25'):
         raise ValueError('Unknown collision credit mode')
     if not count:
         return []
     if mode == 'uniform50':
         return [1./count]*count
-    if mode == 'latest25_last10':
+    if mode == 'latest40_last25':
+        schedule = [0.]*25 + [.6*i/sum(range(24)) for i in range(24)] + [.4]
+    elif mode == 'latest25_last10':
         schedule = [0.]*40 + [.75*i/36 for i in range(9)] + [.25]
     else:
         schedule = [.8*i/sum(range(1,50)) for i in range(1,50)] + [.2]
@@ -104,11 +106,12 @@ def credit_history(history,policies,collision=False,credit_mode='uniform50'):
     if collision:history.clear()
 
 
-def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None):
+def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None):
     """Exactly `attempts` completed drives per policy, with no shared round barrier."""
     if type(history_stride) is not int or history_stride < 1:
         raise ValueError('History stride must be a positive integer')
     collision_weights(0,credit_mode)
+    if wall_credit_mode is not None:collision_weights(0,wall_credit_mode)
     policies=[PoolPolicy(actor,seed+i) for i,actor in enumerate(actors)]
     sessions=[None]*len(cars)
     cursor=0;tick=0;assignment_cursor=0
@@ -149,7 +152,11 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
         # Finished-budget cars are parked while remaining drives finish.
         parked=[(i,c['crashed']) for i,c in enumerate(cars) if not active[i]]
         for i,_ in parked:cars[i]['crashed']=True
-        app.step(cars,[],controls=controls)
+        events=[]
+        if wall_credit_mode is None:app.step(cars,[],controls=controls)
+        else:app.step(cars,[],controls=controls,events=events)
+        # Mixed wall/object contacts keep the longer object history.
+        wall_only={i for i,kind,_ in events if kind=='wall'} - {i for i,kind,_ in events if kind!='wall'}
         for i,crashed in parked:cars[i]['crashed']=crashed
         for i,(session,car) in enumerate(zip(sessions,cars)):
             if not active[i]:continue
@@ -160,10 +167,10 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
             session['reward']+=reward;session['distance']+=max(0.,delta);session['steps']+=1
             if car['crashed'] or session['steps']>=steps:
                 owner=session['owner'];p=policies[owner]
-                credit_history(histories[i],policies,collision=car['crashed'],credit_mode=credit_mode)
+                credit_history(histories[i],policies,collision=car['crashed'],credit_mode=wall_credit_mode if i in wall_only else credit_mode)
                 p.update();p.completed+=1
                 row=dict(network=owner,car=i,attempt=p.completed,steps=session['steps'],
-                         collision=car['crashed'],distance=session['distance'],
+                         collision=car['crashed'],collision_kinds=sorted({kind for index,kind,_ in events if index==i}),distance=session['distance'],
                          reward=session['reward']-(50. if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'])
                 records.append(row)
                 if on_attempt:on_attempt(row)

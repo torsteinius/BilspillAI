@@ -16,7 +16,7 @@ utformer og utfordrer hypotesene; Codex implementerer, tester og bidrar med
 tekniske forslag. Loggen viser også forsøk som forverret kjøringen, og skiller
 mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid underveis.
 
-[Gjeldende logg: tilfeldige kjegler og starter, vekslende kjøreretning](docs/experiments/random800-generation-progress.md).
+[Gjeldende logg: tilfeldig oppsett og kortere vegghistorikk](docs/experiments/wall1000-generation-progress.md).
 Fra generasjon 383 trekkes 4–8 kjegler og startposisjoner tilfeldig. Alle fem biler kjører samme vei, vekselvis med og mot klokka per generasjon. Videoene nedenfor viser tidligere oppsett.
 Treningsbudsjettet er utvidet til **1000 generasjoner totalt**, med automatisk videreføring etter 800. Målet er bedre passeringer og håndtering av biler og kjegler.
 Nettverkene bytter nå bil mellom kjøringer; den forrige metoden er bevart nedenfor.
@@ -27,6 +27,13 @@ Loggen oppdateres lokalt under kjøringen; GitHub viser sist pushede versjon.
 
 [Tidslinje med alle metodeendringer og trendgraf](docs/experiments/car-training-timeline.md).
 Grafmarkeringene og tidslinjen hentes fra samme hendelsesregister.
+
+![Biltrening: kjøretid og kjørelengde per generasjon med metodeendringer](docs/experiments/car-training-trend.png)
+
+Grafen refererer til en fast bildefil som overskrives ved oppdatering, slik at
+README og utviklingsloggen viser samme versjon. Oppdater med
+`.venv-media/bin/python scripts/plot_car_training_progress.py`.
+GitHub viser sist pushede bildefil; grafen er ikke en livevisning.
 
 ## Nå: trening på svinger, kjegler og trafikk
 

@@ -16,6 +16,18 @@ metodene som er implementert korrekt, har foreløpig gitt dårligere kjøring.
 [Detaljert forsøksoppsett](BIL_HUKOMMELSE.md) ·
 [Arkiverte målinger og innstillinger](experiments/2026-11-05-results.json)
 
+## Treningsutvikling med metodeendringer
+
+![Biltrening: kjøretid og kjørelengde per generasjon med metodeendringer](experiments/car-training-trend.png)
+
+Dette er samme bildefil som i README, referert med relativ sti. Når grafen
+regenereres, oppdateres begge dokumentenes visning uten nye bildehenvisninger.
+Kjør `.venv-media/bin/python scripts/plot_car_training_progress.py` fra
+prosjektroten. GitHub viser sist pushede bildefil, ikke løpende treningsdata.
+Se [tidslinjen](experiments/car-training-timeline.md) for koblingen mellom
+markeringene og oppføringene nedenfor. Tilfeldige testoppsett og metodebytter
+påvirker resultatene; markeringene alene dokumenterer ikke årsakssammenhenger.
+
 <a id="endring-01"></a>
 
 ## 01 — Hukommelse ble delt i to separate spørsmål
@@ -1125,6 +1137,54 @@ vellykkede forbikjøringer separat.
 Kontrollfil: `.ai-service/car-random800/continuation.json`.
 Planlagt videreføring: `.ai-service/car-random1000/`, generasjon 801–1000.
 Denne oppføringen er en budsjettendring; videreføringen er planlagt, ikke startet.
+
+<a id="endring-36"></a>
+
+## 36 — Kortere historikk for veggkontakt
+
+**5. november 2026, fra generasjon 432:** Prosjekteieren ba uttrykkelig om
+å aktivere forslaget om kortere veggstraff. Begrunnelsen er at veggkontakt i
+større grad handler om umiddelbar styring enn planlegging langt fram i tid.
+Den tidligere observerte friere sideplasseringen og vinglingen skjedde før
+aktivering; dette er derfor en hypotese, ikke en målt effekt av endringen.
+
+Ved ren veggkontakt fordeles samme totalstraff på 50 over de siste **25 av 50
+lagrede handlingene**: **40 % til nyeste**, de resterende **60 % lineært over
+de 24 eldre**, ned til null på den eldste av disse. Det lagres fortsatt hvert
+tredje steg: vinduet dekker omtrent 75 simuleringssteg. Ved kortere historikk
+brukes den tilgjengelige slutten av fordelingen, normalisert til samme total.
+Nyeste lagrede handling kan være opptil to steg før kollisjonssteget.
+
+Bil- og kjeglekollisjoner beholder 50 oppføringer med 20 % til nyeste og 80 %
+lineært bakover. Ved samtidig vegg- og objektkontakt brukes objektfordelingen,
+uten dobbel straff. Belønning for trygg framdrift beholdes. Kollisjonstype
+registreres nå i treningsloggen.
+
+Generasjon 431 ble fullført med gammel metode. Startvektene er kontrollert
+identiske med denne vinneren; ingen nullstilling. Ny prosess initialiserer
+optimizer, historikk og tilfeldighetsgenerator på nytt. Ti nettverk, tilfeldig
+oppsett, samme referansetrafikk og forelder i evalueringen beholdes.
+Kjøringen går direkte til **1000 totalt**, og erstatter den planlagte overgangen
+ved 800 i oppføring 35. Ny logg: `.ai-service/car-wall1000/`.
+
+**Validering:** 99 programtester passerer, inkludert straffordeling, bevart
+sum og skille mellom vegg-, bil-, kjegle- og blandet kontakt. Læringseffekten
+er ennå ikke målt. Følg kjørelengde og kollisjoner mot forelderen på samme oppsett.
+
+**Prosjekteierens observasjon etter visning av generasjon 434 (5. november
+2026):** Bilene holdt seg for sterkt mot sentrum av veien, og passeringer
+opplevdes som nesten umulige. Prosjekteierens forklaring er at veggkrasj ble
+straffet for langt tilbake i tid: også tidligere handlinger som flyttet bilen
+ut fra sentrum for å passere, fikk straff for en senere veggkontakt. Dette
+kan ha lært modellen å unngå nødvendig sidebevegelse, selv når selve feilen
+var en senere styrekorreksjon. Kortere vegghistorikk skal gjøre det mulig å
+bruke mer av veibredden uten å straffe hele innledningen til en forbikjøring.
+
+Dette er prosjekteierens kvalitative observasjon og årsakshypotese, ikke en
+kontrollert påvisning av årsak. Vi bør følge sideplassering, vellykkede
+passeringer, vingling og veggkollisjoner for å vurdere avveiningen. Disse
+atferdsmålene er ennå ikke samlet som egne evalueringsmålinger. Notatet
+presiserer begrunnelsen for endring 36; det innfører ingen ny treningsendring.
 
 ## Hva vi vet, og hva som står åpent
 
