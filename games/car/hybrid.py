@@ -12,6 +12,7 @@ from ai.network import NeuralNetwork
 from . import app
 from .temporal import Adam, Experience, distribute_collision, forward_gradient
 
+NATIVE_EVALUATION = False
 SAFE_REWARD = .02
 PROGRESS_REWARD = .05
 COLLISION_PENALTY = 50.
@@ -200,6 +201,9 @@ def train_round(learners,steps,offset,cars=None):
 
 def evaluate_candidate(actor, traffic, steps, offset=0, initial_cars=None,overtake_reward=0.,background_models=(),pass_only=False,car_collision_penalty=50.):
     """Every candidate drives every starting slot/speed against frozen opponents."""
+    if NATIVE_EVALUATION:
+        from .native_evaluation import evaluate
+        return evaluate(actor,traffic,steps,offset,initial_cars,overtake_reward,background_models,pass_only,car_collision_penalty)
     rows=[]
     for role in range(5):
         cars=app.initial(offset) if initial_cars is None else copy.deepcopy(initial_cars)
@@ -245,6 +249,7 @@ def evaluate_suite(actor, traffic, steps, offsets, starts=None,overtake_reward=0
 
 
 def main():
+    global NATIVE_EVALUATION
     parser=argparse.ArgumentParser(description=__doc__)
     source=parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--initial-model',type=Path)
@@ -255,6 +260,12 @@ def main():
     parser.add_argument('--cone-count',type=int,choices=range(34),help='Evenly spaced cones (0–33)')
     parser.add_argument('--no-cones',action='store_true',help='Train and evaluate without cones')
     parser.add_argument('--wide-sector-view',action='store_true',help='Keep 30-sector weights; switch to 220-degree coarse side vision')
+    parser.add_argument('--training-cars',type=int,choices=(5,10),default=5)
+    parser.add_argument('--batch-size',type=int,choices=(0,50),default=0)
+    parser.add_argument('--batch-backend',choices=('rust','mlx-gpu'),default='rust')
+    parser.add_argument('--continue-survivors',action='store_true')
+    parser.add_argument('--rust-evaluation',action='store_true',help='Whole evaluation rollout in Rust (pass-only sectors, no cones)')
+    parser.add_argument('--max-brake',type=float,default=.5)
     parser.add_argument('--car-collision-penalty',type=float,default=50.,help='Penalty for car contact; wall/cone penalties stay 50')
     parser.add_argument('--background-speed-scale',type=float,default=1.,help='Multiplier for background cars only, in (0,1]')
     parser.add_argument('--background-model',type=Path,action='append',default=[],help='Frozen background model, one per additional car; up to 15')
@@ -279,6 +290,14 @@ def main():
     parser.add_argument('--seed',type=int,default=20261105)
     parser.add_argument('--generation-offset',type=int,default=0)
     args=parser.parse_args()
+    if (args.training_cars!=5 or args.batch_size or args.continue_survivors) and not (args.rotate and args.random_scenarios):
+        parser.error('New batching/slots require rotation and random scenarios')
+    if not math.isfinite(args.max_brake) or not 0<=args.max_brake<1:
+        parser.error('--max-brake must be in [0,1)')
+    app.MAX_BRAKE=args.max_brake
+    NATIVE_EVALUATION=args.rust_evaluation
+    if args.rust_evaluation and not (args.pass_only and args.no_cones):
+        parser.error('--rust-evaluation requires --pass-only and --no-cones')
     if not math.isfinite(args.car_collision_penalty) or args.car_collision_penalty<0 or (args.car_collision_penalty!=50. and not args.rotate):
         parser.error('Nondefault car penalty must be nonnegative and requires rotation')
     if not math.isfinite(args.background_speed_scale) or not 0<args.background_speed_scale<=1:
@@ -342,7 +361,7 @@ def main():
     rng=random.Random(args.seed)
     test_rng=random.Random(args.seed+1)
     test_offsets=[test_rng.uniform(-12.,12.) for _ in range(args.test_rounds)]
-    settings=dict(random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake or args.fresh_sectors or args.fresh_sectors30,action_outputs=parent.architecture[-1],throttle_max_increase=.5 if parent.architecture[-1]==3 else 0.,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,brake_max_reduction=.5 if parent.architecture[-1]>=2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=parent.architecture[0],radar_angles=angle_inputs,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
+    settings=dict(batch_size=args.batch_size,batch_backend=args.batch_backend,continue_survivors=args.continue_survivors,evaluation_car_count=5+len(args.background_model),native_evaluation=args.rust_evaluation,random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake or args.fresh_sectors or args.fresh_sectors30,action_outputs=parent.architecture[-1],throttle_max_increase=.5 if parent.architecture[-1]==3 else 0.,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,brake_max_reduction=args.max_brake if parent.architecture[-1]>=2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=parent.architecture[0],radar_angles=angle_inputs,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
                   learners=args.learners,training_attempts_per_generation=args.learners*args.rounds,history=50,history_stride=args.history_stride,history_reward='sum_between_samples',history_boundary='new_sample_on_new_session',credit=args.collision_credit,wall_credit=args.wall_credit,safe_reward=SAFE_REWARD,
                   progress_reward=PROGRESS_REWARD,collision_penalty=COLLISION_PENALTY,car_collision_penalty=args.car_collision_penalty,
                   exploration_sigma=.15,learning_rate=.0003,mutation_sigma=.03,
@@ -371,7 +390,7 @@ def main():
             parser.error('Background models must match actor architecture and observations')
         dest=args.output/f'background-{i}.json';net.save(dest)
         background.append(net);background_paths.append(str(dest.resolve()))
-    settings.update(car_count=5+len(background),training_cars=5,background_models=background_paths,background_speed_scale=args.background_speed_scale,
+    settings.update(car_count=args.training_cars+len(background),training_cars=args.training_cars,background_models=background_paths,background_speed_scale=args.background_speed_scale,
                     reward_mode='passes_and_collisions' if args.pass_only else 'safe_progress_passes_collisions',
                     safe_reward=0. if args.pass_only else SAFE_REWARD,
                     progress_reward=0. if args.pass_only else PROGRESS_REWARD)
@@ -386,6 +405,9 @@ def main():
         scenario=Scenario(args.seed,gen,car_count=5+len(background),no_cones=args.no_cones,background_speed_scale=args.background_speed_scale)
         test_starts=scenario.evaluation_starts(args.test_rounds)
         holdout_starts=scenario.evaluation_starts(2,holdout=True)
+        # Evaluation remains five roles + fixed background traffic, as before.
+        if args.training_cars!=5:
+            scenario=Scenario(args.seed,gen,car_count=args.training_cars+len(background),no_cones=args.no_cones,background_speed_scale=args.background_speed_scale,training_count=args.training_cars)
     def evaluate_current(n):
         return evaluate_suite(n,traffic,args.steps,test_offsets,starts=test_starts,overtake_reward=args.overtake_reward,background_models=background,pass_only=args.pass_only,car_collision_penalty=args.car_collision_penalty)
     def holdout_current(n):
@@ -417,7 +439,7 @@ def main():
                 def report_attempt(row):
                     log.write(json.dumps(dict(generation=gen,training_attempt=row))+'\n');log.flush()
                 rotation=train_generation([l.actor for l in learners],args.steps,args.rounds,
-                                          training_cars,car_histories,args.seed+gen*100,on_attempt=report_attempt,history_stride=args.history_stride,credit_mode=args.collision_credit,scenario=scenario,wall_credit_mode=args.wall_credit,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,background_models=background,pass_only=args.pass_only,car_collision_penalty=args.car_collision_penalty)
+                                          training_cars,car_histories,args.seed+gen*100,on_attempt=report_attempt,history_stride=args.history_stride,credit_mode=args.collision_credit,scenario=scenario,wall_credit_mode=args.wall_credit,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,background_models=background,pass_only=args.pass_only,car_collision_penalty=args.car_collision_penalty,batch_size=args.batch_size,batch_backend=args.batch_backend,continue_survivors=args.continue_survivors)
                 log.write(json.dumps(dict(generation=gen,rotation_summary={k:v for k,v in rotation.items() if k!='records'}))+'\n');log.flush()
             else:
                 for round_index in range(args.rounds):

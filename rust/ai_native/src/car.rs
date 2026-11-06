@@ -51,7 +51,7 @@ pub fn cone_targets(
         .collect()
 }
 
-fn swept(a: Point, b: Point, next_a: Point, next_b: Point) -> f64 {
+pub(crate) fn swept(a: Point, b: Point, next_a: Point, next_b: Point) -> f64 {
     let r = [a.0 - b.0, a.1 - b.1, a.2 - b.2];
     let v = [
         next_a.0 - next_b.0 - r[0],

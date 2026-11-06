@@ -75,7 +75,7 @@ impl RoadGeometry {
 #[pymethods]
 impl RoadGeometry {
     #[new]
-    fn new(segments: Vec<Vec<f64>>, half_width: f64) -> PyResult<Self> {
+    pub(crate) fn new(segments: Vec<Vec<f64>>, half_width: f64) -> PyResult<Self> {
         if segments.is_empty()
             || !half_width.is_finite()
             || half_width <= 0.
@@ -98,13 +98,13 @@ impl RoadGeometry {
             cache: HashMap::new(),
         })
     }
-    fn locate(&mut self, x: f64, y: f64, z: f64) -> (f64, f64, f64, usize) {
+    pub(crate) fn locate(&mut self, x: f64, y: f64, z: f64) -> (f64, f64, f64, usize) {
         self.hit(x, y, z)
     }
-    fn clearance(&mut self, x: f64, y: f64, z: f64) -> f64 {
+    pub(crate) fn clearance(&mut self, x: f64, y: f64, z: f64) -> f64 {
         self.half_width - self.hit(x, y, z).0
     }
-    fn progress(&mut self, x: f64, y: f64, z: f64) -> f64 {
+    pub(crate) fn progress(&mut self, x: f64, y: f64, z: f64) -> f64 {
         self.hit(x, y, z).1
     }
     fn sensors(

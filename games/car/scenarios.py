@@ -9,8 +9,9 @@ def separation(a,b):
 
 
 class Scenario:
-    def __init__(self,seed,generation,world=app,car_count=5,no_cones=False,background_speed_scale=1.):
-        if not 5<=car_count<=20:raise ValueError("Expected 5–20 cars")
+    def __init__(self,seed,generation,world=app,car_count=5,no_cones=False,background_speed_scale=1.,training_count=5):
+        if not 5<=car_count<=25 or not 1<=training_count<=10 or training_count>car_count:raise ValueError("Invalid car/learner count")
+        self.training_count=training_count
         if not math.isfinite(background_speed_scale) or not 0<background_speed_scale<=1:raise ValueError('Background speed scale must be in (0,1]')
         self.background_speed_scale=background_speed_scale
         self.car_count=car_count
@@ -40,7 +41,7 @@ class Scenario:
             if any(separation(pose,c)<self.world.CAR_RADIUS+c['radius']+8 for c in self.cones):continue
             if any(not c['crashed'] and separation(pose,c)<2*self.world.CAR_RADIUS+12 for c in cars):continue
             pose['heading']+=math.pi if self.direction<0 else 0.
-            return dict(pose,direction=self.direction,speed_factor=self.world.SPEED_FACTORS[index%len(self.world.SPEED_FACTORS)]*(self.background_speed_scale if index>=5 else 1.),
+            return dict(pose,direction=self.direction,speed_factor=self.world.SPEED_FACTORS[index%len(self.world.SPEED_FACTORS)]*(self.background_speed_scale if index>=self.training_count else 1.),
                         travel=0.,crashed=False,restarts=0,target_id=f'car:{index}')
         raise RuntimeError('Could not find free random start')
 
@@ -67,5 +68,5 @@ class Scenario:
         # Screen y points down: positive signed area is clockwise on the map.
         pts=self.world.TRACK.points
         area=sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(pts,pts[1:]+pts[:1]))
-        return dict(generation=self.generation,seed=self.seed,direction=self.direction,car_count=self.car_count,background_speed_scale=self.background_speed_scale,
+        return dict(generation=self.generation,seed=self.seed,direction=self.direction,car_count=self.car_count,training_count=self.training_count,background_speed_scale=self.background_speed_scale,
                     direction_label='clockwise' if area*self.direction>0 else 'counterclockwise',cones=self.cones)

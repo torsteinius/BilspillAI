@@ -379,6 +379,30 @@
       "series": "traffic20",
       "first_generation": 854,
       "chart_label": "Bilkrasj −100"
+    },
+    {
+      "id": "E47",
+      "title": "Maksbrems ned til 30 % av normalfarten",
+      "log_anchor": "endring-47",
+      "series": "traffic20",
+      "first_generation": 859,
+      "chart_label": "Brems: minst 30 % fart"
+    },
+    {
+      "id": "E48",
+      "title": "Hele evalueringen flyttet til Rust",
+      "log_anchor": "endring-48",
+      "series": "traffic20",
+      "first_generation": 862,
+      "chart_label": "Evalueringsløkke i Rust"
+    },
+    {
+      "id": "E49",
+      "title": "Ti treningsbiler og GPU-batcher på 50",
+      "log_anchor": "endring-49",
+      "series": "traffic20",
+      "first_generation": 863,
+      "chart_label": "10 treningsbiler · GPU batch 50"
     }
   ]
 }

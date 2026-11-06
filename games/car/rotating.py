@@ -27,7 +27,7 @@ class Record:
 
 
 class PoolPolicy:
-    def __init__(self, actor, seed):
+    def __init__(self, actor, seed, car_count=5, batch_size=0, batch_backend="rust"):
         self.actor=actor
         self.rng=random.Random(seed)
         self.baseline=type(actor)([*actor.architecture[:-1],1],seed=seed).set_backend(actor.backend)
@@ -36,7 +36,11 @@ class PoolPolicy:
         self.baseline_optimizer=Adam(self.baseline.weight_count,rate=.0003)
         self.pending=[]
         self.started=self.completed=0
-        self.car_counts=[0]*5
+        self.car_counts=[0]*car_count
+        self.batch_size=batch_size
+        self.batch_backend=batch_backend
+        self.batch_engine=None
+        self.batch_updates=0
 
     def credit(self,record):
         # Consume only new reward. A future collision can add a separate delta.
@@ -45,7 +49,16 @@ class PoolPolicy:
             record.credited=True
             record.reward=0.
 
-    def update(self):
+    def update(self,force=False):
+        if self.batch_size:
+            from .batch_learning import gradients
+            while len(self.pending)>=self.batch_size or (force and self.pending):
+                batch=self.pending[:self.batch_size];del self.pending[:len(batch)]
+                ag,bg=gradients(self,batch)
+                self.optimizer.apply(self.actor.weights,ag)
+                self.baseline_optimizer.apply(self.baseline.weights,bg)
+                self.batch_updates+=1
+            return
         if not self.pending:return
         ag=[0.]*self.actor.weight_count;bg=[0.]*self.baseline.weight_count
         sigma=.15
@@ -104,7 +117,7 @@ def credit_history(history,policies,collision=False,credit_mode='uniform50',pena
         policy=record.origin or policies[record.owner]
         policy.credit(record)
         if policy not in policies:retired.add(policy)
-    for policy in retired:policy.update()
+    for policy in retired:policy.update(force=True)
     if collision:history.clear()
 
 
@@ -120,7 +133,7 @@ def reward_overtake(history, bonus, mode='latest'):
         record.reward+=share
 
 
-def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None,overtake_reward=0.,overtake_credit='latest',background_models=(),pass_only=False,car_collision_penalty=50.):
+def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None,overtake_reward=0.,overtake_credit='latest',background_models=(),pass_only=False,car_collision_penalty=50.,batch_size=0,batch_backend="rust",continue_survivors=False):
     """Exactly `attempts` completed drives per policy, with no shared round barrier."""
     if type(history_stride) is not int or history_stride < 1:
         raise ValueError('History stride must be a positive integer')
@@ -128,8 +141,8 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
     collision_weights(0,credit_mode)
     if wall_credit_mode is not None:collision_weights(0,wall_credit_mode)
     training_count=len(cars)-len(background_models)
-    if not 1<=training_count<=5 or (background_models and training_count!=5):raise ValueError('Background traffic requires five training cars')
-    policies=[PoolPolicy(actor,seed+i) for i,actor in enumerate(actors)]
+    if not 1<=training_count<=10:raise ValueError('Expected up to ten training cars')
+    policies=[PoolPolicy(actor,seed+i,training_count,batch_size,batch_backend) for i,actor in enumerate(actors)]
     sessions=[None]*len(cars)
     cursor=0;tick=0;assignment_cursor=0
     records=[]
@@ -171,7 +184,8 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
             if session['steps']==0 or not histories[i] or histories[i][-1].span_steps >= history_stride:
                 if len(histories[i])==50:
                     old=histories[i].popleft();origin=old.origin or policies[old.owner];origin.credit(old)
-                    if origin not in policies:origin.update()
+                    if origin not in policies:origin.update(force=True)
+                    elif p.batch_size:origin.update()
                 histories[i].append(Record(owner,inputs,samples,means,action,origin=p))
         # Finished-budget cars are parked while remaining drives finish.
         parked=[(i,c['crashed']) for i,c in enumerate(cars) if i<training_count and not active[i]]
@@ -204,11 +218,12 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
                 records.append(row)
                 if on_attempt:on_attempt(row)
                 sessions[i]=None
-                if scenario is not None:
+                if scenario is not None and not continue_survivors:
                     histories[i].clear()
                     if not car['crashed']:scenario.restart_car(cars,i)
         tick+=1
     # Include late collision credit attributed to a policy that already finished.
-    for p in policies:p.update()
+    for p in policies:
+        p.update(force=True) if p.batch_size else p.update()
     return dict(attempts=[p.completed for p in policies],assignments=[p.car_counts for p in policies],
-                ticks=tick,records=records)
+                ticks=tick,records=records,batch_updates=[p.batch_updates for p in policies])

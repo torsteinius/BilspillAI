@@ -1,0 +1,29 @@
+[
+  {
+    "training_cars": 5,
+    "background_cars": 15,
+    "backend": "rust",
+    "seconds": 3.921559749636799,
+    "ticks": 1127,
+    "attempts": 30,
+    "batch_updates": 41
+  },
+  {
+    "training_cars": 10,
+    "background_cars": 15,
+    "backend": "rust",
+    "seconds": 2.6795177082531154,
+    "ticks": 600,
+    "attempts": 30,
+    "batch_updates": 43
+  },
+  {
+    "training_cars": 10,
+    "background_cars": 15,
+    "backend": "mlx-gpu",
+    "seconds": 2.70694816717878,
+    "ticks": 600,
+    "attempts": 30,
+    "batch_updates": 43
+  }
+]

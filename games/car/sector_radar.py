@@ -1,6 +1,6 @@
 """Configurable forward zones: nearest road edge or obstacle surface in each zone.
 
-Flat-track road edges are a mitered offset of the sampled centreline. Geometry
+Road edges are a mitered offset of the sampled centreline, with segment heights. Geometry
 is cached; exact closest points on these segments/discs are calculated in Rust.
 """
 import math
@@ -30,8 +30,8 @@ def sector_edges(mode):
 
 
 def road_edges(track):
-    if max(p[2] for p in track.points)-min(p[2] for p in track.points)>1e-6:
-        raise ValueError('Sector radar experiment currently requires a flat track')
+    # The native radar filters segments and objects by height (14 world units).
+    # Sampled segments retain their midpoint height, including on ramps.
     boundaries=[[],[]];points=track.points
     for i,p in enumerate(points):
         before=points[i-1];after=points[(i+1)%len(points)]

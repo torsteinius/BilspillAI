@@ -40,6 +40,24 @@ class BrakingTests(unittest.TestCase):
         ego['speed']=1.5
         self.assertAlmostEqual(app.radar(ego,[target])['closing_speed'],0.)
 
+    def test_seventy_percent_braking_keeps_actual_speed_for_radar(self):
+        old=app.MAX_BRAKE
+        try:
+            app.MAX_BRAKE=.7
+            for brake,expected in ((0.,3.),(.5,1.95),(1.,.9)):
+                car=self.car()
+                app.step([car],[],controls=[(0.,brake)])
+                self.assertAlmostEqual(car['speed'],expected)
+                self.assertAlmostEqual(car['x']-400.,expected)
+            ego=self.car();target=dict(ego,x=450.)
+            app.step([target],[],controls=[(0.,1.)])
+            self.assertAlmostEqual(app.radar(ego,[target])['speed'],.9)
+            self.assertAlmostEqual(app.radar(ego,[target])['relative_speed'],-2.1)
+            car=self.car();app.step([car],[],controls=[(0.,0.,1.)])
+            self.assertAlmostEqual(car['speed'],4.5)
+        finally:
+            app.MAX_BRAKE=old
+
     def test_two_outputs_have_correct_gradients(self):
         rng=random.Random(9);net=NeuralNetwork([2,3,2]);net.weights=[rng.uniform(-.3,.3) for _ in net.weights]
         x=[.2,-.4]

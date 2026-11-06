@@ -50,10 +50,13 @@ Oppføringene følger utviklingsloggen. Hver lenke beskriver forslag, begrunnels
 | E44 | 849 / traffic20 | [20 biler, passeringsbonus og 220° syn](../UTVIKLINGSLOGG_BIL.md#endring-44) |
 | E45 | 849 / traffic20 | [Trafikkbilene får 15 % lavere grunnfart](../UTVIKLINGSLOGG_BIL.md#endring-45) |
 | E46 | 854 / traffic20 | [Doblet bilkollisjonsstraff](../UTVIKLINGSLOGG_BIL.md#endring-46) |
+| E47 | 859 / traffic20 | [Maksbrems ned til 30 % av normalfarten](../UTVIKLINGSLOGG_BIL.md#endring-47) |
+| E48 | 862 / traffic20 | [Hele evalueringen flyttet til Rust](../UTVIKLINGSLOGG_BIL.md#endring-48) |
+| E49 | 863 / traffic20 | [Ti treningsbiler og GPU-batcher på 50](../UTVIKLINGSLOGG_BIL.md#endring-49) |
 
 ## Sammenlignbar del av forsøket
 
-Grafen nedenfor starter med 120° radar ved generasjon 101. Rust-bytte ved 111 og historikkendring ved 201 er markert. Fra generasjon 246 er kjeglene fjernet; fra 255 er fire kjegler lagt tilbake. Disse miljøendringene starter nye sammenligningsperioder. Fra 296 gjenopprettes 50 oppføringer og vektene fra 286; grafen brytes ved denne tilbakeføringen. Fra 358 gjenopprettes vektene fra 325 og forelderen får vinne. Fra 383 endres kjegler, starter og retning hver generasjon: trendendringer kan skyldes vanskelighetsgrad, ikke bare læring. Oppføringer om videoer og dokumentasjon er med i tidslinjen, men markeres ikke som treningsendringer.
+Grafen leses ovenfra og ned, med generasjon på loddrett akse og vannrette endringstekster til venstre. Grafen starter med 120° radar ved generasjon 101. Rust-bytte ved 111 og historikkendring ved 201 er markert. Fra generasjon 246 er kjeglene fjernet; fra 255 er fire kjegler lagt tilbake. Disse miljøendringene starter nye sammenligningsperioder. Fra 296 gjenopprettes 50 oppføringer og vektene fra 286; grafen brytes ved denne tilbakeføringen. Fra 358 gjenopprettes vektene fra 325 og forelderen får vinne. Fra 383 endres kjegler, starter og retning hver generasjon: trendendringer kan skyldes vanskelighetsgrad, ikke bare læring. Oppføringer om videoer og dokumentasjon er med i tidslinjen, men markeres ikke som treningsendringer.
 
 ![Kjøretid og kjørelengde med metodeendringer](car-training-trend.png)
 

@@ -25,6 +25,7 @@ ARCHITECTURE = [INPUTS, HIDDEN, HIDDEN, 1]
 network = NeuralNetwork(ARCHITECTURE)
 WEIGHT_COUNT = network.weight_count
 COLLISION_PENALTY = 50.
+MAX_BRAKE = .5
 MODEL = Path(__file__).parent / 'models' / 'model_radar_9_8_8_1.json'
 
 
@@ -298,7 +299,7 @@ def policy(weights, readings):
 
 
 def decode_outputs(outputs):
-    """Legacy models steer only; two-output models also request 0–50% braking."""
+    """Legacy models steer only; braking strength is configurable through MAX_BRAKE."""
     if len(outputs) == 1:
         return outputs[0]
     if len(outputs) == 2 and RADAR_MODE in ('sectors15','sectors30','sectors30wide'):
@@ -373,7 +374,7 @@ def step(cars, weights, *, controls=None, events=None):
             continue
         before = progress(c['x'], c['y'], c.get('z', 0.))
         c['heading'] += steer * .045
-        speed = 3 * c.get('speed_factor', 1.) * (1.-.5*brake)*(1.+.5*throttle)
+        speed = 3 * c.get('speed_factor', 1.) * (1.-MAX_BRAKE*brake)*(1.+.5*throttle)
         c.update(brake=brake,throttle=throttle,speed=speed)
         c['x'] += speed * math.cos(c['heading'])
         c['y'] += speed * math.sin(c['heading'])
@@ -517,7 +518,8 @@ def replay_live():
             if REPLAY_BACKGROUND:
                 controls=[]
                 for i,c in enumerate(attempt):
-                    net=network if i<5 else REPLAY_BACKGROUND[i-5]
+                    count=REPLAY_SCENARIO.training_count if REPLAY_SCENARIO else 5
+                    net=network if i<count else REPLAY_BACKGROUND[i-count]
                     controls.append(0. if c['crashed'] else decode_outputs(net.forward(observations(c,attempt))))
             reward, event = step(attempt, best,controls=controls)
             score += reward
@@ -605,8 +607,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO, REPLAY_BACKGROUND
+    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO, REPLAY_BACKGROUND, MAX_BRAKE
     parser = argparse.ArgumentParser()
+    parser.add_argument('--max-brake', type=float, default=None, help='Maximum fraction of base speed removed by full braking')
     parser.add_argument('--radar-scale', type=float, default=3., help='Radar radius and range multiplier')
     parser.add_argument('--radar-mode', choices=('legacy', 'spatial', 'cone', 'cone4', 'cone4relative', 'cone4angles', 'sectors15', 'sectors30', 'sectors30wide'), help='spatial: independent distance and lateral position; requires matching training')
     parser.add_argument('--traffic', choices=('convoy', 'opposite'), default='convoy')
@@ -623,6 +626,9 @@ def main():
     parser.add_argument('--model', type=Path, help='Separate checkpoint path for an experiment')
     parser.add_argument('--seed', type=int, help='Random seed for a new experiment')
     args = parser.parse_args()
+    if args.max_brake is not None and (not math.isfinite(args.max_brake) or not 0 <= args.max_brake < 1):
+        parser.error('--max-brake must be in [0, 1)')
+    MAX_BRAKE = args.max_brake if args.max_brake is not None else .5
     if args.steps is not None and args.steps < 1:
         parser.error('--steps must be positive')
     if not math.isfinite(args.radar_scale) or args.radar_scale <= 0:
@@ -642,6 +648,8 @@ def main():
         resuming = args.replay or bool(args.fast_generations and MODEL.exists())
         if resuming:
             network = NeuralNetwork.load(MODEL)
+            if args.max_brake is None:
+                MAX_BRAKE = network.metadata.get('experiment', {}).get('brake_max_reduction', .5)
             ARCHITECTURE = list(network.architecture)
             WEIGHT_COUNT = network.weight_count
             status['architecture'] = ARCHITECTURE
@@ -659,14 +667,15 @@ def main():
             import sys
             from .scenarios import Scenario
             saved = network.metadata['scenario']
-            REPLAY_SCENARIO = Scenario(saved['seed'], saved['generation'],world=sys.modules[__name__],car_count=saved.get('car_count',5),no_cones=not saved['cones'],background_speed_scale=saved.get('background_speed_scale',1.))
+            REPLAY_SCENARIO = Scenario(saved['seed'], saved['generation'],world=sys.modules[__name__],car_count=saved.get('car_count',5),no_cones=not saved['cones'],background_speed_scale=saved.get('background_speed_scale',1.),training_count=saved.get('training_count',5))
             REPLAY_SCENARIO.cones = saved['cones']
             REPLAY_SCENARIO.direction = saved['direction']
             TRACK.cones = REPLAY_SCENARIO.cones
             paths=network.metadata.get('experiment',{}).get('background_models',[])
             REPLAY_BACKGROUND=[NeuralNetwork.load(p).set_backend(args.backend) for p in paths]
-            if len(REPLAY_BACKGROUND)!=saved.get('car_count',5)-5:raise ValueError('Missing fixed background models')
+            if len(REPLAY_BACKGROUND)!=saved.get('car_count',5)-saved.get('training_count',5):raise ValueError('Missing fixed background models')
             status['background_cars']=len(REPLAY_BACKGROUND)
+            status['training_cars']=saved.get('training_count',5)
             status['scenario_direction'] = saved['direction_label']
     except (ValueError, KeyError, OSError, TypeError, RuntimeError) as error:
         parser.error(str(error))

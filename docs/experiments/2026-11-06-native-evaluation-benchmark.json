@@ -1,0 +1,226 @@
+[
+  {
+    "track": "training",
+    "generation": 860,
+    "cars": 20,
+    "python_seconds": 6.416484582703561,
+    "rust_seconds": 2.4153900840319693,
+    "speedup": 2.6565003413414003,
+    "result": {
+      "score": -225.0,
+      "collisions": 3,
+      "distance": 8260.701157797794,
+      "overtakes": 1,
+      "roles": [
+        {
+          "role": 0,
+          "reward": 0.0,
+          "distance": 2995.917775167875,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 0
+        },
+        {
+          "role": 1,
+          "reward": 0.0,
+          "distance": 3308.1181849847126,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 0
+        },
+        {
+          "role": 2,
+          "reward": -25.0,
+          "distance": 712.3749304110588,
+          "steps": 197,
+          "collision": true,
+          "overtakes": 1
+        },
+        {
+          "role": 3,
+          "reward": -100.0,
+          "distance": 1136.2345857104988,
+          "steps": 275,
+          "collision": true,
+          "overtakes": 0
+        },
+        {
+          "role": 4,
+          "reward": -100.0,
+          "distance": 108.05568152364867,
+          "steps": 22,
+          "collision": true,
+          "overtakes": 0
+        }
+      ]
+    }
+  },
+  {
+    "track": "training",
+    "generation": 861,
+    "cars": 20,
+    "python_seconds": 10.136666541919112,
+    "rust_seconds": 4.228671415708959,
+    "speedup": 2.397127973637944,
+    "result": {
+      "score": 25.0,
+      "collisions": 2,
+      "distance": 13916.12406501989,
+      "overtakes": 9,
+      "roles": [
+        {
+          "role": 0,
+          "reward": 25.0,
+          "distance": 3150.1203274159902,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 1
+        },
+        {
+          "role": 1,
+          "reward": -75.0,
+          "distance": 1317.349904641485,
+          "steps": 365,
+          "collision": true,
+          "overtakes": 1
+        },
+        {
+          "role": 2,
+          "reward": 50.0,
+          "distance": 3933.6628549691322,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 2
+        },
+        {
+          "role": 3,
+          "reward": -100.0,
+          "distance": 884.581133640188,
+          "steps": 206,
+          "collision": true,
+          "overtakes": 0
+        },
+        {
+          "role": 4,
+          "reward": 125.0,
+          "distance": 4630.409844353096,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 5
+        }
+      ]
+    }
+  },
+  {
+    "track": "figure_eight",
+    "generation": 860,
+    "cars": 20,
+    "python_seconds": 3.186771458014846,
+    "rust_seconds": 1.3123277090489864,
+    "speedup": 2.4283351148046894,
+    "result": {
+      "score": -225.0,
+      "collisions": 5,
+      "distance": 4611.940783099659,
+      "overtakes": 1,
+      "roles": [
+        {
+          "role": 0,
+          "reward": -50.0,
+          "distance": 1778.6721487285122,
+          "steps": 594,
+          "collision": true,
+          "overtakes": 0
+        },
+        {
+          "role": 1,
+          "reward": -50.0,
+          "distance": 1476.4471711874285,
+          "steps": 443,
+          "collision": true,
+          "overtakes": 0
+        },
+        {
+          "role": 2,
+          "reward": -50.0,
+          "distance": 500.0703574632016,
+          "steps": 132,
+          "collision": true,
+          "overtakes": 0
+        },
+        {
+          "role": 3,
+          "reward": -50.0,
+          "distance": 477.0215227697263,
+          "steps": 123,
+          "collision": true,
+          "overtakes": 0
+        },
+        {
+          "role": 4,
+          "reward": -25.0,
+          "distance": 379.72958295079025,
+          "steps": 82,
+          "collision": true,
+          "overtakes": 1
+        }
+      ]
+    }
+  },
+  {
+    "track": "training",
+    "generation": 860,
+    "cars": 5,
+    "python_seconds": 3.531885208096355,
+    "rust_seconds": 1.4925390421412885,
+    "speedup": 2.366360348623976,
+    "result": {
+      "score": 0.0,
+      "collisions": 0,
+      "distance": 18636.254805889395,
+      "overtakes": 0,
+      "roles": [
+        {
+          "role": 0,
+          "reward": 0.0,
+          "distance": 2996.1245242912164,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 0
+        },
+        {
+          "role": 1,
+          "reward": 0.0,
+          "distance": 3336.8841767270333,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 0
+        },
+        {
+          "role": 2,
+          "reward": 0.0,
+          "distance": 3750.704864180082,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 0
+        },
+        {
+          "role": 3,
+          "reward": 0.0,
+          "distance": 4121.000304172855,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 0
+        },
+        {
+          "role": 4,
+          "reward": 0.0,
+          "distance": 4431.540936518209,
+          "steps": 1000,
+          "collision": false,
+          "overtakes": 0
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,5 @@
+generation,winner,test_score,score_vs_parent,distance_vs_parent,collision_reduction_vs_parent,score_change,score_change_from_start,mean_distance,distance_change,distance_change_from_start_pct,collisions,collision_reduction,collision_reduction_from_start,overtakes,parent_overtakes,attempts,completed_without_collision,holdout_score,holdout_collisions,elapsed_seconds
+0,startmodell,-100.0,0.0,0.0,0,0.0,0.0,2918.635591884489,0.0,0.0,31,0,0,120,120,100,69,75.0,4,0.0
+859,learner-5,1050.0,1150.0,200.09102456235087,1,1150.0,1150.0,3118.7266164468397,200.09102456235087,6.855635733310472,30,1,1,162,120,100,70,-325.0,6,2133.4050006247126
+860,learner-3,-700.0,300.0,-131.55197433365856,-3,-1750.0,-600.0,2634.7294675299995,-483.99714891684016,-9.727357712758455,45,-15,-14,120,128,100,55,-50.0,6,4621.795544666704
+861,parent,-2300.0,0.0,0.0,0,-1600.0,-2200.0,2295.896048227965,-338.8334193020346,-21.336666536518067,61,-16,-30,112,112,100,39,-350.0,6,6198.366403707769

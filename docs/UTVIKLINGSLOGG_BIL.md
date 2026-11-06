@@ -1763,3 +1763,57 @@ fargeforklaring i bildet. README peker fortsatt til samme MP4- og GIF-filer,
 som nå inneholder det nye opptaket. Det første opptaket er bevart lokalt under
 `.ai-service/car-generation852-traffic20-preview/original-colors/`.
 Modellvekter, treningsoppsett og rapporterte testresultater er uendret.
+
+
+### Vertikal historisk graf — 6. november 2026
+
+På prosjekteierens forslag er grafen dreid til en vertikal tidslinje: eldste generasjoner øverst og nyeste nederst, vannrette endringstekster til venstre og kjøretid/kjørelengde i parallelle felt. Linjer kobler hver tekst til riktig generasjon, også når hendelsene ligger tett. Samme bildefil brukes fortsatt i README og historikken; målinger og treningsmetode er uendret.
+
+### Prøvekjøring på åttetallsbanen — 6. november 2026
+
+På brukerens forespørsel vises generasjon 858 på åttetallsbanen med overpass, seks biler totalt og førerplasskamera i en av de fem bilene med siste modell. Den sjette bilen bruker en fast trafikkmodell. Dette er avspilling med uendrede vekter; den aktive treningen med 20 biler fortsetter på treningsbanen.
+
+Sektorradarens sperre mot kuperte baner er fjernet. Veikantsegmentene beholder sin gjennomsnittshøyde, og Rust filtrerer bort segmenter og objekter med minst 14 høydeenheters forskjell fra bilen. Dette er en tilnærming på ramper, ikke full tredimensjonal siktberegning. Seks adskilte startsteder, 30 radarsoner og filtrering av biler på et annet høydenivå er kontrollert. De 22 eksisterende testene for sektorsyn og høydebane består.
+
+Brukeren økte deretter åttetallsvisningen til **15 passive trafikkbiler pluss fem biler med generasjon 858**, totalt 20. De passive bilene bruker de samme frosne trafikkmodellene og grunnfartsfaktor 0,85 som treningsoppsettet. Førerplasskamera og 1× hastighet beholdes. Kun avspillingen endres.
+
+### Maksbrems til 30 % av normalfarten — 6. november 2026
+
+Brukeren foreslo sterkere brems fordi åttetallsbanen har krappere svinger. Avspillingen har nå `--max-brake 0.7`: fullt bremseutslag gir 30 % av bilens individuelle normalfart, halv brems 65 %, ingen brems 100 %, og full gass fortsatt 150 %. Generasjon 858 og alle vekter er beholdt; dette er en endret kobling mellom handling og fart, ikke ny læring. Samme fysiske regel gjelder alle bilene i visningen. Radar bruker faktisk fart, og historikken lagrer fortsatt nettverkets handlinger. 19 tester for brems og sektorsyn består, inkludert ny kontroll av fart og relativ radarhastighet.
+
+Dette er foreløpig aktivert i åttetallsavspillingen. Den allerede kjørende treningsprosessen beholder maksbrems 50 %; treningsresultatene skal ikke merkes som trening med den nye bremsegrensen.
+
+<a id="endring-47"></a>
+### Endring 47: sterkere brems også i treningen — fra generasjon 859
+
+Brukeren ba om å ta brems ned til 30 % av normalfarten inn i treningen og forventer at modellen kan tilpasse seg uten å nullstille vektene. Ny serie `car-traffic20-brake70-1000` viderefører nøyaktig vektene fra siste fullførte vinner, generasjon 858. Den uferdige evalueringen av 859 i forrige serie avbrytes; den generasjonen kjøres på nytt med den nye bremsegrensen. Gamle logger og modeller beholdes. Optimizer, handlingshistorikk og tilfeldig generator starter på nytt ved prosessbyttet.
+
+Maksimal reduksjon er nå 70 % i både trening og evaluering, også for forelderen og trafikkbilene. Full gass er fortsatt +50 %. Fem treningsplasser, ti roterende nettverk, 15 passive trafikkbiler, treningsbanen, belønning og straff beholdes. Målet er fortsatt generasjon 1000. Modeller lagrer bremsegrensen i forsøksinnstillingene, og avspilling leser denne automatisk. Eksisterende kontroll av fart, relativ radarhastighet og handlingshistorikk består (19 tester). Innledende evaluering må fullføres før første nye treningsgenerasjon begynner.
+
+<a id="endring-48"></a>
+### Endring 48: prøve med hele evalueringsløkken i Rust
+
+Brukeren ba om å prøve å flytte mer av hovedløkken fra Python til Rust etter profilering. Ny `SectorEvaluation` utfører hele hvert testforsøk i Rust: radar, nettverk, bevegelse, kollisjoner, forbikjøringer og evalueringens belønning. Python starter forsøkene og mottar resultatene. Læring og historikkoppdateringer under trening er fortsatt i Python med Rust-kjerner. GPU og parallell evaluering er ikke innført her.
+
+Den nye veien er eksplisitt valgt med `--rust-evaluation` og begrenset til dagens sektormodell, uten kjegler, med bare passering/straff som belønning. Referanseimplementeringen beholdes. Tester sammenligner begge retninger, høydebane, tvungne bilkollisjoner og fem/20 biler. Fire separate sammenligninger med lagret modell fra 860, inntil 1000 steg og alle fem roller, ga identiske diskrete utfall og kjørelengde innen 1e-7 banenheter. Målt hastighetsøkning var 2,37–2,66 ganger for evalueringen, med aktiv trening i bakgrunnen; dette er ikke en måling av hastighetsøkningen for hele generasjonen. Detaljer: `experiments/2026-11-06-native-evaluation-benchmark.json`.
+
+Byttet er lagt ved neste fullførte generasjon (861 eller senere), slik at pågående arbeid beholdes. Ny serie: `car-traffic20-nativeeval-1000`. En lokal engangsvakt kontrollerer prosessidentitet og ferdig vinner før bytte. Status: `.ai-service/native-evaluation-handoff.json`. Det er fortsatt samme bremsegrense på 70 % reduksjon og mål på generasjon 1000. Første aktive generasjon føres inn i tidslinjen ved selve byttet.
+
+Rust-evaluering aktivert etter fullført generasjon 861; første nye generasjon er 862. Vektene er kontrollert identiske ved overgangen. Treningen fortsetter til 1000. Optimizer, treningshistorikk og tilfeldig generator starter på nytt ved prosessbyttet; ingen fullført generasjon forkastes.
+
+<a id="endring-49"></a>
+### Endring 49: doble treningsplassene, samme forsøksbudsjett, grupper på 50
+
+Prosjekteieren presiserte at dobbelt så mange treningsbiler skal dele samme arbeidsmengde, ikke gi dobbelt så mange forsøk. Det nye forsøket bruker **10 treningsbiler + 15 passive biler**, med ti kandidatnettverk som roterer asynkront mellom treningsplassene. Fortsatt **100 forsøk per kandidat = 1000 totalt per generasjon**. Forelderen holdes uendret som den ellevte evalueringskandidaten. Evalueringen beholdes på fem roller + 15 passive, med 20 startoppsett per kandidat, for sammenlignbarhet.
+
+Hvert kandidatnettverk samler egne grupper på 50 historikkoppføringer som er klare for kreditering. Gruppen gir én samlet gradient og én Adam-oppdatering; gradientene fra forskjellige nettverk blandes ikke. Det er en metodeendring fra tidligere oppdatering per avsluttet forsøk, ikke 50 sekvensielle oppdateringer. Historikkens trestegsintervall og kollisjons-/passeringsfordeling beholdes. Tidligere handlinger beholder opprinnelig policy og atferdsverdier. Bilene som ikke krasjer fortsetter fra samme posisjon med historikken beholdt også etter forsøksgrensen. Nye generasjoner får fortsatt nye randomiserte starter. Ufullstendige grupper skylles ved slutten av generasjonen; disse små gruppene bruker Rust for å unngå GPU-kompilering for alle reststørrelser.
+
+Ny Rust-funksjon beregner hele gruppens gradienter uten Python-løkker. Alternativ MLX/Metal-implementering beregner samme tap på GPU, med float32 mot Rust float64. Adam og simuleringen er fortsatt på CPU. GPU-versjonen bruker den eksisterende `.venv-gpu`; den erstatter ikke Rust-evalueringen. Modellenes vekter beholdes ved overgangen.
+
+Kontroller: 128 tester bestått. Rust-batch sammenlignes med tidligere oppdateringsregel; budsjett, ti plasser og flushing av rest testes. GPU/Rust-gradientene avvek maksimalt 3,71e-8 i kontrollbatchen. Gradientberegning for 50 oppføringer var 1,3–1,9 ganger raskere på GPU i korte målinger. Kilde for MLX-transformasjoner: https://ml-explore.github.io/mlx/build/html/usage/quick_start.html .
+
+Kort pilot med samme 30 forsøk (ti kandidater, tre forsøk, maks 200 steg): fem treningsbiler/Rust krevde 1127 steg og 3,92 s; ti/Rust krevde 600 steg og 2,68 s; ti/GPU krevde 600 steg og 2,71 s. Dobbelt antall plasser reduserte stegantallet omtrent som ønsket, men GPU ga ingen klar ekstra totalgevinst i denne korte piloten. Flere biler endrer også trafikktettheten, og testen er ikke bevis på bedre læring. Målinger: `experiments/2026-11-06-ten-cars-pilot.json` og `experiments/2026-11-06-batch50-gpu-benchmark.json`. En hel kort generasjon med ti treningsbiler, GPU-batcher og Rust-evaluering fullførte uten feil.
+
+Langt forsøk klargjort som `car-traffic25-batch50-gpu-1000` etter fullført generasjon 862 eller senere, til fortsatt mål 1000. Engangsvakt: `.ai-service/switch-ten-cars-gpu.py`; status `.ai-service/ten-cars-gpu-handoff.json`. Nøyaktig første generasjon merkes på tidslinjen ved byttet. Foregående serie og alle modeller beholdes. Prosessbyttet starter optimizer/historikk/RNG på nytt fra siste vinners vekter.
+
+Ti treningsbiler og GPU batch50 aktivert etter fullført generasjon 862; første nye generasjon er 863. Vektene er kontrollert identiske ved overgangen. Treningen fortsetter til 1000. Optimizer, treningshistorikk og tilfeldig generator starter på nytt ved prosessbyttet; ingen fullført generasjon forkastes.

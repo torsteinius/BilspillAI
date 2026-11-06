@@ -21,7 +21,7 @@ impl LocalNetwork {
 #[pymethods]
 impl LocalNetwork {
     #[new]
-    fn new(sizes:Vec<usize>,links:Vec<Vec<Vec<usize>>>)->PyResult<Self>{
+    pub(crate) fn new(sizes:Vec<usize>,links:Vec<Vec<Vec<usize>>>)->PyResult<Self>{
         if sizes.len()<2 || sizes.contains(&0) || links.len()+1!=sizes.len(){return Err(PyValueError::new_err("Invalid local topology"));}
         let mut count=0;
         for (l,layer) in links.iter().enumerate(){
@@ -30,8 +30,8 @@ impl LocalNetwork {
         } Ok(Self{sizes,links,count})
     }
     fn latent(&self,inputs:Vec<f64>,weights:Vec<f64>)->PyResult<Vec<f64>>{self.check(&inputs,&weights)?;Ok(self.acts(&inputs,&weights).pop().unwrap())}
-    fn forward(&self,inputs:Vec<f64>,weights:Vec<f64>,_normalized:bool)->PyResult<Vec<f64>>{Ok(self.latent(inputs,weights)?.iter().map(|v|v.tanh()).collect())}
-    fn gradient(&self,inputs:Vec<f64>,weights:Vec<f64>,output_index:usize)->PyResult<(f64,Vec<f64>)>{
+    pub(crate) fn forward(&self,inputs:Vec<f64>,weights:Vec<f64>,_normalized:bool)->PyResult<Vec<f64>>{Ok(self.latent(inputs,weights)?.iter().map(|v|v.tanh()).collect())}
+    pub(crate) fn gradient(&self,inputs:Vec<f64>,weights:Vec<f64>,output_index:usize)->PyResult<(f64,Vec<f64>)>{
         self.check(&inputs,&weights)?;
         if output_index>=*self.sizes.last().unwrap(){return Err(PyValueError::new_err("Invalid output"));}
         let a=self.acts(&inputs,&weights);let mut offsets=vec![0];

@@ -5269,5 +5269,68 @@
     "mean_distance": 2673.898449714978,
     "collisions": 45,
     "attempts": 100
+  },
+  {
+    "generation": 854,
+    "mean_steps": 764.85,
+    "mean_distance": 2723.3499972062623,
+    "collisions": 39,
+    "attempts": 100
+  },
+  {
+    "generation": 855,
+    "mean_steps": 734.16,
+    "mean_distance": 2702.2395612782416,
+    "collisions": 45,
+    "attempts": 100
+  },
+  {
+    "generation": 856,
+    "mean_steps": 754.64,
+    "mean_distance": 2675.3239407908313,
+    "collisions": 40,
+    "attempts": 100
+  },
+  {
+    "generation": 857,
+    "mean_steps": 722.03,
+    "mean_distance": 2701.4285927580354,
+    "collisions": 46,
+    "attempts": 100
+  },
+  {
+    "generation": 858,
+    "mean_steps": 833.58,
+    "mean_distance": 2875.51978629619,
+    "collisions": 26,
+    "attempts": 100
+  },
+  {
+    "generation": 859,
+    "mean_steps": 836.95,
+    "mean_distance": 3118.7266164468397,
+    "collisions": 30,
+    "attempts": 100
+  },
+  {
+    "generation": 860,
+    "mean_steps": 723.86,
+    "mean_distance": 2634.7294675299995,
+    "collisions": 45,
+    "attempts": 100
+  },
+  {
+    "generation": 861,
+    "mean_steps": 605.39,
+    "mean_distance": 2295.896048227965,
+    "collisions": 61,
+    "attempts": 100
+  },
+  {
+    "generation": 862,
+    "mean_steps": 776.65,
+    "mean_distance": 2828.7618981198098,
+    "collisions": 45,
+    "attempts": 100
   }
 ]

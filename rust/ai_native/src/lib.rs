@@ -1,4 +1,6 @@
 mod car;
+mod batch;
+mod evaluation;
 mod local;
 mod sectors;
 mod track;
@@ -277,6 +279,8 @@ fn bilspill_ai_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(car::cone_targets, m)?)?;
     m.add_function(wrap_pyfunction!(car::separations, m)?)?;
     m.add_class::<track::RoadGeometry>()?;
+    m.add_function(wrap_pyfunction!(batch::policy_batch,m)?)?;
+    m.add_class::<evaluation::SectorEvaluation>()?;
     m.add_class::<DenseNetwork>()?;
     m.add_class::<local::LocalNetwork>()?;
     m.add_class::<sectors::SectorRadar>()?;

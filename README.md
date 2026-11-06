@@ -16,7 +16,7 @@ utformer og utfordrer hypotesene; Codex implementerer, tester og bidrar med
 tekniske forslag. Loggen viser også forsøk som forverret kjøringen, og skiller
 mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid underveis.
 
-[Gjeldende logg: nytt forsøk med sektorradar og lokale lag](docs/experiments/traffic20-carpenalty-generation-progress.md).
+[Gjeldende logg: nytt forsøk med sektorradar og lokale lag](docs/experiments/traffic25-batch50-gpu-generation-progress.md).
 Fra generasjon 383 trekkes 4–8 kjegler og startposisjoner tilfeldig. Alle fem biler kjører samme vei, vekselvis med og mot klokka per generasjon. Videoene nedenfor viser tidligere oppsett.
 Treningsbudsjettet er utvidet til **1000 generasjoner totalt**, med videreføring fra bevarte vekter. Målet er bedre passeringer og håndtering av biler og kjegler.
 Nettverkene bytter nå bil mellom kjøringer; den forrige metoden er bevart nedenfor.

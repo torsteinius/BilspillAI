@@ -2,7 +2,7 @@
 
 **Viktig:** Endringer fra forrige generasjon og fra start blander læring med endret vanskelighetsgrad. Bruk sammenligningen med forelderen på samme generasjons scenarioer nedenfor for å vurdere kandidatens gevinst.
 
-Sist fullførte generasjon: **855 av 1000**. Hele kjøringen er ikke registrert ferdig.
+Sist fullførte generasjon: **858 av 1000**. Hele kjøringen er ikke registrert ferdig.
 
 Denne loggen oppdateres automatisk fra lagrede testresultater. Generasjoner som fortsatt trener eller testes tas ikke med.
 Arkitektur: 60 → 120 → 120 → 120 → 32 → 24 → 16 → 8 → 4 → 2. Seed: 20261115. Bane, startsteder og felles retning endres hver generasjon; kandidater og forelder testes på identiske scenarioer innen generasjonen.
@@ -18,6 +18,9 @@ Testene i hovedtabellen brukes til å velge vinneren. De to ekstra tilfeldige te
 | 0 | startmodell | -200.00 | +0.00 | +0.00 | 2723.35 | +0.00 | +0.0 % | 39/100 | +0 | 61 |
 | 854 | parent | -200.00 | +0.00 | +0.00 | 2723.35 | +0.00 | +0.0 % | 39/100 | +0 | 61 |
 | 855 | parent | -50.00 | +150.00 | +150.00 | 2702.24 | -21.11 | -0.8 % | 45/100 | -6 | 55 |
+| 856 | parent | -625.00 | -575.00 | -425.00 | 2675.32 | -26.92 | -1.8 % | 40/100 | +5 | 60 |
+| 857 | learner-1 | -325.00 | +300.00 | -125.00 | 2701.43 | +26.10 | -0.8 % | 46/100 | -6 | 54 |
+| 858 | learner-8 | 250.00 | +575.00 | +450.00 | 2875.52 | +174.09 | +5.6 % | 26/100 | +20 | 74 |
 
 ## Ekstra tilfeldige teststarter — ikke brukt til utvelgelse
 
@@ -26,6 +29,9 @@ Testene i hovedtabellen brukes til å velge vinneren. De to ekstra tilfeldige te
 | 0 | -25.00 | 3 |
 | 854 | -25.00 | 3 |
 | 855 | -225.00 | 6 |
+| 856 | 75.00 | 3 |
+| 857 | -325.00 | 5 |
+| 858 | 175.00 | 1 |
 
 Datakilde: lokal `metrics.jsonl` i kjøringen. CSV-en inneholder også samlet endring i kollisjoner fra start og registrert kjøretid. GitHub-versjonen oppdateres først ved en ny push; den lokale filen oppdateres mens kjøringen går.
 
@@ -36,6 +42,9 @@ Datakilde: lokal `metrics.jsonl` i kjøringen. CSV-en inneholder også samlet en
 | 0 | +0.00 | +0.00 | +0 |
 | 854 | +0.00 | +0.00 | +0 |
 | 855 | +0.00 | +0.00 | +0 |
+| 856 | +0.00 | +0.00 | +0 |
+| 857 | +175.00 | +19.17 | +0 |
+| 858 | +200.00 | +147.56 | +9 |
 
 ## Bekreftede forbikjøringer i evalueringen
 
@@ -46,6 +55,9 @@ Bonus per passering: 25 poeng. En passering telles én gang per bilpar og leveti
 | 0 | 116 | 116 |
 | 854 | 116 | 116 |
 | 855 | 152 | 152 |
+| 856 | 107 | 107 |
+| 857 | 123 | 122 |
+| 858 | 112 | 106 |
 
 Vektene er videreført fra forrige forsøk. Tre lokale nabolag per sektor, fem skjulte beslutningslag og styring/samlet fart. Den tidligere modellen er arkivert; generasjonsnummeret følger prosjektets tidslinje, ikke antall generasjoner trent med denne arkitekturen.
 

@@ -19,7 +19,7 @@ pub struct SectorRadar { walls:Vec<(f64,f64,f64,f64,f64)>, edges:Vec<f64> }
 impl SectorRadar {
     #[new]
     #[pyo3(signature = (walls, edges=None))]
-    fn new(walls:Vec<(f64,f64,f64,f64,f64)>,edges:Option<Vec<f64>>)->PyResult<Self>{
+    pub(crate) fn new(walls:Vec<(f64,f64,f64,f64,f64)>,edges:Option<Vec<f64>>)->PyResult<Self>{
         let edges=edges.unwrap_or_else(||(0..=15).map(|i|-PI/2.+i as f64*PI/15.).collect());
         if edges.len()<2 || edges.iter().any(|v|!v.is_finite()) || edges.windows(2).any(|w|w[1]<=w[0]) || edges[0]< -PI || edges[edges.len()-1]>PI || edges.windows(2).any(|w|w[1]-w[0]>=PI) {
             return Err(PyValueError::new_err("Sector edges must increase within -pi to pi, with widths below pi"));
@@ -27,7 +27,7 @@ impl SectorRadar {
         Ok(Self{walls,edges})
     }
     // Obstacles: x,y,z,radius,vx,vy,kind (1 cone, 2 car). Wall kind is zero.
-    fn scan(&self,x:f64,y:f64,z:f64,heading:f64,speed:f64,range:f64,objects:Vec<(f64,f64,f64,f64,f64,f64,i32)>)->PyResult<Vec<(f64,f64,f64,f64,i32,i32)>>{
+    pub(crate) fn scan(&self,x:f64,y:f64,z:f64,heading:f64,speed:f64,range:f64,objects:Vec<(f64,f64,f64,f64,f64,f64,i32)>)->PyResult<Vec<(f64,f64,f64,f64,i32,i32)>>{
         if !range.is_finite() || range<=0.{return Err(PyValueError::new_err("Invalid radar range"));}
         let cs=heading.cos();let sn=heading.sin();let local=|px:f64,py:f64|((px-x)*cs+(py-y)*sn,-(px-x)*sn+(py-y)*cs);
         let walls:Vec<_>=self.walls.iter().enumerate().filter(|(_,w)|(w.4-z).abs()<14.).map(|(i,w)|(i,local(w.0,w.1),local(w.2,w.3))).filter(|(_,a,b)|{
