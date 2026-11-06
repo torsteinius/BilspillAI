@@ -529,3 +529,33 @@ Hypotesen er at lang historikk ved veggkrasj også straffet tidligere, nyttig
 sidebevegelse før en forbikjøring. Den kortere vegghistorikken skal rette
 straffen mer mot den umiddelbare styringen. Dette er en kvalitativ forklaring
 som må undersøkes, ikke en bekreftet årsakssammenheng; se endring 36.
+
+
+### Gass og forbikjøringer fra generasjon 492 (6. november 2026)
+
+Eksisterende vekter beholdes; tredje utgang gir opptil 50 % ekstra fart, med ni nye tilfeldige vekter. Bekreftede passeringer gir +25 poeng. Gass inngår i handlingshistorikken og faktisk hastighet i radaren. Se [endring 37](UTVIKLINGSLOGG_BIL.md#endring-37) for måleregel, startmodell og tester.
+
+
+### Jevn passeringbonus fra generasjon 502
+
+Prosjekteieren ba om at handlingene som leder til forbikjøringen belønnes omtrent likt. +25 fordeles nå jevnt over opptil 50 lagrede handlinger, omtrent 150 simuleringssteg. Historikken fortsetter etter passeringen; vektene bevares. Se [endring 38](UTVIKLINGSLOGG_BIL.md#endring-38).
+
+
+### Radarvinkler fra generasjon 520
+
+Prosjekteierens forslag: to ekstra verdier per objekt, objektvinkel og relativ bevegelsesvinkel. 31 innganger, 64 nye tilfeldige koblinger; gamle vekter bevart. Se [endring 39](UTVIKLINGSLOGG_BIL.md#endring-39) for koordinater, nullverdier og kompatibilitet.
+
+
+### Nytt sektorbasert forsøk fra generasjon 806
+
+Prosjekteieren foreslo ett felles sensorbilde fordi objektradar og kantfølere kan være vanskelige å sammenholde. Den tidligere modellen fra 805 er arkivert. Nytt nettverk med 15 × 2 radarverdier, tre lokale lag og fem beslutningslag, styring og samlet fart ±50 %, starter med nye vekter. Se [endring 41](UTVIKLINGSLOGG_BIL.md#endring-41) for nøyaktig implementering, forutsetninger og tester.
+
+
+### Mer umiddelbar veggstraff fra generasjon 819
+
+Etter prosjekteierens presisering fordeles −50 nå jevnt over de tre siste lagrede handlingene ved ren veggkontakt, omtrent ni simuleringssteg med dagens lagringsintervall. Vektene beholdes. Se [endring 42](UTVIKLINGSLOGG_BIL.md#endring-42).
+
+
+### 30 soner fra generasjon 826
+
+Prosjekteieren foreslo høyere oppløsning for smale åpninger: 30 soner med jevnt varierende bredde og dobbelt tetthet rett foran. Nye vekter, gammel modell arkivert; se [endring 43](UTVIKLINGSLOGG_BIL.md#endring-43).

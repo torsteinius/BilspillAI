@@ -166,3 +166,35 @@ class RotatingTests(unittest.TestCase):
             with patch('games.car.rotating.app.restart_crashed'),patch('games.car.rotating.features',return_value=[1.]),patch('games.car.rotating.app.step',side_effect=step),patch('games.car.rotating.clone_network',side_effect=lambda a:a),patch('games.car.rotating.credit_history',wraps=credit_history) as credit:
                 train_generation(actors,10,1,cars,[deque()],12,credit_mode='latest20_linear',wall_credit_mode='latest40_last25')
             self.assertEqual(credit.call_args.kwargs['credit_mode'],expected)
+
+    def test_pass_bonus_is_even_preserves_history_and_routes_only_new_reward(self):
+        from games.car.rotating import reward_overtake
+        policies=[PoolPolicy(NeuralNetwork([1,1]),i) for i in range(5)]
+        for count in (1,10,50):
+            h=deque(Record(i%5,[float(i)],(.1,),(0.,),.1,reward=.2,origin=policies[i%5]) for i in range(count))
+            credit_history(h,policies)
+            for p in policies:p.pending.clear()
+            reward_overtake(h,25.,'uniform50')
+            self.assertEqual(len(h),count)
+            self.assertTrue(all(abs(r.reward-25/count)<1e-12 for r in h))
+            credit_history(h,policies)
+            pending=[r for p in policies for r in p.pending]
+            self.assertAlmostEqual(sum(r[3] for r in pending),25.)
+            self.assertTrue(all(r[4] for r in pending))
+            sizes=[len(p.pending) for p in policies]
+            credit_history(h,policies)
+            self.assertEqual(sizes,[len(p.pending) for p in policies])
+            for p in policies:p.pending.clear()
+
+    def test_wall_last_three_penalizes_only_three_records(self):
+        from games.car.rotating import collision_weights
+        for count in (1,2,3,10,50):
+            weights=collision_weights(count,'uniform_last3')
+            self.assertAlmostEqual(sum(weights),1.)
+            self.assertEqual(weights[:max(0,count-3)],[0.]*max(0,count-3))
+            for w in weights[-3:]:self.assertAlmostEqual(w,1/min(count,3))
+        p=PoolPolicy(NeuralNetwork([1,1]),1)
+        h=deque(Record(0,[float(i)],(.1,),(0.,),.1,reward=.2,origin=p) for i in range(50))
+        credit_history(h,[p],True,credit_mode='uniform_last3')
+        self.assertFalse(h)
+        for i,row in enumerate(p.pending):self.assertAlmostEqual(row[3],.2-(50/3 if i>=47 else 0.))

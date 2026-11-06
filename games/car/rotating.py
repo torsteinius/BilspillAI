@@ -30,7 +30,7 @@ class PoolPolicy:
     def __init__(self, actor, seed):
         self.actor=actor
         self.rng=random.Random(seed)
-        self.baseline=NeuralNetwork([*actor.architecture[:-1],1],seed=seed).set_backend(actor.backend)
+        self.baseline=type(actor)([*actor.architecture[:-1],1],seed=seed).set_backend(actor.backend)
         self.baseline.weights=[self.rng.gauss(0,.1) for _ in self.baseline.weights]
         self.optimizer=Adam(actor.weight_count,rate=.0003)
         self.baseline_optimizer=Adam(self.baseline.weight_count,rate=.0003)
@@ -76,13 +76,15 @@ def collision_weights(count, mode='uniform50'):
     """Oldest first; truncate the 50-slot schedule and renormalize short lives."""
     if not 0 <= count <= 50:
         raise ValueError('Expected up to 50 history records')
-    if mode not in ('uniform50', 'latest20_linear', 'latest25_last10', 'latest40_last25'):
+    if mode not in ('uniform50', 'latest20_linear', 'latest25_last10', 'latest40_last25', 'uniform_last3'):
         raise ValueError('Unknown collision credit mode')
     if not count:
         return []
     if mode == 'uniform50':
         return [1./count]*count
-    if mode == 'latest40_last25':
+    if mode == 'uniform_last3':
+        schedule = [0.]*47 + [1./3]*3
+    elif mode == 'latest40_last25':
         schedule = [0.]*25 + [.6*i/sum(range(24)) for i in range(24)] + [.4]
     elif mode == 'latest25_last10':
         schedule = [0.]*40 + [.75*i/36 for i in range(9)] + [.25]
@@ -93,10 +95,10 @@ def collision_weights(count, mode='uniform50'):
     return [w/total for w in weights]
 
 
-def credit_history(history,policies,collision=False,credit_mode='uniform50'):
+def credit_history(history,policies,collision=False,credit_mode='uniform50',penalty=50.):
     if collision and history:
         for record,weight in zip(history,collision_weights(len(history),credit_mode)):
-            record.reward-=50.*weight
+            record.reward-=penalty*weight
     retired=set()
     for record in history:
         policy=record.origin or policies[record.owner]
@@ -106,35 +108,57 @@ def credit_history(history,policies,collision=False,credit_mode='uniform50'):
     if collision:history.clear()
 
 
-def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None):
+def reward_overtake(history, bonus, mode='latest'):
+    """Add only the new bonus; normal credit routes it to the original actors."""
+    if mode not in ('latest','uniform50'):
+        raise ValueError('Unknown overtaking credit mode')
+    if not history or not bonus:
+        return
+    records=list(history) if mode=='uniform50' else [history[-1]]
+    share=bonus/len(records)
+    for record in records:
+        record.reward+=share
+
+
+def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None,overtake_reward=0.,overtake_credit='latest',background_models=(),pass_only=False,car_collision_penalty=50.):
     """Exactly `attempts` completed drives per policy, with no shared round barrier."""
     if type(history_stride) is not int or history_stride < 1:
         raise ValueError('History stride must be a positive integer')
+    reward_overtake([],0.,overtake_credit)
     collision_weights(0,credit_mode)
     if wall_credit_mode is not None:collision_weights(0,wall_credit_mode)
+    training_count=len(cars)-len(background_models)
+    if not 1<=training_count<=5 or (background_models and training_count!=5):raise ValueError('Background traffic requires five training cars')
     policies=[PoolPolicy(actor,seed+i) for i,actor in enumerate(actors)]
     sessions=[None]*len(cars)
     cursor=0;tick=0;assignment_cursor=0
     records=[]
+    from .overtaking import OvertakeTracker
+    tracker=OvertakeTracker() if overtake_reward else None
     while any(p.completed<attempts for p in policies):
         if scenario is None:app.restart_crashed(cars,0)
         else:scenario.restart_crashed(cars)
         assigned=False
-        for i in [(assignment_cursor+j)%len(cars) for j in range(len(cars))]:
+        for i in [(assignment_cursor+j)%training_count for j in range(training_count)]:
             car=cars[i]
             if sessions[i] is not None or car['crashed']:continue
             owner,cursor=next_owner(policies,cursor,attempts)
             if owner is None:continue
             p=policies[owner];p.started+=1;p.car_counts[i]+=1
             assigned=True
-            sessions[i]=dict(owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.,start_pose={k:car[k] for k in ('x','y','heading','direction') if k in car})
-        if assigned:assignment_cursor=(assignment_cursor+1)%len(cars)
+            sessions[i]=dict(owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.,overtakes=0,start_pose={k:car[k] for k in ('x','y','heading','direction') if k in car})
+        if assigned:assignment_cursor=(assignment_cursor+1)%training_count
         active=[s is not None and not c['crashed'] for s,c in zip(sessions,cars)]
         if not any(active):
             raise RuntimeError('All cars blocked from spawning before training budget completed')
+        if tracker:tracker.update(cars,advance=False)
         before=[c['travel'] for c in cars]
         controls=[]
         for i,(session,car) in enumerate(zip(sessions,cars)):
+            if i>=training_count:
+                net=background_models[i-training_count]
+                controls.append(0. if car['crashed'] else app.decode_outputs(net.forward(features(car,cars))))
+                continue
             if not active[i]:controls.append(0.);continue
             owner=session['owner'];p=policies[owner]
             inputs=features(car,cars)
@@ -150,28 +174,33 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
                     if origin not in policies:origin.update()
                 histories[i].append(Record(owner,inputs,samples,means,action,origin=p))
         # Finished-budget cars are parked while remaining drives finish.
-        parked=[(i,c['crashed']) for i,c in enumerate(cars) if not active[i]]
+        parked=[(i,c['crashed']) for i,c in enumerate(cars) if i<training_count and not active[i]]
         for i,_ in parked:cars[i]['crashed']=True
         events=[]
-        if wall_credit_mode is None:app.step(cars,[],controls=controls)
+        if wall_credit_mode is None and car_collision_penalty==50.:app.step(cars,[],controls=controls)
         else:app.step(cars,[],controls=controls,events=events)
         # Mixed wall/object contacts keep the longer object history.
         wall_only={i for i,kind,_ in events if kind=='wall'} - {i for i,kind,_ in events if kind!='wall'}
+        car_contacts={i for i,kind,_ in events if kind=='car'}
+        passed=tracker.update(cars) if tracker else [0]*len(cars)
         for i,crashed in parked:cars[i]['crashed']=crashed
         for i,(session,car) in enumerate(zip(sessions,cars)):
             if not active[i]:continue
             delta=car['travel']-before[i]
-            reward=driving_reward(delta,car['crashed'])
+            reward=0. if pass_only else driving_reward(delta,car['crashed'])
+            bonus=overtake_reward*passed[i]
+            reward_overtake(histories[i],bonus,overtake_credit)
+            session['overtakes']+=passed[i]
             histories[i][-1].reward+=reward
             histories[i][-1].span_steps+=1
-            session['reward']+=reward;session['distance']+=max(0.,delta);session['steps']+=1
+            session['reward']+=reward+bonus;session['distance']+=max(0.,delta);session['steps']+=1
             if car['crashed'] or session['steps']>=steps:
                 owner=session['owner'];p=policies[owner]
-                credit_history(histories[i],policies,collision=car['crashed'],credit_mode=wall_credit_mode if i in wall_only else credit_mode)
+                credit_history(histories[i],policies,collision=car['crashed'],credit_mode=wall_credit_mode if i in wall_only else credit_mode,penalty=car_collision_penalty if i in car_contacts else 50.)
                 p.update();p.completed+=1
-                row=dict(network=owner,car=i,attempt=p.completed,steps=session['steps'],
+                row=dict(network=owner,car=i,overtakes=session['overtakes'],attempt=p.completed,steps=session['steps'],
                          collision=car['crashed'],collision_kinds=sorted({kind for index,kind,_ in events if index==i}),distance=session['distance'],
-                         reward=session['reward']-(50. if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'])
+                         reward=session['reward']-((car_collision_penalty if i in car_contacts else 50.) if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'])
                 records.append(row)
                 if on_attempt:on_attempt(row)
                 sessions[i]=None

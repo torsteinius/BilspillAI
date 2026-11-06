@@ -16,9 +16,9 @@ utformer og utfordrer hypotesene; Codex implementerer, tester og bidrar med
 tekniske forslag. Loggen viser også forsøk som forverret kjøringen, og skiller
 mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid underveis.
 
-[Gjeldende logg: tilfeldig oppsett og kortere vegghistorikk](docs/experiments/wall1000-generation-progress.md).
+[Gjeldende logg: nytt forsøk med sektorradar og lokale lag](docs/experiments/traffic20-carpenalty-generation-progress.md).
 Fra generasjon 383 trekkes 4–8 kjegler og startposisjoner tilfeldig. Alle fem biler kjører samme vei, vekselvis med og mot klokka per generasjon. Videoene nedenfor viser tidligere oppsett.
-Treningsbudsjettet er utvidet til **1000 generasjoner totalt**, med automatisk videreføring etter 800. Målet er bedre passeringer og håndtering av biler og kjegler.
+Treningsbudsjettet er utvidet til **1000 generasjoner totalt**, med videreføring fra bevarte vekter. Målet er bedre passeringer og håndtering av biler og kjegler.
 Nettverkene bytter nå bil mellom kjøringer; den forrige metoden er bevart nedenfor.
 
 [Forbedring per generasjon i det nye 100-generasjoners forsøket](docs/experiments/deep-100-generation-progress.md)
@@ -35,9 +35,43 @@ README og utviklingsloggen viser samme versjon. Oppdater med
 `.venv-media/bin/python scripts/plot_car_training_progress.py`.
 GitHub viser sist pushede bildefil; grafen er ikke en livevisning.
 
-## Nå: trening på svinger, kjegler og trafikk
+## Nå: sektorradar og nettverk med lokale koblinger
 
-Den oppdaterte treningsbanen har vekslende svinger, 33 kjegler og fem biler som kjører samme vei med 80–120 % grunnfart. Radaren har 120° åpningsvinkel og rekkevidde 540. Den gir nærhet, sideplassering, relativ lengdehastighet og tilnærmingsfart for de fire nærmeste objektene; manglende objekter gir nuller. Sju sensorstråler måler avstand til vegger, kjegler og biler. Nettverket har 23 innganger, fire skjulte lag med åtte nevroner og to utganger: styring og brems (0–50 % fartsreduksjon). Rust beregner nettverk, gradienter, veigeometri, radar og kollisjonsavstander. [Metodehistorikk og resultater](docs/UTVIKLINGSLOGG_BIL.md).
+Fra generasjon **806** starter et separat forsøk med nye vekter. Den gamle
+modellen fra generasjon **805** og hele treningshistorikken er bevart.
+Generasjonsnumrene følger prosjektets tidslinje; 806 er første generasjon
+med denne arkitekturen.
+
+**15 sektorer over 180° foran bilen** måler nærmeste punkt på veikant, kjegle
+eller bil, og relativ tilnærmingsfart. Det gir 30 innganger, uten separate
+kantfølere. Tre lag kobler bare nabosektorer; fem skjulte beslutningslag følger.
+To utganger styrer bilen og velger samlet fart fra 50 til 150 % av grunnfarten.
+Rust beregner sektortreff, nettverk og gradienter.
+
+Tilfeldige 4–8 kjegler, fem biler, vekslende kjøreretning og de tidligere
+belønnings-/straffereglene beholdes. Målet er et mer sammenhengende sensorbilde;
+vi vet ennå ikke om det lærer bedre. [Metode, arkivering og validering](docs/UTVIKLINGSLOGG_BIL.md#endring-41).
+Videoene nedenfor viser både tidligere arkitekturer og den nye sektorradarmodellen.
+
+Fra generasjon 819 fordeles veggstraffen kun på de tre siste lagrede handlingene, omtrent ni simuleringssteg. Vektene beholdes ([endring 42](docs/UTVIKLINGSLOGG_BIL.md#endring-42)).
+
+Fra generasjon **826** starter neste forsøk med **30 soner og nye vekter**.
+Sonene er gradvis tettere foran (4.6°) enn på sidene (8.6°).
+Nettet har 60 innganger og tre lokale lag med 120 nevroner hver; de fem
+beslutningslagene og ratt/fart-utgangene beholdes. Modellen fra 825
+er arkivert. [Begrunnelse og nøyaktig metode](docs/UTVIKLINGSLOGG_BIL.md#endring-43).
+Videoene nedenfor viser både 15-sonersmodellen (821) og 30-sonersmodellen (832).
+
+Fra generasjon **849**: **20 biler uten kjegler**, fem som trenes og 15 med
+faste modeller. De ti kandidatnettene roterer mellom de fem treningsbilene.
+Bare forbikjøringsbonus og kollisjonsstraff brukes nå. De 15 trafikkbilene
+har 15 % lavere grunnfart enn tilsvarende treningsbil (68–102 % mot 80–120 %);
+se [fartsendringen](docs/UTVIKLINGSLOGG_BIL.md#endring-45). Synet dekker **220°**
+med fortsatt 30 soner: 4,56° rett foran og 34,36° ytterst. Vektene beholdes.
+[Metode og begrunnelse](docs/UTVIKLINGSLOGG_BIL.md#endring-44).
+Videoene nedenfor viser utviklingen fra fem biler til 20 biler, i kronologisk rekkefølge.
+
+Fra generasjon **854** er bilkollisjonsstraffen økt fra −50 til **−100**. Veggstraffen beholdes på −50, og vektene videreføres ([endring 46](docs/UTVIKLINGSLOGG_BIL.md#endring-46)).
 
 ## Kjøringen utvikler seg — minst trening først
 
@@ -90,7 +124,7 @@ og omstarter. Vektene ble beholdt ved videre trening.
 
 [![Generasjon 156 kjører ovenfra med fem biler, 33 kjegler og 120° radar](docs/media/hybrid-generation156-overhead-preview.gif)](docs/media/hybrid-generation156-overhead.mp4)
 
-[Se den nye videoen — 60 sekunder, MP4](docs/media/hybrid-generation156-overhead.mp4).
+[Se videoen — 60 sekunder, MP4](docs/media/hybrid-generation156-overhead.mp4).
 Filmet 5. november 2026 i **1× avspilling**, ovenfra med hele banen synlig.
 Alle fem biler bruker den lagrede modellen fra **generasjon 156**. Vektene
 oppdateres ikke i opptaket; videre trening kjører separat uten visualisering.
@@ -101,6 +135,101 @@ før krasj**, mot **405** ved generasjon 110: omtrent **90 % lengre** under samm
 testoppsett. Alle 100 tester endte fortsatt i krasj. [Lagrede testresultater](docs/experiments/2026-11-05-generation156.json). Videoen er en illustrasjon,
 ikke selve testen: her bruker alle bilene samme modell og får starte på nytt.
 I testene prøves kandidaten i én bilrolle av gangen mot fast referansetrafikk.
+
+### Generasjon 797 — radarvinkler, gass og forbikjøringsbonus
+
+[![Generasjon 797: fem biler sett ovenfra med sensorer og tilfeldig plasserte kjegler](docs/media/hybrid-generation797-overhead-preview.gif)](docs/media/hybrid-generation797-overhead.mp4)
+
+[Se videoen · 60 sekunder, MP4](docs/media/hybrid-generation797-overhead.mp4).
+Filmet **6. november 2026**, ovenfra med hele banen og alle fem bilene synlige,
+i **1× avspilling**. Alle bilene bruker den lagrede modellen fra generasjon
+797, med **31 innganger og tre utganger: styring, brems og gass**.
+Dette er faktisk kjøring med kollisjoner og omstarter; vektene oppdateres ikke
+under opptaket. Treningen fortsetter separat uten visualisering.
+
+Denne versjonen har to vinkler per radarobjekt og en forbikjøringsbonus som
+fordeles over de siste 50 lagrede handlingene. Oppsettet randomiseres under
+trening; opptaket viser generasjon 797 sitt lagrede oppsett, med kjøring med
+klokka. I 100 utvelgelsestester hadde modellen **1693 banenheter i snitt,
+74 kollisjoner og ingen bekreftede forbikjøringer**.
+[Lagrede testresultater](docs/experiments/2026-11-06-generation797.json).
+Videoen er ikke selve evalueringen: her bruker alle fem biler samme modell
+og får starte på nytt, mens testene bruker fast referansetrafikk og stopper
+ved krasj eller steggrensen. Resultatene er ikke direkte sammenlignbare med
+de eldre videoene, som bruker andre oppsett.
+
+Prosjekteieren ba om et nytt opptak etter at det forrige klippet virket uheldig.
+[Forrige opptak, generasjon 793](docs/media/hybrid-generation793-overhead.mp4)
+er bevart som historikk, sammen med [testresultatene](docs/experiments/2026-11-06-generation793.json).
+
+### Generasjon 821 — sektorradar og lokalt synsnett
+
+[![Generasjon 821: sektorradar og fem biler sett ovenfra](docs/media/sectors-generation821-overhead-preview.gif)](docs/media/sectors-generation821-overhead.mp4)
+
+[Se videoen · 60 sekunder, MP4](docs/media/sectors-generation821-overhead.mp4).
+
+Opptak 6. november 2026 i **1× hastighet**, med hele banen og alle fem biler.
+Dette er den nye modellen med **15 radarsektorer**, tre lokale synslag,
+fem skjulte beslutningslag og to utganger: ratt og samlet brems/gass.
+Den startet med nye vekter ved generasjon 806; 821 er den 16. generasjonen
+med denne arkitekturen. Fra 819 rammer veggstraffen bare de tre siste lagrede handlingene.
+
+I de 100 utvelgelsestestene kjørte modellen i snitt **1 110 lengdeenheter**;
+84 forsøk endte i krasj, mens 16 nådde steggrensen. Ingen forbikjøringer ble
+registrert i disse testene. [Lagrede testresultater](docs/experiments/2026-11-06-generation821.json).
+Videoen viser en avspilling hvor alle fem biler bruker samme modell og starter
+på nytt etter krasj, ikke selve evalueringen. Tidligere videoer er bevart ovenfor.
+
+### Generasjon 832 — 30 soner med tettere syn rett foran
+
+[![Generasjon 832: 30 radarsoner og fem biler sett ovenfra](docs/media/sectors30-generation832-overhead-preview.gif)](docs/media/sectors30-generation832-overhead.mp4)
+
+[Se videoen · 60 sekunder, MP4](docs/media/sectors30-generation832-overhead.mp4).
+
+Opptak 6. november 2026 i **1× hastighet**, med hele banen og alle fem biler
+som kjører mot klokka. Modellen har **30 radarsoner**, gradvis tettere rett
+foran bilen, og 60 innganger. Arkitekturen er
+60 → 120 → 120 → 120 → 32 → 24 → 16 → 8 → 4 → 2.
+Dette er den sjuende fullførte generasjonen siden nye vekter ved 826.
+
+I 100 utvelgelsestester kjørte den i snitt **1 815 lengdeenheter**. 55 tester
+nådde grensen på 1 000 steg uten krasj; 45 endte i krasj. Ingen forbikjøringer
+ble registrert for vinneren i disse testene.
+[Lagrede testresultater](docs/experiments/2026-11-06-generation832.json).
+Opptaket er en avspilling med samme modell i alle bilene og omstarter, ikke
+selve evalueringen. Randomiserte oppsett og ny initialisering gjør at klippene
+ikke alene kan brukes til å måle effekten av flere radarsoner.
+
+I den oppdaterte livevisningen er **treningsbilene lysegrønne** og den faste
+trafikken **grå**. Videoen fra generasjon 852 nedenfor er tatt opp på nytt med disse fargene; eldre videoer beholder de opprinnelige bilfargene.
+
+### Generasjon 852 — 20 biler, saktere trafikk og forbikjøringer
+
+[![Generasjon 852: 20 biler uten kjegler, sett ovenfra](docs/media/traffic20-generation852-overhead-preview.gif)](docs/media/traffic20-generation852-overhead.mp4)
+
+[Se videoen · 60 sekunder, MP4](docs/media/traffic20-generation852-overhead.mp4).
+
+Nytt opptak 6. november 2026 i **1× hastighet**: **grønne treningsbiler og grå trafikkbiler**, med fargeforklaring i bildet. De fem første bilene bruker
+vinneren fra generasjon 852; de 15 øvrige bruker faste modeller fra 831,
+836 og 845. Banen er uten kjegler. Trafikkbilene har **15 % lavere grunnfart**,
+mens alle modeller fortsatt styrer egen gass og brems.
+
+Endringene ble foreslått og presisert av prosjekteieren: mer trafikk for flere
+passeringsmuligheter, bare forbikjøringsbonus og kollisjonsstraff, samt
+**220° syn med 30 soner**, fin oppløsning foran og fire ganger bredere yttersoner.
+Vektene fra 848 ble beholdt. Se [metodeskiftet](docs/UTVIKLINGSLOGG_BIL.md#endring-44)
+og [lavere trafikkfart](docs/UTVIKLINGSLOGG_BIL.md#endring-45).
+
+Generasjon 852 beholdt forelderen. I 100 testforsøk ble det registrert
+**114 forbikjøringer**, **2 636 lengdeenheter i snitt** og **42 krasj**;
+58 forsøk nådde grensen på 1 000 steg uten krasj. Én bil kan passere flere andre.
+[Lagrede testresultater og innstillinger](docs/experiments/2026-11-06-generation852.json).
+
+Videoen er avspilling av lagrede vekter, uten læring. Her bruker fem biler
+vinneren samtidig og biler starter på nytt; evalueringen tester én kandidatrolle
+om gangen uten omstarter. Tallene er derfor fra evalueringen, ikke telt i klippet.
+Flere og saktere biler gir flere passeringsmuligheter, så antall passeringer kan
+ikke sammenlignes direkte med de tidligere fem-bilersforsøkene.
 
 ## Labyrintforsøk i aksjon
 

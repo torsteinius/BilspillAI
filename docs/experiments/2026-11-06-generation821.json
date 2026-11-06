@@ -1,0 +1,72 @@
+{
+  "generation": 821,
+  "winner": "learner-0",
+  "evaluation": {
+    "score": 2254.0003784868454,
+    "collisions": 84,
+    "distance": 110967.20756973716,
+    "overtakes": 0,
+    "test_rounds": 20,
+    "attempts": 100
+  },
+  "mean_distance": 1109.6720756973716,
+  "scenario": {
+    "generation": 821,
+    "seed": 20261112,
+    "direction": 1,
+    "direction_label": "clockwise",
+    "cones": [
+      {
+        "x": 709.4854304770605,
+        "y": -147.27184670117217,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:821:0"
+      },
+      {
+        "x": 1531.4748088454728,
+        "y": -200.98696554107332,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:821:1"
+      },
+      {
+        "x": 14.876500401407757,
+        "y": -215.1108407544715,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:821:2"
+      },
+      {
+        "x": -162.5008995023783,
+        "y": 102.61669160580233,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:821:3"
+      }
+    ]
+  },
+  "architecture": [
+    30,
+    60,
+    60,
+    60,
+    32,
+    24,
+    16,
+    8,
+    4,
+    2
+  ],
+  "model_sha256": "4d2d07050f36787174f3393be74571fd3a48a759ca2aa38902c021e49d43b4c1",
+  "recording_date": "2026-11-06",
+  "replay_speed": 1
+}

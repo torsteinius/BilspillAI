@@ -1,0 +1,436 @@
+{
+  "generation": 842,
+  "model_sha256": "8d0dc21b97281acbce3e571432de374df834f81afecfe41589663140723813c1",
+  "cones": 0,
+  "cars": 5,
+  "all_cars_same_model": true,
+  "respawn": true,
+  "steps_per_trial": 3000,
+  "trials": 20,
+  "total_passes": 7,
+  "trials_with_passes": 6,
+  "elapsed_seconds": 39.000038458034396,
+  "rows": [
+    {
+      "direction": 1,
+      "trial": 0,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "total_passes": 1,
+      "collision_events": {
+        "wall": 14,
+        "car": 0
+      },
+      "distance": 51613.3503740809,
+      "pass_events": [
+        {
+          "tick": 2849,
+          "car": 4,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "direction": 1,
+      "trial": 1,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 14,
+        "car": 0
+      },
+      "distance": 51733.8852154646,
+      "pass_events": []
+    },
+    {
+      "direction": 1,
+      "trial": 2,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 7,
+        "car": 0
+      },
+      "distance": 51813.42808748297,
+      "pass_events": []
+    },
+    {
+      "direction": 1,
+      "trial": 3,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 15,
+        "car": 0
+      },
+      "distance": 51743.437656196074,
+      "pass_events": []
+    },
+    {
+      "direction": 1,
+      "trial": 4,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 16,
+        "car": 2
+      },
+      "distance": 51788.21889997353,
+      "pass_events": []
+    },
+    {
+      "direction": 1,
+      "trial": 5,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "total_passes": 1,
+      "collision_events": {
+        "wall": 11,
+        "car": 0
+      },
+      "distance": 51709.1710083461,
+      "pass_events": [
+        {
+          "tick": 2409,
+          "car": 4,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "direction": 1,
+      "trial": 6,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "total_passes": 1,
+      "collision_events": {
+        "wall": 17,
+        "car": 0
+      },
+      "distance": 51703.07842088011,
+      "pass_events": [
+        {
+          "tick": 2639,
+          "car": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "direction": 1,
+      "trial": 7,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 14,
+        "car": 0
+      },
+      "distance": 51779.13882231472,
+      "pass_events": []
+    },
+    {
+      "direction": 1,
+      "trial": 8,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "total_passes": 1,
+      "collision_events": {
+        "wall": 12,
+        "car": 2
+      },
+      "distance": 51709.91673875354,
+      "pass_events": [
+        {
+          "tick": 1552,
+          "car": 4,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "direction": 1,
+      "trial": 9,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 12,
+        "car": 0
+      },
+      "distance": 51782.95065629006,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 0,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 11,
+        "car": 0
+      },
+      "distance": 52328.73035991459,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 1,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 14,
+        "car": 0
+      },
+      "distance": 52389.32782280445,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 2,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 12,
+        "car": 4
+      },
+      "distance": 52295.395403411196,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 3,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 10,
+        "car": 4
+      },
+      "distance": 52477.15327123616,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 4,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "total_passes": 2,
+      "collision_events": {
+        "wall": 13,
+        "car": 0
+      },
+      "distance": 52356.775383826665,
+      "pass_events": [
+        {
+          "tick": 720,
+          "car": 4,
+          "count": 1
+        },
+        {
+          "tick": 2909,
+          "car": 3,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "direction": -1,
+      "trial": 5,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 10,
+        "car": 0
+      },
+      "distance": 52449.61565664334,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 6,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 17,
+        "car": 2
+      },
+      "distance": 52187.62082466714,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 7,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 12,
+        "car": 2
+      },
+      "distance": 52264.105073110884,
+      "pass_events": []
+    },
+    {
+      "direction": -1,
+      "trial": 8,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "total_passes": 1,
+      "collision_events": {
+        "wall": 11,
+        "car": 6
+      },
+      "distance": 52392.492592154864,
+      "pass_events": [
+        {
+          "tick": 1799,
+          "car": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "direction": -1,
+      "trial": 9,
+      "steps": 3000,
+      "passes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "total_passes": 0,
+      "collision_events": {
+        "wall": 13,
+        "car": 0
+      },
+      "distance": 52340.620826107726,
+      "pass_events": []
+    }
+  ]
+}

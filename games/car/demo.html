@@ -9,7 +9,7 @@
 .overhead-only #recordPreview{max-height:260px}
 .overhead-only #trackView{max-height:65vh}
 </style><main><header><h1>AI-spill <small>Bilspill</small></h1><div class="tag" id="connection">Kobler til Python</div></header>
-<p><span id="trafficInfo">Laster trafikk</span> · sju sensorstråler og radar · felles nettverk: <span id="architecture">—</span>.</p>
+<p><span id="trafficInfo">Laster trafikk</span> · <span id="sensorLabel">sensorer</span> · nettverk (første fem biler): <span id="architecture">—</span>.</p>
 <div class="stats"><div class="stat"><span>Generasjon</span><strong id="gen">0 / 100</strong></div><div class="stat"><span>Beste poeng hittil</span><strong id="score">—</strong></div><div class="stat"><span>Runde per bil</span><strong id="lap"><b>0.0 %</b><b>0.0 %</b></strong></div></div>
 <p><strong id="candidate">Starter trening …</strong><br><span id="attempt"></span></p>
 <label>Visningshastighet <select id="speed"><option value="1" selected>1×</option><option value="3">3×</option><option value="10">10×</option><option value="30">30×</option></select></label><p id="speedError"></p>
@@ -36,7 +36,7 @@
 <text id="mapTitle" x="400" y="262" fill="#a9bac7" text-anchor="middle" font-size="20">PYTHON KJØRER</text><text id="mode" x="400" y="290" fill="#72e4b0" text-anchor="middle" font-size="14">Treningen starter …</text>
 <g id="radars"></g><g id="rays" stroke="#f3c969" stroke-width="2" opacity=".85"></g>
 <g id="cars"></g></svg>
-<p class="note">Alle bilene bruker samme nettverk; under trening følger visningen kandidaten som evalueres. Sensorstrålene måler nærmeste vegg eller bil, og radaren gir nærhet og retning til nærmeste synlige bil. Startsteder følger forsøksoppsettet; i randomiserte forsøk trekkes nye, ledige startsteder ved hver start. Fartsforskjellene gjør at de etter hvert tar igjen hverandre. Ved kollisjon starter bare involverte biler på nytt når startplassen er ledig. Modellen styrer selv; vellykkede forbikjøringer er ikke garantert. Fargene identifiserer bilene i visningen og er ikke sensorinput.</p><p id="validation" class="note"></p></main>
+<p class="note">De fem første bilene bruker modellen som vises. I oppsett med ekstra trafikk kjører de øvrige bilene med faste modeller; de trenes ikke. Sensorene følger modellversjonen. Sektorradaren måler nærmeste veikant, kjegle eller bil i hver radarsone rundt bilens front, også litt bak sidene ved 220°, uten separate kantfølere. Eldre modeller bruker sju stråler og objektradar. Startsteder følger forsøksoppsettet; i randomiserte forsøk trekkes nye, ledige startsteder ved hver start. Fartsforskjellene gjør at de etter hvert tar igjen hverandre. Ved kollisjon starter bare involverte biler på nytt når startplassen er ledig. Modellen styrer selv; vellykkede forbikjøringer er ikke garantert. Fargene identifiserer bilene i visningen og er ikke sensorinput.</p><p id="validation" class="note"></p></main>
 <script type="module" src="/renderer/bridge.js"></script>
 <script>
 const overheadOnly=location.hash==='#ovenfra';
@@ -45,14 +45,16 @@ const $=id=>document.getElementById(id);
 let cockpitState=null, road=[], trackData=null;
 const carColors=['#72e4b0','#6fb9ff','#f3c969','#e69bff','#ff865f'];
 const carNames=['Grønn','Blå','Gul','Lilla','Oransje'];
+for(let i=5;i<20;i++){carColors.push(`hsl(${(i*137.5)%360} 45% 65%)`);carNames.push(`Trafikk ${i-4}`);}
 function prepareCars(s){
  if($('cars').children.length===s.cars.length)return;
- $('cars').innerHTML=s.cars.map((c,i)=>`<g id="car${i}"><circle r="7" fill="${carColors[i]}"/><path d="M7 0 L-3 -4 L-3 4 Z" fill="white"/></g>`).join('');
- $('lap').innerHTML=s.cars.map((c,i)=>`<b style="color:${carColors[i]}"></b>`).join('');
+ if(s.cars.length>5){for(let i=0;i<s.cars.length;i++){carColors[i]=i<5?'#35ef8f':'#8793a1';carNames[i]=i<5?`Treningsbil ${i+1}`:`Trafikk ${i-4}`;}}
+ $('cars').innerHTML=s.cars.map((c,i)=>`<g id="car${i}"><circle r="7" fill="${carColors[i]}" stroke="${s.cars.length>5&&i<5?'#fff':'none'}" stroke-width="1.5"/><path d="M7 0 L-3 -4 L-3 4 Z" fill="white"/></g>`).join('');
+ $('lap').innerHTML=s.cars.slice(0,5).map((c,i)=>`<b style="color:${carColors[i]}"></b>`).join('');
  const selected=$('driver').value;
  $('driver').innerHTML=s.cars.map((c,i)=>`<option value="${i}">${carNames[i]} · ${Math.round(100*(c.speed_factor||1))} %</option>`).join('');
  $('driver').value=Number(selected)<s.cars.length?selected:'0';
- $('trafficInfo').textContent=s.traffic==='convoy'?`Fem biler · ${s.scenario_direction?(s.scenario_direction==='clockwise'?'med klokka':'mot klokka'):'samme retning'} · fart 80–120 %`:'To biler · motsatt kjøreretning';
+ $('trafficInfo').textContent=s.traffic==='convoy'?`${s.cars.length} biler · ${s.scenario_direction?(s.scenario_direction==='clockwise'?'med klokka':'mot klokka'):'samme retning'} · grunnfart ${Math.round(100*Math.min(...s.cars.map(c=>c.speed_factor||1)))}–${Math.round(100*Math.max(...s.cars.map(c=>c.speed_factor||1)))} %${s.cars.length>5?' · Grønn: 5 treningsbiler · Grå: 15 faste trafikkbiler':''}`:'To biler · motsatt kjøreretning';
 }
 function updateMapView(){
  if(!trackData)return;
@@ -65,13 +67,20 @@ function updateMapView(){
 $('mapZoom').onchange=updateMapView;
 async function update(){
  try{
-  const r=await fetch('/api/state');if(!r.ok)throw Error(r.status);const s=await r.json();cockpitState=s;prepareCars(s);drawCockpit();updateMapView();$('architecture').textContent=s.architecture.join(' → ');
+  const r=await fetch('/api/state');if(!r.ok)throw Error(r.status);const s=await r.json();cockpitState=s;prepareCars(s);drawCockpit();updateMapView();$('architecture').textContent=s.architecture.join(' → ');$('sensorLabel').textContent=s.radar_mode?.startsWith('sectors')?`${s.architecture[0]/2} radarsektorer · ${s.radar_mode==='sectors30wide'?220:180}° · avstand og tilnærmingsfart`:'sju sensorstråler og radar';
   $('connection').textContent=s.fast?'Trener raskt · rolig avspilling':'Python tilkoblet';$('speed').disabled=false;$('gen').textContent=s.generation+' / '+s.generations;
-  $('score').textContent=s.best_score ?? '—';$('candidate').textContent=s.phase==='training'?'Viser generasjon '+(s.display_generation ?? '—')+', kandidat '+(s.display_candidate ?? '—')+' · Trener kandidat '+s.candidate+' / '+s.population:s.phase==='validation'?'Kontrollerer andre startplasseringer':'Avspilling av beste nettverk';$('attempt').textContent='Steg '+s.step+' / '+(s.simulation_steps||650)+' · Poeng: '+s.current_score+' · Omstarter: '+s.cars.map(c=>c.restarts).join(' / ');$('speed').value=String(s.speed);s.cars.forEach((c,i)=>{$('lap').children[i].textContent=carNames[i]+' '+Number(c.lap).toFixed(1)+' %';});
+  $('score').textContent=s.best_score ?? '—';$('candidate').textContent=s.phase==='training'?'Viser generasjon '+(s.display_generation ?? '—')+', kandidat '+(s.display_candidate ?? '—')+' · Trener kandidat '+s.candidate+' / '+s.population:s.phase==='validation'?'Kontrollerer andre startplasseringer':'Avspilling av beste nettverk';$('attempt').textContent='Steg '+s.step+' / '+(s.simulation_steps||650)+' · Poeng: '+s.current_score+' · Omstarter: '+s.cars.map(c=>c.restarts).join(' / ');$('speed').value=String(s.speed);s.cars.slice(0,5).forEach((c,i)=>{$('lap').children[i].textContent=carNames[i]+' '+Number(c.lap).toFixed(1)+' %';});
   $('mode').textContent=s.reason || (s.training?'Opptak fra treningen':'Avspilling · trening ferdig');
   let rays='',radars='';s.cars.forEach((c,i)=>{
    const r=c.radar, color=r.detected?'#ff865f':carColors[i];
-   if(!c.crashed && r.shape==='cone'){
+   if(!c.crashed && r.shape==='sectors'){
+    r.sectors.forEach(zone=>{
+     const a=c.heading+(zone.angle_low??zone.angle-Math.PI/30),b=c.heading+(zone.angle_high??zone.angle+Math.PI/30),d=zone.distance;
+     radars+=`<path d="M ${c.x} ${c.y} L ${c.x+d*Math.cos(a)} ${c.y+d*Math.sin(a)} A ${d} ${d} 0 0 1 ${c.x+d*Math.cos(b)} ${c.y+d*Math.sin(b)} Z" fill="${carColors[i]}" fill-opacity=".07" stroke="${carColors[i]}" stroke-opacity=".5"/>`;
+     if(zone.detected){const x=c.x+zone.forward*Math.cos(c.heading)-zone.lateral*Math.sin(c.heading),y=c.y+zone.forward*Math.sin(c.heading)+zone.lateral*Math.cos(c.heading);radars+=`<circle cx="${x}" cy="${y}" r="2.5" fill="${carColors[i]}"/>`;}
+    });
+   }
+   else if(!c.crashed && r.shape==='cone'){
     const a=c.heading-r.half_angle,b=c.heading+r.half_angle;
     radars+=`<path d="M ${c.x} ${c.y} L ${c.x+r.range*Math.cos(a)} ${c.y+r.range*Math.sin(a)} A ${r.range} ${r.range} 0 0 1 ${c.x+r.range*Math.cos(b)} ${c.y+r.range*Math.sin(b)} Z" fill="${color}" fill-opacity=".06" stroke="${color}" stroke-opacity=".65"/>`;
    }
@@ -130,7 +139,7 @@ function drawCockpit(){
  const id=Number($('driver').value),car=cockpitState.cars[id];
  const chase=$('cameraMode').value==='chase';
  const radar=car.radar;
- $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · relativ fart ${(radar.relative_speed??0).toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
+ $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='wall'?'Veikant':radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · relativ fart ${(radar.relative_speed??0).toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
  $('elevationInfo').textContent=`Høyde ${Math.round(car.z||0)} · Stigning ${(100*Math.tan(car.pitch||0)).toFixed(1)} %`;
  if(window.carGpu?.ready&&window.carGpu.render(cockpitState,id,chase))return;
  const pitch=(car.pitch||0)+(chase?-.18:0),cp=Math.cos(pitch),sp=Math.sin(pitch);
@@ -251,11 +260,11 @@ async function paintVideoFrame(){
   const s=cockpitState;
   videoContext.fillStyle='rgba(10,18,24,.92)';videoContext.fillRect(0,0,1600,86);videoContext.fillRect(0,1000,1600,80);
   videoContext.fillStyle='#e9eff4';videoContext.font='bold 28px system-ui';
-  videoContext.fillText(`Treningsbane · fem biler · ${trackData?.cones?.length??0} kjegler · radar 3× · ${captureSource==='3d'?'3D':'oversiktskart'}`,28,36);
+  videoContext.fillText(`Treningsbane · ${cockpitState?.cars?.length??5} biler · ${trackData?.cones?.length??0} kjegler · radar 3× · ${captureSource==='3d'?'3D':'oversiktskart'}`,28,36);
   videoContext.font='22px system-ui';
   videoContext.fillText(`Viser generasjon ${s?.display_generation??s?.generation??'—'}, kandidat ${s?.display_candidate??'—'} · steg ${s?.step??0} · ${s?.speed??1}× avspilling`,28,68);
-  videoContext.fillText(s?.training?'Treningsforsøk med feil og omstarter.':'Avspilling av lagret modell · styring og brems · vektene oppdateres ikke.',28,1032);
-  videoContext.fillText(`Omstarter: ${s?.cars.map(c=>c.restarts).join(' / ')||'—'} · 5. november 2026`,28,1062);
+  videoContext.fillText(s?.cars.length>5?'Grønn: 5 treningsbiler · Grå: 15 faste trafikkbiler · Avspilling uten vektoppdateringer':s?.training?'Treningsforsøk med feil og omstarter.':'Avspilling av lagret modell · vektene oppdateres ikke.',28,1032);
+  videoContext.fillText(`Omstarter: ${s?.cars.map(c=>c.restarts).join(' / ')||'—'} · ${new Date().toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Oslo'})}`,28,1062);
  }finally{if(url)URL.revokeObjectURL(url);painting=false;}
 }
 function stopVideo(){

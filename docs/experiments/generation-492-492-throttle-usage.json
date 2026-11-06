@@ -1,0 +1,16 @@
+{
+  "model": "generation-492.json",
+  "generation": 492,
+  "tests": 100,
+  "measured_steps": 36370,
+  "gas_active_pct": 0.0,
+  "gas_above_half_pct": 0.0,
+  "gas_mean": 0.0,
+  "gas_max": 0.0,
+  "brake_mean": 0.00368859179488966,
+  "both_active_pct": 0.0,
+  "mean_speed_multiplier": 0.998155704102555,
+  "distance": 1100.5574173207085,
+  "crashes": 91,
+  "overtakes": 6
+}

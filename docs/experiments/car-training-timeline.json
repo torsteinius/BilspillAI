@@ -296,6 +296,89 @@
       "series": "random_scenarios",
       "first_generation": 432,
       "chart_label": "Vegg: 25 handlinger, 40 % nyeste"
+    },
+    {
+      "id": "E37",
+      "title": "Gassutgang og belønning for forbikjøring",
+      "log_anchor": "endring-37",
+      "series": "random_scenarios",
+      "first_generation": 492,
+      "chart_label": "Gass +50 %; forbikjøring +25"
+    },
+    {
+      "id": "E38",
+      "title": "Jevn forbikjøringsbonus over 50 handlinger",
+      "log_anchor": "endring-38",
+      "series": "random_scenarios",
+      "first_generation": 502,
+      "chart_label": "Passering: bonus over 50 handlinger"
+    },
+    {
+      "id": "E39",
+      "title": "To vinkler per radarobjekt; 31 innganger",
+      "log_anchor": "endring-39",
+      "series": "random_scenarios",
+      "first_generation": 520,
+      "chart_label": "Radar: to vinkler per objekt"
+    },
+    {
+      "id": "E40",
+      "title": "Video av generasjon 793 i README",
+      "log_anchor": "endring-40",
+      "series": null,
+      "first_generation": null,
+      "chart_label": null
+    },
+    {
+      "id": "E41",
+      "title": "Ny start: 15 radarsektorer og lokalt synsnett",
+      "log_anchor": "endring-41",
+      "series": "sectors15",
+      "first_generation": 806,
+      "chart_label": "Ny start: sektorradar + lokale lag",
+      "reset_trend": true
+    },
+    {
+      "id": "E42",
+      "title": "Veggstraff på tre siste lagrede handlinger",
+      "log_anchor": "endring-42",
+      "series": "sectors15",
+      "first_generation": 819,
+      "chart_label": "Vegg: siste 3 handlinger"
+    },
+    {
+      "id": "E43",
+      "title": "30 soner, tettere foran, nye vekter",
+      "log_anchor": "endring-43",
+      "series": "sectors30",
+      "first_generation": 826,
+      "chart_label": "30 soner · nye vekter",
+      "reset_trend": true
+    },
+    {
+      "id": "E44",
+      "title": "20 biler, passeringsbonus og 220° syn",
+      "log_anchor": "endring-44",
+      "series": "traffic20",
+      "first_generation": 849,
+      "chart_label": "20 biler · 220° · ny belønning",
+      "reset_trend": true
+    },
+    {
+      "id": "E45",
+      "title": "Trafikkbilene får 15 % lavere grunnfart",
+      "log_anchor": "endring-45",
+      "series": "traffic20",
+      "first_generation": 849,
+      "chart_label": "Trafikkfart ×0,85"
+    },
+    {
+      "id": "E46",
+      "title": "Doblet bilkollisjonsstraff",
+      "log_anchor": "endring-46",
+      "series": "traffic20",
+      "first_generation": 854,
+      "chart_label": "Bilkrasj −100"
     }
   ]
 }

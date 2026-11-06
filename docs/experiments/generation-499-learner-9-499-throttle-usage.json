@@ -1,0 +1,16 @@
+{
+  "model": "generation-499-learner-9.json",
+  "generation": 499,
+  "tests": 100,
+  "measured_steps": 17792,
+  "gas_active_pct": 0.0,
+  "gas_above_half_pct": 0.0,
+  "gas_mean": 0.0,
+  "gas_max": 0.0,
+  "brake_mean": 0.004214461502662525,
+  "both_active_pct": 0.0,
+  "mean_speed_multiplier": 0.9978927692486687,
+  "distance": 530.1730567675052,
+  "crashes": 100,
+  "overtakes": 0
+}

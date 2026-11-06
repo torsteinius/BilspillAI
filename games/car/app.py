@@ -36,6 +36,7 @@ PERIMETER, PATH = TRACK.perimeter, TRACK.path
 SIMULATION_STEPS = 650
 TRAFFIC = 'opposite'
 REPLAY_SCENARIO = None
+REPLAY_BACKGROUND = []
 RADAR_MODE = 'legacy'
 RADAR_SCALE = 1.
 SPEED_FACTORS = (.8, .9, 1., 1.1, 1.2)
@@ -123,9 +124,30 @@ def sensors(car, other):
     return readings
 
 
+def radar_angles(car, other):
+    """Signed bearing and relative velocity direction in ego coordinates, radians."""
+    ch,sh=math.cos(car['heading']),math.sin(car['heading'])
+    dx,dy=other['x']-car['x'],other['y']-car['y']
+    bearing=math.atan2(-dx*sh+dy*ch,dx*ch+dy*sh)
+    speed=0. if other.get('kind')=='cone' else other.get('speed',3*other.get('speed_factor',1.))
+    ego=car.get('speed',3*car.get('speed_factor',1.))
+    vx=speed*math.cos(other.get('heading',0.))-ego*ch
+    vy=speed*math.sin(other.get('heading',0.))-ego*sh
+    forward,lateral=vx*ch+vy*sh,-vx*sh+vy*ch
+    # Direction is undefined at zero relative speed: use zero.
+    motion=math.atan2(lateral,forward) if math.hypot(forward,lateral)>1e-8 else 0.
+    return bearing,motion
+
+
 def radar(car, other):
+    if RADAR_MODE in ('sectors15','sectors30','sectors30wide'):
+        import sys
+        from .sector_radar import scan
+        sectors=scan(sys.modules[__name__],car,other)
+        nearest=min(sectors,key=lambda r:r['distance'])
+        return dict(nearest,shape='sectors',sectors=sectors,range=RADAR_RANGE,targets=[],half_angle=math.radians(110) if RADAR_MODE=='sectors30wide' else math.pi/2,center_x=car['x'],center_y=car['y'],radius=RADAR_RANGE)
     objects = others(car, other)+TRACK.cones
-    if NATIVE_CAR_KERNELS and TRACK.native is not None and RADAR_MODE in ('cone', 'cone4', 'cone4relative'):
+    if NATIVE_CAR_KERNELS and TRACK.native is not None and RADAR_MODE in ('cone', 'cone4', 'cone4relative', 'cone4angles'):
         from ai.rust_backend import native_module
         rows = native_module().cone_targets(
             (car['x'], car['y'], car['heading'], car.get('speed', 3*car.get('speed_factor', 1.)), car['crashed']),
@@ -147,11 +169,16 @@ def radar(car, other):
                 radius=RADAR_RADIUS, offset=0., center_x=car['x'], center_y=car['y']))
     else:
         detections = [_radar_one(car, c) for c in objects]
+    if RADAR_MODE == 'cone4angles':
+        # Native and Python kernels preserve object order among their detections.
+        visible_objects=[objects[row[0]] for row in rows if same_level(car,objects[row[0]])] if NATIVE_CAR_KERNELS and TRACK.native is not None else objects
+        for detection,obj in zip(detections,visible_objects):
+            detection['bearing_angle'],detection['motion_angle']=radar_angles(car,obj)
     visible = [r for r in detections if r['detected']]
     if visible:
         nearest = min(visible, key=lambda r: r['distance']).copy()
-        nearest['targets'] = [dict(distance=r['distance'], forward=r['forward'], lateral=r['lateral'], kind=r['kind'], speed=r.get('speed'), closing_speed=r.get('closing_speed'), relative_speed=r.get('relative_speed'), proximity=r['proximity'], target_id=r.get('target_id')) for r in sorted(visible,key=lambda r:r['distance'])]
-        if RADAR_MODE in ('cone4', 'cone4relative'):
+        nearest['targets'] = [dict(distance=r['distance'], forward=r['forward'], lateral=r['lateral'], kind=r['kind'], speed=r.get('speed'), closing_speed=r.get('closing_speed'), relative_speed=r.get('relative_speed'), proximity=r['proximity'], target_id=r.get('target_id'),bearing_angle=r.get('bearing_angle',0.),motion_angle=r.get('motion_angle',0.)) for r in sorted(visible,key=lambda r:r['distance'])]
+        if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles'):
             nearest['targets'] = nearest['targets'][:4]
         return nearest
     # Keep exactly two radar inputs, even for an empty traffic list.
@@ -208,7 +235,7 @@ def _cone_radar_one(car, other):
 
 
 def _radar_one(car, other):
-    if RADAR_MODE in ('cone', 'cone4', 'cone4relative'):
+    if RADAR_MODE in ('cone', 'cone4', 'cone4relative', 'cone4angles'):
         return _cone_radar_one(car, other)
     dx, dy = other['x']-car['x'], other['y']-car['y']
     distance = math.hypot(dx, dy)
@@ -231,13 +258,22 @@ def _radar_one(car, other):
 
 
 def observations(car, other):
+    if RADAR_MODE in ('sectors15','sectors30','sectors30wide'):
+        import sys
+        from .sector_radar import inputs
+        return inputs(sys.modules[__name__],car,other)
     detection = radar(car, other)
-    if RADAR_MODE in ('cone4', 'cone4relative'):
+    if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles'):
         values = []
         for target in detection['targets'][:4]:
             values.extend([target['proximity'], target['lateral']/RADAR_RANGE,
-                           (max(-1., min(1., target['relative_speed']/7.2)) if RADAR_MODE == 'cone4relative' else target['speed']/3.6), max(-1., min(1., target['closing_speed']/7.2))])
+                           (max(-1., min(1., target['relative_speed']/7.2)) if RADAR_MODE in ('cone4relative','cone4angles') else target['speed']/3.6), max(-1., min(1., target['closing_speed']/7.2))])
         values.extend([0.]*(16-len(values)))
+        if RADAR_MODE == 'cone4angles':
+            angles=[]
+            for target in detection['targets'][:4]:
+                angles.extend([target['bearing_angle']/math.pi,target['motion_angle']/math.pi])
+            values.extend(angles+[0.]*(8-len(angles)))
         return sensors(car, other) + values
     if RADAR_MODE == 'cone':
         values = ([detection['proximity'], detection['lateral']/RADAR_RANGE,
@@ -257,7 +293,7 @@ def migrate_sensor_weights(weights):
 
 def policy(weights, readings):
     # Observation normalization belongs to this game, not the reusable network.
-    values = [1 - distance / 180 for distance in readings[:7]] + readings[7:]
+    values = readings if RADAR_MODE in ('sectors15','sectors30','sectors30wide') else [1 - distance / 180 for distance in readings[:7]] + readings[7:]
     return decode_outputs(network.forward(values, weights))
 
 
@@ -265,9 +301,13 @@ def decode_outputs(outputs):
     """Legacy models steer only; two-output models also request 0–50% braking."""
     if len(outputs) == 1:
         return outputs[0]
+    if len(outputs) == 2 and RADAR_MODE in ('sectors15','sectors30','sectors30wide'):
+        return outputs[0],max(0.,-outputs[1]),max(0.,outputs[1])
     if len(outputs) == 2:
         return outputs[0], (outputs[1]+1.)/2.
-    raise ValueError('Expected steering, optionally followed by brake output')
+    if len(outputs) == 3:
+        return outputs[0], (outputs[1]+1.)/2., max(0.,outputs[2])
+    raise ValueError('Expected steering, optional brake and throttle outputs')
 
 
 def initial(offset=0):
@@ -321,20 +361,20 @@ def step(cars, weights, *, controls=None, events=None):
     # All decisions use the same pre-movement state.
     if controls is None:
         controls = [policy(weights, observations(c, cars)) if not c['crashed'] else 0. for c in cars]
-    controls = [(v,0.) if isinstance(v,(float,int)) else tuple(v) for v in controls]
-    if len(controls) != len(cars) or any(len(v)!=2 or not all(math.isfinite(x) for x in v) or not -1<=v[0]<=1 or not 0<=v[1]<=1 for v in controls):
-        raise ValueError('Each car needs steering in [-1,1] and brake in [0,1]')
+    controls = [(v,0.,0.) if isinstance(v,(float,int)) else tuple(v)+(0.,) if len(v)==2 else tuple(v) for v in controls]
+    if len(controls) != len(cars) or any(len(v)!=3 or not all(math.isfinite(x) for x in v) or not -1<=v[0]<=1 or not all(0<=a<=1 for a in v[1:]) for v in controls):
+        raise ValueError('Each car needs steering in [-1,1] and brake/throttle in [0,1]')
     active = [not c['crashed'] for c in cars]
     old = [(c['x'], c['y'], c.get('z', 0.)) for c in cars]
     reward = 0.
     reason = ''
-    for idx, (c, (steer, brake)) in enumerate(zip(cars, controls)):
+    for idx, (c, (steer, brake, throttle)) in enumerate(zip(cars, controls)):
         if c['crashed']:
             continue
         before = progress(c['x'], c['y'], c.get('z', 0.))
         c['heading'] += steer * .045
-        speed = 3 * c.get('speed_factor', 1.) * (1.-.5*brake)
-        c.update(brake=brake,speed=speed)
+        speed = 3 * c.get('speed_factor', 1.) * (1.-.5*brake)*(1.+.5*throttle)
+        c.update(brake=brake,throttle=throttle,speed=speed)
         c['x'] += speed * math.cos(c['heading'])
         c['y'] += speed * math.sin(c['heading'])
         c['z'] = TRACK.locate(c['x'], c['y'], c.get('z', 0.))[2]
@@ -432,7 +472,7 @@ def train(additional=GENERATIONS, fast=False, training_speed=0):
     start = network.generation if resume else 0
     network.metadata.update(game='car', collision_penalty=COLLISION_PENALTY,
                             objective='obstacle_penalties_only', simulation_steps=SIMULATION_STEPS,
-                            track=TRACK.name, traffic=TRAFFIC, radar_mode=RADAR_MODE, radar_scale=RADAR_SCALE, speed_factors=list(SPEED_FACTORS) if TRAFFIC == 'convoy' else [1.,1.], radar_occlusion='none' if RADAR_MODE in ('cone', 'cone4', 'cone4relative') else 'road_edges_v1', observation_version='seven_rays_four_relative_targets_v6' if RADAR_MODE == 'cone4relative' else 'seven_rays_four_cone_targets_v5' if RADAR_MODE == 'cone4' else 'seven_rays_cone_motion_v4' if RADAR_MODE == 'cone' else 'seven_rays_spatial_radar_occluded_v3' if RADAR_MODE == 'spatial' else 'seven_rays_circular_radar_v1')
+                            track=TRACK.name, traffic=TRAFFIC, radar_mode=RADAR_MODE, radar_scale=RADAR_SCALE, speed_factors=list(SPEED_FACTORS) if TRAFFIC == 'convoy' else [1.,1.], radar_occlusion='none' if RADAR_MODE in ('cone', 'cone4', 'cone4relative', 'cone4angles') else 'road_edges_v1', observation_version='seven_rays_four_relative_angles_v7' if RADAR_MODE == 'cone4angles' else 'seven_rays_four_relative_targets_v6' if RADAR_MODE == 'cone4relative' else 'seven_rays_four_cone_targets_v5' if RADAR_MODE == 'cone4' else 'seven_rays_cone_motion_v4' if RADAR_MODE == 'cone' else 'seven_rays_spatial_radar_occluded_v3' if RADAR_MODE == 'spatial' else 'seven_rays_circular_radar_v1')
     network.metadata.pop('validation', None)
     with lock:
         status.update(fast=True, speed=training_speed or 1, generations=start + additional)
@@ -473,7 +513,13 @@ def replay_live():
             started = time.monotonic()
             if REPLAY_SCENARIO:REPLAY_SCENARIO.restart_crashed(attempt)
             else:restart_crashed(attempt)
-            reward, event = step(attempt, best)
+            controls=None
+            if REPLAY_BACKGROUND:
+                controls=[]
+                for i,c in enumerate(attempt):
+                    net=network if i<5 else REPLAY_BACKGROUND[i-5]
+                    controls.append(0. if c['crashed'] else decode_outputs(net.forward(observations(c,attempt))))
+            reward, event = step(attempt, best,controls=controls)
             score += reward
             with lock:
                 cars = [c.copy() for c in attempt]
@@ -530,7 +576,7 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == '/api/state':
             with lock:
                 payload = dict(status, reason=reason, angles=ANGLES,
-                    cars=[dict(c, sensors=sensors(c, cars), radar=radar(c, cars),
+                    cars=[dict(c, sensors=[] if RADAR_MODE in ('sectors15','sectors30','sectors30wide') else sensors(c, cars), radar=radar(c, cars),
                                pitch=TRACK.pitch(c['x'], c['y'], c.get('z', 0.), c['heading']),
                                lap=round(100*max(0,c['travel'])/PERIMETER,1)) for i,c in enumerate(cars)])
             data, kind = json.dumps(payload).encode(), 'application/json'
@@ -559,10 +605,10 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO
+    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO, REPLAY_BACKGROUND
     parser = argparse.ArgumentParser()
     parser.add_argument('--radar-scale', type=float, default=3., help='Radar radius and range multiplier')
-    parser.add_argument('--radar-mode', choices=('legacy', 'spatial', 'cone', 'cone4', 'cone4relative'), help='spatial: independent distance and lateral position; requires matching training')
+    parser.add_argument('--radar-mode', choices=('legacy', 'spatial', 'cone', 'cone4', 'cone4relative', 'cone4angles', 'sectors15', 'sectors30', 'sectors30wide'), help='spatial: independent distance and lateral position; requires matching training')
     parser.add_argument('--traffic', choices=('convoy', 'opposite'), default='convoy')
     parser.add_argument('--cone-count',type=int,choices=range(34),help='Evenly spaced cones (0–33)')
     parser.add_argument('--no-cones',action='store_true',help='Remove cones from sensors, physics and rendering')
@@ -586,7 +632,7 @@ def main():
     configure_traffic(args.traffic)
     try:
         RADAR_MODE = args.radar_mode or ('cone4' if args.track == 'training' and not args.replay else 'legacy')
-        ARCHITECTURE = [23 if RADAR_MODE in ('cone4', 'cone4relative') else 11 if RADAR_MODE == 'cone' else INPUTS, *args.hidden, 1]
+        ARCHITECTURE = [60 if RADAR_MODE in ('sectors30','sectors30wide') else 30 if RADAR_MODE == 'sectors15' else 31 if RADAR_MODE == 'cone4angles' else 23 if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles') else 11 if RADAR_MODE == 'cone' else INPUTS, *args.hidden, 1]
         network = NeuralNetwork(ARCHITECTURE, seed=args.seed)
         WEIGHT_COUNT = network.weight_count
         best = network.weights[:]
@@ -603,7 +649,7 @@ def main():
         RADAR_MODE = args.radar_mode or (saved_mode if resuming else ('cone4' if args.track == 'training' else 'legacy'))
         if resuming and RADAR_MODE != saved_mode:
             raise ValueError('Radar input differs from saved weights; use matching radar mode or train a new model')
-        if network.architecture[0] != (23 if RADAR_MODE in ('cone4', 'cone4relative') else 11 if RADAR_MODE == 'cone' else 9):
+        if network.architecture[0] != (60 if RADAR_MODE in ('sectors30','sectors30wide') else 30 if RADAR_MODE == 'sectors15' else 31 if RADAR_MODE == 'cone4angles' else 23 if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles') else 11 if RADAR_MODE == 'cone' else 9):
             raise ValueError('Network input count does not match radar mode')
         status['radar_mode'] = RADAR_MODE
         network.set_backend(args.backend)
@@ -613,10 +659,14 @@ def main():
             import sys
             from .scenarios import Scenario
             saved = network.metadata['scenario']
-            REPLAY_SCENARIO = Scenario(saved['seed'], saved['generation'],world=sys.modules[__name__])
+            REPLAY_SCENARIO = Scenario(saved['seed'], saved['generation'],world=sys.modules[__name__],car_count=saved.get('car_count',5),no_cones=not saved['cones'],background_speed_scale=saved.get('background_speed_scale',1.))
             REPLAY_SCENARIO.cones = saved['cones']
             REPLAY_SCENARIO.direction = saved['direction']
             TRACK.cones = REPLAY_SCENARIO.cones
+            paths=network.metadata.get('experiment',{}).get('background_models',[])
+            REPLAY_BACKGROUND=[NeuralNetwork.load(p).set_backend(args.backend) for p in paths]
+            if len(REPLAY_BACKGROUND)!=saved.get('car_count',5)-5:raise ValueError('Missing fixed background models')
+            status['background_cars']=len(REPLAY_BACKGROUND)
             status['scenario_direction'] = saved['direction_label']
     except (ValueError, KeyError, OSError, TypeError, RuntimeError) as error:
         parser.error(str(error))

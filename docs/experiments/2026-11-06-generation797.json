@@ -1,0 +1,76 @@
+{
+  "generation": 797,
+  "winner": "learner-7",
+  "evaluation": {
+    "score": 5882.2747203352255,
+    "collisions": 74,
+    "distance": 169270.29440670498,
+    "overtakes": 0,
+    "test_rounds": 20,
+    "attempts": 100
+  },
+  "mean_distance": 1692.7029440670499,
+  "scenario": {
+    "generation": 797,
+    "seed": 20261110,
+    "direction": 1,
+    "direction_label": "clockwise",
+    "cones": [
+      {
+        "x": 131.20089482516318,
+        "y": -205.9227409259589,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:797:0"
+      },
+      {
+        "x": 1589.125437298504,
+        "y": 216.9287277728611,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:797:1"
+      },
+      {
+        "x": 717.569331687362,
+        "y": -124.54333312603536,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:797:2"
+      },
+      {
+        "x": 1819.2806840482908,
+        "y": 205.93591038127042,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:797:3"
+      },
+      {
+        "x": 168.30604212114855,
+        "y": -206.8027187984265,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:797:4"
+      }
+    ]
+  },
+  "architecture": [
+    31,
+    8,
+    8,
+    8,
+    8,
+    3
+  ],
+  "recording_date": "2026-11-06",
+  "replay_speed": 1
+}

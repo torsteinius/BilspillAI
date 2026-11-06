@@ -1,4 +1,6 @@
 mod car;
+mod local;
+mod sectors;
 mod track;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -276,6 +278,8 @@ fn bilspill_ai_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(car::separations, m)?)?;
     m.add_class::<track::RoadGeometry>()?;
     m.add_class::<DenseNetwork>()?;
+    m.add_class::<local::LocalNetwork>()?;
+    m.add_class::<sectors::SectorRadar>()?;
     m.add_class::<EvolutionRng>()?;
     Ok(())
 }

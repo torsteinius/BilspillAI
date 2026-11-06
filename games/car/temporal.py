@@ -22,6 +22,7 @@ HISTORY = 100
 
 def forward_gradient(network, inputs, output_index=0):
     """Tanh hidden layers, linear final output; gradient of that output."""
+    if hasattr(network,'gradient'):return network.gradient(inputs,output_index)
     if network.backend == "rust":
         return network._native.gradient(inputs, network.weights, output_index)
     activations = [inputs]
@@ -53,6 +54,7 @@ def forward_gradient(network, inputs, output_index=0):
 
 def forward_latent(network, inputs):
     """Unbounded action means without computing discarded gradients."""
+    if hasattr(network,'latent'):return network.latent(inputs)
     if network.backend == 'rust':
         return network._native.latent(inputs, network.weights)
     values = list(inputs)

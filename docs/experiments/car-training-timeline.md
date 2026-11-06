@@ -40,6 +40,16 @@ Oppføringene følger utviklingsloggen. Hver lenke beskriver forslag, begrunnels
 | E34 | 383 / random_scenarios | [Tilfeldige 4–8 kjegler og starter; felles retning veksler](../UTVIKLINGSLOGG_BIL.md#endring-34) |
 | E35 | Se logg; ingen bekreftet grafgrense | [1000 generasjoner: mål om passeringer og ulike hindringer](../UTVIKLINGSLOGG_BIL.md#endring-35) |
 | E36 | 432 / random_scenarios | [Veggkontakt: siste 25, 40 % til nyeste](../UTVIKLINGSLOGG_BIL.md#endring-36) |
+| E37 | 492 / random_scenarios | [Gassutgang og belønning for forbikjøring](../UTVIKLINGSLOGG_BIL.md#endring-37) |
+| E38 | 502 / random_scenarios | [Jevn forbikjøringsbonus over 50 handlinger](../UTVIKLINGSLOGG_BIL.md#endring-38) |
+| E39 | 520 / random_scenarios | [To vinkler per radarobjekt; 31 innganger](../UTVIKLINGSLOGG_BIL.md#endring-39) |
+| E40 | Se logg; ingen bekreftet grafgrense | [Video av generasjon 793 i README](../UTVIKLINGSLOGG_BIL.md#endring-40) |
+| E41 | 806 / sectors15 | [Ny start: 15 radarsektorer og lokalt synsnett](../UTVIKLINGSLOGG_BIL.md#endring-41) |
+| E42 | 819 / sectors15 | [Veggstraff på tre siste lagrede handlinger](../UTVIKLINGSLOGG_BIL.md#endring-42) |
+| E43 | 826 / sectors30 | [30 soner, tettere foran, nye vekter](../UTVIKLINGSLOGG_BIL.md#endring-43) |
+| E44 | 849 / traffic20 | [20 biler, passeringsbonus og 220° syn](../UTVIKLINGSLOGG_BIL.md#endring-44) |
+| E45 | 849 / traffic20 | [Trafikkbilene får 15 % lavere grunnfart](../UTVIKLINGSLOGG_BIL.md#endring-45) |
+| E46 | 854 / traffic20 | [Doblet bilkollisjonsstraff](../UTVIKLINGSLOGG_BIL.md#endring-46) |
 
 ## Sammenlignbar del av forsøket
 
@@ -47,6 +57,6 @@ Grafen nedenfor starter med 120° radar ved generasjon 101. Rust-bytte ved 111 o
 
 ![Kjøretid og kjørelengde med metodeendringer](car-training-trend.png)
 
-Kurven viser siste generasjon i lagrede data da grafen ble laget. Den er et øyeblikksbilde, ikke automatisk oppdatert. Glidende snitt bruker de siste ti generasjonene og kan krysse en metodegrense, men nullstilles ved endringer i kjegleantallet og tilbakeføring av vekter. Samvariasjon med en markering viser ikke alene at endringen forårsaket forbedring.
+Ved overgang til sektorradar starter et nytt nettverk med nye vekter. Kurve og glidende snitt brytes ved denne overgangen. Kurven viser siste generasjon i lagrede data da grafen ble laget. Den er et øyeblikksbilde, ikke automatisk oppdatert. Glidende snitt bruker de siste ti generasjonene og kan krysse en metodegrense, men nullstilles ved endringer i kjegleantallet og tilbakeføring av vekter. Samvariasjon med en markering viser ikke alene at endringen forårsaket forbedring.
 
 Ved nye endringer: legg først inn begrunnelse og observasjon i utviklingsloggen, deretter hendelse i `car-training-timeline.json` med forsøksserie og første berørte generasjon. Bruk null når grensen er ukjent. Oppdater graf og tidslinje med `.venv-media/bin/python scripts/plot_car_training_progress.py`.

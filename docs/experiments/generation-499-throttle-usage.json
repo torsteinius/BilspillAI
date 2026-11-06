@@ -1,0 +1,15 @@
+{
+  "generation": 499,
+  "tests": 100,
+  "measured_steps": 28200,
+  "gas_active_pct": 0.0,
+  "gas_above_half_pct": 0.0,
+  "gas_mean": 0.0,
+  "gas_max": 0.0,
+  "brake_mean": 0.0025109810943922286,
+  "both_active_pct": 0.0,
+  "mean_speed_multiplier": 0.9987445094528039,
+  "distance": 840.4597536557201,
+  "crashes": 100,
+  "overtakes": 0
+}

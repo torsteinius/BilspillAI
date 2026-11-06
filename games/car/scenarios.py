@@ -9,7 +9,11 @@ def separation(a,b):
 
 
 class Scenario:
-    def __init__(self,seed,generation,world=app):
+    def __init__(self,seed,generation,world=app,car_count=5,no_cones=False,background_speed_scale=1.):
+        if not 5<=car_count<=20:raise ValueError("Expected 5–20 cars")
+        if not math.isfinite(background_speed_scale) or not 0<background_speed_scale<=1:raise ValueError('Background speed scale must be in (0,1]')
+        self.background_speed_scale=background_speed_scale
+        self.car_count=car_count
         self.world=world
         self.seed=seed
         self.generation=generation
@@ -17,7 +21,7 @@ class Scenario:
         self.rng=random.Random(seed+generation*100003+1)
         layout_rng=random.Random(seed+generation*100003)
         self.cones=[]
-        for i in range(layout_rng.randint(4,8)):
+        for i in range(0 if no_cones else layout_rng.randint(4,8)):
             for _ in range(10000):
                 p=self.world.TRACK.pose(layout_rng.random()*self.world.TRACK.perimeter,
                                  layout_rng.uniform(-self.world.TRACK.half_width+22,self.world.TRACK.half_width-22))
@@ -36,14 +40,14 @@ class Scenario:
             if any(separation(pose,c)<self.world.CAR_RADIUS+c['radius']+8 for c in self.cones):continue
             if any(not c['crashed'] and separation(pose,c)<2*self.world.CAR_RADIUS+12 for c in cars):continue
             pose['heading']+=math.pi if self.direction<0 else 0.
-            return dict(pose,direction=self.direction,speed_factor=self.world.SPEED_FACTORS[index],
+            return dict(pose,direction=self.direction,speed_factor=self.world.SPEED_FACTORS[index%len(self.world.SPEED_FACTORS)]*(self.background_speed_scale if index>=5 else 1.),
                         travel=0.,crashed=False,restarts=0,target_id=f'car:{index}')
         raise RuntimeError('Could not find free random start')
 
     def initial(self,rng=None):
         rng=self.rng if rng is None else rng
         cars=[]
-        for i in range(5):cars.append(self.spawn(i,cars,rng))
+        for i in range(self.car_count):cars.append(self.spawn(i,cars,rng))
         return cars
 
     def restart_car(self,cars,index):
@@ -63,5 +67,5 @@ class Scenario:
         # Screen y points down: positive signed area is clockwise on the map.
         pts=self.world.TRACK.points
         area=sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(pts,pts[1:]+pts[:1]))
-        return dict(generation=self.generation,seed=self.seed,direction=self.direction,
+        return dict(generation=self.generation,seed=self.seed,direction=self.direction,car_count=self.car_count,background_speed_scale=self.background_speed_scale,
                     direction_label='clockwise' if area*self.direction>0 else 'counterclockwise',cones=self.cones)

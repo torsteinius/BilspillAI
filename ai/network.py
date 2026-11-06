@@ -109,6 +109,9 @@ class NeuralNetwork:
         if saved.get('model_type') == 'present_history_branches_v1':
             from ai.branched import BranchedNetwork
             model_class = BranchedNetwork
+        if saved.get('model_type') == 'sector_local_vision_v1':
+            from ai.local_vision import LocalVisionNetwork
+            model_class = LocalVisionNetwork
         network = model_class(saved['architecture'], seed=saved.get('seed'))
         if expected_architecture is not None and network.architecture != tuple(expected_architecture):
             raise ValueError('Saved model has incompatible architecture')

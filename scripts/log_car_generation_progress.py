@@ -36,7 +36,7 @@ def progress_rows(events):
             distance_change_from_start_pct=100*(mean/initial['mean_distance']-1) if initial and initial['mean_distance'] else 0.,
             collisions=collisions,collision_reduction=previous['collisions']-collisions if previous else 0,
             collision_reduction_from_start=initial['collisions']-collisions if initial else 0,
-            attempts=attempts,completed_without_collision=attempts-collisions,
+            overtakes=evaluation.get('overtakes'),parent_overtakes=parent.get('overtakes'),attempts=attempts,completed_without_collision=attempts-collisions,
             holdout_score=sum(h['score'] for h in holdout) if holdout else None,
             holdout_collisions=sum(h['collisions'] for h in holdout) if holdout else None,
             elapsed_seconds=event.get('elapsed_seconds',0.)))
@@ -98,6 +98,15 @@ def publish(run,output):
         text += ['## Vinner mot forelder på samme scenarioer', '', '| Gen. | Δ poeng | Δ distanse/test | Færre krasj |', '| ---: | ---: | ---: | ---: |']
         for r in rows:
             text.append(f"| {r['generation']} | {r['score_vs_parent']:+.2f} | {r['distance_vs_parent']:+.2f} | {r['collision_reduction_vs_parent']:+d} |")
+    if settings.get('overtake_reward'):
+        text[0]='# Forbedring per generasjon — styring, brems og gass'
+        text += ['', '## Bekreftede forbikjøringer i evalueringen', '', f"Bonus per passering: {settings['overtake_reward']:g} poeng. En passering telles én gang per bilpar og levetid, etter ti trygge steg tydelig foran.", '', '| Gen. | Vinner | Forelder |', '| ---: | ---: | ---: |']
+        for r in rows:text.append(f"| {r['generation']} | {r['overtakes']} | {r['parent_overtakes']} |")
+    if settings.get('model_type')=='sector_local_vision_v1':
+        text[0]='# Sektorradar og lokalt synsnett — nytt forsøk'
+        text += ['', ('Nye vekter ved starten av dette forsøket. ' if settings.get('fresh_initialization') else 'Vektene er videreført fra forrige forsøk. ')+'Tre lokale nabolag per sektor, fem skjulte beslutningslag og styring/samlet fart. Den tidligere modellen er arkivert; generasjonsnummeret følger prosjektets tidslinje, ikke antall generasjoner trent med denne arkitekturen.', '']
+    if settings.get('background_models'):
+        text += ['', f"{settings['car_count']} biler: fem treningsplasser og {len(settings['background_models'])} faste trafikkmodeller. Belønning: {settings['reward_mode']}.", '']
     atomic_write(output.with_suffix('.md'),'\n'.join(text))
     return len(rows)
 

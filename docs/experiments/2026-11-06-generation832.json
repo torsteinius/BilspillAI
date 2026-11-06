@@ -1,0 +1,99 @@
+{
+  "generation": 832,
+  "winner": "learner-9",
+  "evaluation": {
+    "score": 8196.636040317622,
+    "collisions": 45,
+    "distance": 181457.1208063531,
+    "overtakes": 0,
+    "test_rounds": 20,
+    "attempts": 100
+  },
+  "mean_distance": 1814.571208063531,
+  "scenario": {
+    "generation": 832,
+    "seed": 20261113,
+    "direction": -1,
+    "direction_label": "counterclockwise",
+    "cones": [
+      {
+        "x": 1867.7948452228143,
+        "y": 178.8682157643282,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:832:0"
+      },
+      {
+        "x": 1954.6098465020366,
+        "y": -127.89927769170966,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:832:1"
+      },
+      {
+        "x": 1999.8662220929325,
+        "y": -24.39592960293782,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:832:2"
+      },
+      {
+        "x": 1413.4998094902364,
+        "y": -172.31094204749402,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:832:3"
+      },
+      {
+        "x": -201.07317956568244,
+        "y": -71.49603277681163,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:832:4"
+      },
+      {
+        "x": 752.4284634365079,
+        "y": -122.32402833254973,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:832:5"
+      },
+      {
+        "x": 641.5094743646661,
+        "y": -159.55009607402476,
+        "z": 0.0,
+        "radius": 6.0,
+        "kind": "cone",
+        "crashed": false,
+        "target_id": "cone:832:6"
+      }
+    ]
+  },
+  "architecture": [
+    60,
+    120,
+    120,
+    120,
+    32,
+    24,
+    16,
+    8,
+    4,
+    2
+  ],
+  "model_sha256": "619d7ce31c25fdcbadc87d893041c4353ab149f86b46601bec2c71bfb2a431fe",
+  "recording_date": "2026-11-06",
+  "replay_speed": 1
+}
