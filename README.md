@@ -16,9 +16,9 @@ utformer og utfordrer hypotesene; Codex implementerer, tester og bidrar med
 tekniske forslag. Loggen viser også forsøk som forverret kjøringen, og skiller
 mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid underveis.
 
-[Gjeldende logg: nytt forsøk med sektorradar og lokale lag](docs/experiments/traffic25-batch50-gpu-generation-progress.md).
+[Gjeldende logg: nytt tolags laserforsøk fra tilfeldige vekter](docs/experiments/laser2-generation-progress.md).
 Fra generasjon 383 trekkes 4–8 kjegler og startposisjoner tilfeldig. Alle fem biler kjører samme vei, vekselvis med og mot klokka per generasjon. Videoene nedenfor viser tidligere oppsett.
-Treningsbudsjettet er utvidet til **1000 generasjoner totalt**, med videreføring fra bevarte vekter. Målet er bedre passeringer og håndtering av biler og kjegler.
+Treningsbudsjettet er utvidet til **1200 generasjoner totalt**, med videreføring fra bevarte vekter. Målet er bedre passeringer og håndtering av biler og kjegler.
 Nettverkene bytter nå bil mellom kjøringer; den forrige metoden er bevart nedenfor.
 
 [Forbedring per generasjon i det nye 100-generasjoners forsøket](docs/experiments/deep-100-generation-progress.md)
@@ -35,7 +35,7 @@ README og utviklingsloggen viser samme versjon. Oppdater med
 `.venv-media/bin/python scripts/plot_car_training_progress.py`.
 GitHub viser sist pushede bildefil; grafen er ikke en livevisning.
 
-## Nå: sektorradar og nettverk med lokale koblinger
+## Sektorradar og nettverk med lokale koblinger — utviklingen
 
 Fra generasjon **806** starter et separat forsøk med nye vekter. Den gamle
 modellen fra generasjon **805** og hele treningshistorikken er bevart.
@@ -231,6 +231,33 @@ om gangen uten omstarter. Tallene er derfor fra evalueringen, ikke telt i klippe
 Flere og saktere biler gir flere passeringsmuligheter, så antall passeringer kan
 ikke sammenlignes direkte med de tidligere fem-bilersforsøkene.
 
+### Generasjon 968 — ekko og trafikk på åttetallsbanen
+
+[![Generasjon 968 på åttetallsbanen, sett ovenfra](docs/media/echo-generation968-eight-overhead-preview.gif)](docs/media/echo-generation968-eight-overhead.mp4)
+
+[Se videoen · 54 sekunder, MP4](docs/media/echo-generation968-eight-overhead.mp4).
+Filmet **7. november 2026 i 1×**, med fem grønne biler som bruker generasjon 968
+og 15 grå trafikkbiler med faste modeller. Ingen kjegler. Opptaket viser hele
+åttetallsbanen med overpass, faktiske feil og omstarter. Vektene er frosne under
+opptaket; treningen fortsetter separat. Dette er en demonstrasjon på en annen
+bane enn treningsbanens evaluering, ikke et målt testresultat.
+[Modell og opptaksmetadata](docs/experiments/2026-11-07-generation968.json).
+
+Modellen har nå 30 soner over 220° med avstand, tilnærmingsfart og ekkostyrke,
+brems ned til 30 % av normalfarten og kraftigere styring ved store rattutslag.
+Den siste perioden gir lengre overlevelse, men færre passeringer og kortere
+kjørelengde. Prosjekteieren observerer at trafikken kan skjule kommende svinger.
+**Neste foreslåtte forsøk:** mange laserstråler i to høyder, der det nederste
+laget ser veikanten under bilene og det øverste ser trafikken. Tett dekning
+foran og glisnere på sidene. Tre lokale synslag skal koble naboer både i vinkel
+og høyde, etterfulgt av 7–8 beslutningslag og to handlingsutganger.
+Fra **generasjon 972** er dette implementert og startet fra nye vekter: **2 × 61
+laserstråler**, med avstand, relativ tilnærmingsfart og vinkelbasert ekko.
+Nettet har tre lokale synslag i to dimensjoner og åtte beslutningslag. Nedre
+stråler er cyan, øvre fiolette. Passive biler beholder gamle modeller og
+sektorsensorer. Videoen over viser fortsatt modellen **før** dette skiftet.
+[Observasjoner, hypoteser og neste steg](docs/UTVIKLINGSLOGG_BIL.md#endring-55).
+
 ## Labyrintforsøk i aksjon
 
 [![Modellen prøver tilfeldige labyrinter med sensorer og lært hukommelse](docs/media/maze-preview.gif)](docs/media/maze-attempts.mp4)
@@ -324,7 +351,4 @@ python3 -m unittest discover -s v2 -p 'test_*.py' -v
 Detaljer og tidligere designnotater for bilspillet finnes i [games/car/README.md](games/car/README.md). Den historiske V1-demoen kjøres med `python3 versions/v1/demo.py` på port 8765.
 
 
-Nyeste bilforsøk: radaren er en 60° kjegle uten veggsperring, med avstand,
-sideposisjon, objektfart og relativ tilnærmingsfart. 1000 generasjoner er
-startet fra nye vekter uten visning. Videoene fra treningsbanen er fra før
-denne radarendringen. Se [status og kjørekommando](docs/BIL_HUKOMMELSE.md#ny-radar-og-ny-trening-1000-generasjoner-uten-visning).
+Gjeldende bilforsøk bruker to laserhøyder med 61 stråler hver, ti treningsbiler og 15 passive biler med gamle sensorer. Den nye modellen startet fra tilfeldige vekter ved generasjon 972. Se [status og begrunnelse](docs/UTVIKLINGSLOGG_BIL.md#endring-55).

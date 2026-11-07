@@ -1,0 +1,19 @@
+{
+  "generation": 968,
+  "recorded_date": "2026-11-07",
+  "source_checkpoint": ".ai-service/car-traffic25-trainedonly-1000/generation-968.json",
+  "source_sha256": "d6913a47ef262d06e1211d30df3ea6b33902f13110709a6216d4137944a4d861",
+  "replay_checkpoint": ".ai-service/car-generation968-eight-preview/model.json",
+  "replay_sha256": "a7021686ec58d8bdd425a29664bd66e5862227fe2a6a924cc48795abc1731ee1",
+  "track": "figure_eight",
+  "camera": "overhead",
+  "playback_speed": 1,
+  "duration_seconds": 53.78,
+  "learning": false,
+  "latest_model_cars": 5,
+  "fixed_traffic_cars": 15,
+  "cones": 0,
+  "radar": "sectors30echo",
+  "notes": "Frozen replay snapshot; scenario retained from generation 858 preview. Training and evaluation use training track. Two-layer laser proposal is not active.",
+  "video": "docs/media/echo-generation968-eight-overhead.mp4"
+}

@@ -7,12 +7,14 @@ MODEL_TYPE='sector_local_vision_v1'
 DEFAULT=(30,60,60,60,32,24,16,8,4,2)
 FOCUSED=(60,120,120,120,32,24,16,8,4,2)
 
+ECHO=(90,120,120,120,32,24,16,8,4,2)
+
 class LocalVisionNetwork(NeuralNetwork):
     def __init__(self,architecture=DEFAULT,*,seed=None):
-        if tuple(architecture[:-1]) not in (DEFAULT[:-1],FOCUSED[:-1]) or architecture[-1] not in (1,2):
+        if tuple(architecture[:-1]) not in (DEFAULT[:-1],FOCUSED[:-1],ECHO[:-1]) or architecture[-1] not in (1,2):
             raise ValueError('Expected 15 or 30 sectors, three local layers, five decision layers and 1/2 outputs')
         super().__init__(architecture,seed=seed)
-        self.sectors=architecture[0]//2
+        self.sectors=30 if architecture[0]==90 else architecture[0]//2
         self.links=[]
         for layer,(a,b) in enumerate(zip(architecture,architecture[1:])):
             if layer<3:
@@ -21,7 +23,7 @@ class LocalVisionNetwork(NeuralNetwork):
             else:self.links.append([list(range(a)) for _ in range(b)])
         self.weight_count=sum(len(row)+1 for layer in self.links for row in layer)
         self.weights=[0.]*self.weight_count
-        self.metadata.update(model_type=MODEL_TYPE,local_layers=3,sector_channels=[2,4,4,4],local_radius=1,decision_hidden=[32,24,16,8,4])
+        self.metadata.update(model_type=MODEL_TYPE,local_layers=3,sector_channels=[architecture[0]//self.sectors,4,4,4],local_radius=1,decision_hidden=[32,24,16,8,4])
 
     def set_backend(self,backend):
         if backend not in ('python','rust'):raise ValueError('Unknown backend')
@@ -70,3 +72,25 @@ class LocalVisionNetwork(NeuralNetwork):
 
     def forward_batch(self,observations,weights=None):
         return [self.forward(x,weights) for x in observations]
+
+
+def add_echo_input(source):
+    """Insert a zero-weight incidence channel per zone; preserve all old behavior."""
+    if source.architecture[0]==90:return source
+    if source.architecture!=FOCUSED:raise ValueError('Echo upgrade requires the 30-zone two-output model')
+    expanded=LocalVisionNetwork(ECHO,seed=source.seed)
+    old_offset=new_offset=0
+    for old_layer,new_layer in zip(source.links,expanded.links):
+        for old_row,new_row in zip(old_layer,new_layer):
+            for k,index in enumerate(new_row):
+                if old_offset < sum(len(r)+1 for r in source.links[0]):
+                    old_index=(index//3)*2+index%3 if index%3<2 else None
+                else:old_index=index
+                if old_index is not None and old_index in old_row:
+                    expanded.weights[new_offset+k]=source.weights[old_offset+old_row.index(old_index)]
+            expanded.weights[new_offset+len(new_row)]=source.weights[old_offset+len(old_row)]
+            old_offset+=len(old_row)+1;new_offset+=len(new_row)+1
+    expanded.metadata=dict(source.metadata)
+    expanded.metadata.update(radar_mode='sectors30echo',observation_version='thirty_wide_sectors_distance_closing_echo_v1',sector_channels=[3,4,4,4])
+    expanded.generation=source.generation;expanded.score=source.score;expanded.history=list(source.history)
+    return expanded.set_backend(source.backend)

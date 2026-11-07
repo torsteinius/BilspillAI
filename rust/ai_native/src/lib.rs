@@ -3,6 +3,7 @@ mod batch;
 mod evaluation;
 mod local;
 mod sectors;
+mod laser;
 mod track;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -284,6 +285,7 @@ fn bilspill_ai_native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<DenseNetwork>()?;
     m.add_class::<local::LocalNetwork>()?;
     m.add_class::<sectors::SectorRadar>()?;
+    m.add_class::<laser::LaserRadar>()?;
     m.add_class::<EvolutionRng>()?;
     Ok(())
 }

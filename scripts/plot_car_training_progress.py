@@ -22,7 +22,7 @@ lines += ['', '## Sammenlignbar del av forsøket', '',
           'Ved nye endringer: legg først inn begrunnelse og observasjon i utviklingsloggen, deretter hendelse i `car-training-timeline.json` med forsøksserie og første berørte generasjon. Bruk null når grensen er ukjent. Oppdater graf og tidslinje med `.venv-media/bin/python scripts/plot_car_training_progress.py`.', '']
 (ROOT/'docs/experiments/car-training-timeline.md').write_text('\n'.join(lines))
 rows=[]
-for name in ('car-brake-deep-wide-300','car-brake-deep-wide-rust','car-history3-weighted','car-no-cones','car-four-cones','car-last10','car-rollback286','car-continued800','car-best325-elite800','car-ten-models800','car-random800','car-random1000','car-wall1000','car-throttle1000','car-passhistory1000','car-angles1000','car-sectors1000','car-sectors-wall3-1000','car-sectors30-1000','car-traffic20-wide1000','car-traffic20-slow1000','car-traffic20-carpenalty1000','car-traffic20-brake70-1000','car-traffic20-nativeeval-1000','car-traffic25-batch50-gpu-1000'):
+for name in ('car-brake-deep-wide-300','car-brake-deep-wide-rust','car-history3-weighted','car-no-cones','car-four-cones','car-last10','car-rollback286','car-continued800','car-best325-elite800','car-ten-models800','car-random800','car-random1000','car-wall1000','car-throttle1000','car-passhistory1000','car-angles1000','car-sectors1000','car-sectors-wall3-1000','car-sectors30-1000','car-traffic20-wide1000','car-traffic20-slow1000','car-traffic20-carpenalty1000','car-traffic20-brake70-1000','car-traffic20-nativeeval-1000','car-traffic25-batch50-gpu-1000','car-traffic25-echo-1000','car-traffic25-echo-adapt5-1000','car-traffic25-steering-1000','car-traffic25-trainedonly-1000','car-traffic25-trainedonly-1200','car-laser2-fresh-1200'):
     metrics=ROOT/'.ai-service'/name/'metrics.jsonl'
     if not metrics.exists():continue
     for line in metrics.read_text().splitlines():
@@ -40,7 +40,7 @@ plt.rcParams.update({'font.size':11,'axes.spines.top':False,'axes.spines.right':
 fig,panels=plt.subplots(1,3,figsize=(12,20),sharey=True,layout='constrained',gridspec_kw={'width_ratios':[1.6,1,1]})
 label_ax=panels[0];axes=panels[1:]
 label_ax.set_xlim(0,1);label_ax.axis('off')
-events=[e for e in timeline if e['series'] in ('wide120','no_cones','four_cones','random_scenarios','sectors15','sectors30','traffic20') and e.get('first_generation') is not None and x[0]<=e['first_generation']<=x[-1]]
+events=[e for e in timeline if e['series'] in ('wide120','no_cones','four_cones','random_scenarios','sectors15','sectors30','traffic20','laser2') and e.get('first_generation') is not None and x[0]<=e['first_generation']<=x[-1]]
 events.sort(key=lambda e:e['first_generation'])
 breaks=sorted({246,255,296,358,383}|{e['first_generation'] for e in timeline if e.get('reset_trend') and e.get('first_generation') is not None})
 for ax,key,title in zip(axes,('mean_steps','mean_distance'),('Kjøretid per test\n(simuleringssteg)','Kjørelengde per test\n(banenheter)')):

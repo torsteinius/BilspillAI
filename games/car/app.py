@@ -26,6 +26,7 @@ network = NeuralNetwork(ARCHITECTURE)
 WEIGHT_COUNT = network.weight_count
 COLLISION_PENALTY = 50.
 MAX_BRAKE = .5
+STEERING_BOOST = 0.
 MODEL = Path(__file__).parent / 'models' / 'model_radar_9_8_8_1.json'
 
 
@@ -140,13 +141,20 @@ def radar_angles(car, other):
     return bearing,motion
 
 
-def radar(car, other):
-    if RADAR_MODE in ('sectors15','sectors30','sectors30wide'):
+def radar(car, other, mode=None):
+    mode=mode or RADAR_MODE
+    if mode=='laser2':
+        import sys
+        from .laser_radar import scan
+        rays=scan(sys.modules[__name__],car,other)
+        return dict(min(rays,key=lambda r:r['distance']),shape='laser2',rays=rays,range=RADAR_RANGE,targets=[])
+
+    if mode in ('sectors15','sectors30','sectors30wide','sectors30echo','laser2'):
         import sys
         from .sector_radar import scan
-        sectors=scan(sys.modules[__name__],car,other)
+        sectors=scan(sys.modules[__name__],car,other,mode)
         nearest=min(sectors,key=lambda r:r['distance'])
-        return dict(nearest,shape='sectors',sectors=sectors,range=RADAR_RANGE,targets=[],half_angle=math.radians(110) if RADAR_MODE=='sectors30wide' else math.pi/2,center_x=car['x'],center_y=car['y'],radius=RADAR_RANGE)
+        return dict(nearest,shape='sectors',sectors=sectors,range=RADAR_RANGE,targets=[],half_angle=math.radians(110) if mode in ('sectors30wide','sectors30echo','laser2') else math.pi/2,center_x=car['x'],center_y=car['y'],radius=RADAR_RANGE)
     objects = others(car, other)+TRACK.cones
     if NATIVE_CAR_KERNELS and TRACK.native is not None and RADAR_MODE in ('cone', 'cone4', 'cone4relative', 'cone4angles'):
         from ai.rust_backend import native_module
@@ -179,7 +187,7 @@ def radar(car, other):
     if visible:
         nearest = min(visible, key=lambda r: r['distance']).copy()
         nearest['targets'] = [dict(distance=r['distance'], forward=r['forward'], lateral=r['lateral'], kind=r['kind'], speed=r.get('speed'), closing_speed=r.get('closing_speed'), relative_speed=r.get('relative_speed'), proximity=r['proximity'], target_id=r.get('target_id'),bearing_angle=r.get('bearing_angle',0.),motion_angle=r.get('motion_angle',0.)) for r in sorted(visible,key=lambda r:r['distance'])]
-        if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles'):
+        if mode in ('cone4', 'cone4relative', 'cone4angles'):
             nearest['targets'] = nearest['targets'][:4]
         return nearest
     # Keep exactly two radar inputs, even for an empty traffic list.
@@ -258,8 +266,30 @@ def _radar_one(car, other):
                 proximity=proximity, bearing=bearing, range=RADAR_RANGE, radius=RADAR_RADIUS, offset=RADAR_OFFSET, center_x=center_x, center_y=center_y)
 
 
+def model_observations(model,car,other):
+    import sys
+    mode=model.metadata.get('radar_mode',RADAR_MODE)
+    if mode=='laser2':
+        from .laser_radar import inputs
+        return inputs(sys.modules[__name__],car,other)
+    if mode.startswith('sectors'):
+        from .sector_radar import inputs
+        return inputs(sys.modules[__name__],car,other,mode)
+    return observations(car,other)
+
+
+def replay_model(i):
+    count=REPLAY_SCENARIO.training_count if REPLAY_SCENARIO else 5
+    return REPLAY_BACKGROUND[i-count] if REPLAY_BACKGROUND and i>=count else network
+
+
 def observations(car, other):
-    if RADAR_MODE in ('sectors15','sectors30','sectors30wide'):
+    if RADAR_MODE=='laser2':
+        import sys
+        from .laser_radar import inputs
+        return inputs(sys.modules[__name__],car,other)
+
+    if RADAR_MODE in ('sectors15','sectors30','sectors30wide','sectors30echo','laser2'):
         import sys
         from .sector_radar import inputs
         return inputs(sys.modules[__name__],car,other)
@@ -294,7 +324,7 @@ def migrate_sensor_weights(weights):
 
 def policy(weights, readings):
     # Observation normalization belongs to this game, not the reusable network.
-    values = readings if RADAR_MODE in ('sectors15','sectors30','sectors30wide') else [1 - distance / 180 for distance in readings[:7]] + readings[7:]
+    values = readings if RADAR_MODE in ('sectors15','sectors30','sectors30wide','sectors30echo','laser2') else [1 - distance / 180 for distance in readings[:7]] + readings[7:]
     return decode_outputs(network.forward(values, weights))
 
 
@@ -302,7 +332,7 @@ def decode_outputs(outputs):
     """Legacy models steer only; braking strength is configurable through MAX_BRAKE."""
     if len(outputs) == 1:
         return outputs[0]
-    if len(outputs) == 2 and RADAR_MODE in ('sectors15','sectors30','sectors30wide'):
+    if len(outputs) == 2 and RADAR_MODE in ('sectors15','sectors30','sectors30wide','sectors30echo','laser2'):
         return outputs[0],max(0.,-outputs[1]),max(0.,outputs[1])
     if len(outputs) == 2:
         return outputs[0], (outputs[1]+1.)/2.
@@ -373,7 +403,7 @@ def step(cars, weights, *, controls=None, events=None):
         if c['crashed']:
             continue
         before = progress(c['x'], c['y'], c.get('z', 0.))
-        c['heading'] += steer * .045
+        c['heading'] += .045 * (steer + STEERING_BOOST * steer**3)
         speed = 3 * c.get('speed_factor', 1.) * (1.-MAX_BRAKE*brake)*(1.+.5*throttle)
         c.update(brake=brake,throttle=throttle,speed=speed)
         c['x'] += speed * math.cos(c['heading'])
@@ -520,7 +550,7 @@ def replay_live():
                 for i,c in enumerate(attempt):
                     count=REPLAY_SCENARIO.training_count if REPLAY_SCENARIO else 5
                     net=network if i<count else REPLAY_BACKGROUND[i-count]
-                    controls.append(0. if c['crashed'] else decode_outputs(net.forward(observations(c,attempt))))
+                    controls.append(0. if c['crashed'] else decode_outputs(net.forward(model_observations(net,c,attempt))))
             reward, event = step(attempt, best,controls=controls)
             score += reward
             with lock:
@@ -578,7 +608,7 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == '/api/state':
             with lock:
                 payload = dict(status, reason=reason, angles=ANGLES,
-                    cars=[dict(c, sensors=[] if RADAR_MODE in ('sectors15','sectors30','sectors30wide') else sensors(c, cars), radar=radar(c, cars),
+                    cars=[dict(c, sensors=[] if RADAR_MODE in ('sectors15','sectors30','sectors30wide','sectors30echo','laser2') else sensors(c, cars), radar=radar(c, cars, replay_model(i).metadata.get("radar_mode",RADAR_MODE)),
                                pitch=TRACK.pitch(c['x'], c['y'], c.get('z', 0.), c['heading']),
                                lap=round(100*max(0,c['travel'])/PERIMETER,1)) for i,c in enumerate(cars)])
             data, kind = json.dumps(payload).encode(), 'application/json'
@@ -607,11 +637,12 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO, REPLAY_BACKGROUND, MAX_BRAKE
+    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO, REPLAY_BACKGROUND, MAX_BRAKE, STEERING_BOOST
     parser = argparse.ArgumentParser()
+    parser.add_argument('--steering-boost',type=float,default=None,help='Cubic steering boost at full lock')
     parser.add_argument('--max-brake', type=float, default=None, help='Maximum fraction of base speed removed by full braking')
     parser.add_argument('--radar-scale', type=float, default=3., help='Radar radius and range multiplier')
-    parser.add_argument('--radar-mode', choices=('legacy', 'spatial', 'cone', 'cone4', 'cone4relative', 'cone4angles', 'sectors15', 'sectors30', 'sectors30wide'), help='spatial: independent distance and lateral position; requires matching training')
+    parser.add_argument('--radar-mode', choices=('legacy', 'spatial', 'cone', 'cone4', 'cone4relative', 'cone4angles', 'sectors15', 'sectors30', 'sectors30wide', 'sectors30echo','laser2'), help='spatial: independent distance and lateral position; requires matching training')
     parser.add_argument('--traffic', choices=('convoy', 'opposite'), default='convoy')
     parser.add_argument('--cone-count',type=int,choices=range(34),help='Evenly spaced cones (0–33)')
     parser.add_argument('--no-cones',action='store_true',help='Remove cones from sensors, physics and rendering')
@@ -626,6 +657,9 @@ def main():
     parser.add_argument('--model', type=Path, help='Separate checkpoint path for an experiment')
     parser.add_argument('--seed', type=int, help='Random seed for a new experiment')
     args = parser.parse_args()
+    if args.steering_boost is not None and (not math.isfinite(args.steering_boost) or args.steering_boost<0):
+        parser.error('--steering-boost must be nonnegative and finite')
+    STEERING_BOOST=args.steering_boost if args.steering_boost is not None else 0.
     if args.max_brake is not None and (not math.isfinite(args.max_brake) or not 0 <= args.max_brake < 1):
         parser.error('--max-brake must be in [0, 1)')
     MAX_BRAKE = args.max_brake if args.max_brake is not None else .5
@@ -638,7 +672,7 @@ def main():
     configure_traffic(args.traffic)
     try:
         RADAR_MODE = args.radar_mode or ('cone4' if args.track == 'training' and not args.replay else 'legacy')
-        ARCHITECTURE = [60 if RADAR_MODE in ('sectors30','sectors30wide') else 30 if RADAR_MODE == 'sectors15' else 31 if RADAR_MODE == 'cone4angles' else 23 if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles') else 11 if RADAR_MODE == 'cone' else INPUTS, *args.hidden, 1]
+        ARCHITECTURE = [366 if RADAR_MODE=='laser2' else 90 if RADAR_MODE=='sectors30echo' else 60 if RADAR_MODE in ('sectors30','sectors30wide','sectors30echo','laser2') else 30 if RADAR_MODE == 'sectors15' else 31 if RADAR_MODE == 'cone4angles' else 23 if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles') else 11 if RADAR_MODE == 'cone' else INPUTS, *args.hidden, 1]
         network = NeuralNetwork(ARCHITECTURE, seed=args.seed)
         WEIGHT_COUNT = network.weight_count
         best = network.weights[:]
@@ -648,6 +682,8 @@ def main():
         resuming = args.replay or bool(args.fast_generations and MODEL.exists())
         if resuming:
             network = NeuralNetwork.load(MODEL)
+            if args.steering_boost is None:
+                STEERING_BOOST=network.metadata.get('experiment',{}).get('steering_boost',0.)
             if args.max_brake is None:
                 MAX_BRAKE = network.metadata.get('experiment', {}).get('brake_max_reduction', .5)
             ARCHITECTURE = list(network.architecture)
@@ -657,7 +693,7 @@ def main():
         RADAR_MODE = args.radar_mode or (saved_mode if resuming else ('cone4' if args.track == 'training' else 'legacy'))
         if resuming and RADAR_MODE != saved_mode:
             raise ValueError('Radar input differs from saved weights; use matching radar mode or train a new model')
-        if network.architecture[0] != (60 if RADAR_MODE in ('sectors30','sectors30wide') else 30 if RADAR_MODE == 'sectors15' else 31 if RADAR_MODE == 'cone4angles' else 23 if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles') else 11 if RADAR_MODE == 'cone' else 9):
+        if network.architecture[0] != (366 if RADAR_MODE=='laser2' else 90 if RADAR_MODE=='sectors30echo' else 60 if RADAR_MODE in ('sectors30','sectors30wide','sectors30echo','laser2') else 30 if RADAR_MODE == 'sectors15' else 31 if RADAR_MODE == 'cone4angles' else 23 if RADAR_MODE in ('cone4', 'cone4relative', 'cone4angles') else 11 if RADAR_MODE == 'cone' else 9):
             raise ValueError('Network input count does not match radar mode')
         status['radar_mode'] = RADAR_MODE
         network.set_backend(args.backend)

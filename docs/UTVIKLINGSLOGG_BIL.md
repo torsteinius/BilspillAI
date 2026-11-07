@@ -1817,3 +1817,117 @@ Kort pilot med samme 30 forsøk (ti kandidater, tre forsøk, maks 200 steg): fem
 Langt forsøk klargjort som `car-traffic25-batch50-gpu-1000` etter fullført generasjon 862 eller senere, til fortsatt mål 1000. Engangsvakt: `.ai-service/switch-ten-cars-gpu.py`; status `.ai-service/ten-cars-gpu-handoff.json`. Nøyaktig første generasjon merkes på tidslinjen ved byttet. Foregående serie og alle modeller beholdes. Prosessbyttet starter optimizer/historikk/RNG på nytt fra siste vinners vekter.
 
 Ti treningsbiler og GPU batch50 aktivert etter fullført generasjon 862; første nye generasjon er 863. Vektene er kontrollert identiske ved overgangen. Treningen fortsetter til 1000. Optimizer, treningshistorikk og tilfeldig generator starter på nytt ved prosessbyttet; ingen fullført generasjon forkastes.
+
+<a id="endring-50"></a>
+### Endring 50: geometrisk ekkostyrke som ekstra kanal i synsnettet
+
+Prosjekteieren foreslo en «lyd» som beskriver hvor rett refleksjonen kommer tilbake: biler kan gi sterkere ekko, mens veikanten foran ofte treffes på skrå. Han presiserte at dette skal kobles inn lokalt med nabosonene, komprimeres gjennom samme synsnett og beholde resten av nettet.
+
+Hver av de 30 sonene har nå avstand, radial tilnærmingsfart og ekkostyrke, i den rekkefølgen. Arkitektur: **90 → 120 → 120 → 120 → 32 → 24 → 16 → 8 → 4 → 2**. Første lag knytter de tre kanalene fra egen sone og nabosonene sammen; alle senere lag og forbindelser beholdes. Gamle første-lagsvekter flyttes til tilsvarende avstands-/fartskanal, bias beholdes, og nye ekkoforbindelser settes til null. Derfor er initial styring og fart identisk for vilkårlig ekkoinput. Nye kandidater kan deretter lære ekkoforbindelsene. Trafikkmodeller oppgraderes på samme funksjonsbevarende måte og holdes frosne.
+
+Ekkostyrken er en syntetisk amplitude i [0,1], beregnet i Rust som absolutt cosinus mellom retningen til treffpunktet og overflatens normal. Ingen treff gir 0, direkte normalt treff gir 1, skrå/grazende treff gir svakere signal. Veikanter bruker segmentnormaler; biler og kjegler bruker normalen til sin eksisterende sirkelformede geometri. Dette er ikke en materiellmodell, ekte lydsimulering eller skjult objekttype. En kant rett mot bilen kan også gi sterkt ekko; sirkler gir ofte sterkt ekko mot nærmeste punkt. Avstandsdemping legges ikke til, siden avstand allerede er en egen kanal. Den eksisterende høydefiltreringen og begrensningen ved skjult veikant er uendret.
+
+Modus `sectors30echo` holdes adskilt fra gamle 60-inputmodeller. Rust-evalueringsløkken og GPU-batcher støtter de nye 90 inputene. Testene dekker normalt/skrått/uteblitt ekko, lokal nabokobling, uendret funksjon ved oppgradering, samt samsvar mellom Python- og Rust-evaluering med ikke-null ekkoforbindelser. 131 tester består. Ny serie: `car-traffic25-echo-1000`, bytte etter fullført generasjon 870 eller senere. Nøyaktig grense føres i tidslinjen når byttet skjer. Eksisterende modeller og logger beholdes; optimizer/historikk/RNG starter på nytt ved prosessbyttet.
+
+Ekkostyrke i 30 soner aktivert etter fullført generasjon 870; første nye generasjon er 871. Gamle forbindelser er bevart og nye ekkoforbindelser nullstilt ved overgangen. Treningen fortsetter til 1000. Optimizer, treningshistorikk og tilfeldig generator starter på nytt ved prosessbyttet; ingen fullført generasjon forkastes.
+
+<a id="endring-51"></a>
+### Endring 51: fem generasjoner tilvenning til ekkostyrken — 7. november 2026
+
+Prosjekteieren påpekte at en uforandret forelder med null ekkoforbindelser kan stanse overgangen: kandidatene må tåle midlertidig dårligere kjøring mens de lærer å bruke den nye kanalen. Han ba om å endre dette etter forslaget om fem generasjoner med bare trente kandidater som vinnere.
+
+`--adaptation-generations 5` utelukker derfor forelderen fra utvelgelsen i de første fem generasjonene av den nye serien. Alle ti kandidater og forelderen testes fortsatt på identiske oppsett; forelderen er referanse og kan ikke vinne i denne perioden. Fra den sjette generasjonen blir den videreførte forelderen automatisk valgbar igjen. Den opprinnelige modellen fra før tilvenningen forblir arkivert, men gjeninnføres ikke som en ekstra kandidat. Ingen nye signaler, straffer eller vekter nullstilles i dette byttet.
+
+Ny serie `car-traffic25-echo-adapt5-1000` starter etter generasjon 872 eller senere, fra siste fullførte vinner. Presis start og første generasjon der forelderen igjen kan vinne lagres i innstillingene, prosessmetadata og tidslinjen. Den eksisterende kjøringen får fullføre generasjonen før byttet. Tester bekrefter at bedre forelder utelukkes i nøyaktig fem generasjoner og vinner igjen i den sjette, mens vanlig utvelgelse fortsatt virker. Optimizer/historikk/RNG starter på nytt ved prosessbyttet; modellvektene videreføres.
+
+Fem generasjoner ekkotilvenning aktivert etter fullført generasjon 872; første nye generasjon er 873. Vektene er kontrollert identiske ved overgangen. Treningen fortsetter til 1000. Optimizer, treningshistorikk og tilfeldig generator starter på nytt ved prosessbyttet; ingen fullført generasjon forkastes.
+
+### Prosjekteierens observasjon: ny informasjon uten å starte på nytt — 7. november 2026
+
+Etter sammenligningen av generasjon 875 med siste modell før ekko (870), fremhevet prosjekteieren at det er interessant og morsomt å kunne «plugge ny info inn i et trent nett» og få en myk overgang uten å miste alt som allerede er lært. Målet med utvidelsen er å bygge videre på eksisterende kjøreferdigheter, ikke kreve ny trening fra tilfeldige vekter hver gang sensorene får en ekstra kanal.
+
+Dette forsøket viser en konkret mekanisme for slik videreføring: de gamle avstands- og fartsforbindelsene og alle senere lag beholdes, mens ekkostyrken får nye, lokale forbindelser som starter på null. Ved selve oppgraderingen er nettverkets funksjon uendret, kontrollert med tester. Under videre læring kan både nye og gamle vekter endres. De fem tilvenningsgenerasjonene gir kandidatene rom til å utforske den nye informasjonen selv om den tidligere forelderen foreløpig ville fått høyere poeng.
+
+Foreløpig observasjon, ikke en konklusjon om bedre sluttresultat: generasjon 875 beholdt betydelig kjøreferdighet og slo sin umiddelbare forelder på samme oppsett (2251 mot 1789 banenheter per test, 62 mot 73 krasj og 125 mot 62 forbikjøringer). Resultatene var samtidig svakere enn de registrerte resultatene fra 870 før ekko (2950 banenheter, 35 krasj, 148 forbikjøringer). Disse to generasjonene ble testet på forskjellige randomiserte oppsett. Vi har derfor ikke ennå vist at ekkoet forbedrer kjøringen eller at hele ytelsestapet er hentet inn. Det krever sammenligning på identiske oppsett og utvikling over flere generasjoner.
+
+<a id="endring-53"></a>
+### Endring 53: kraftigere styring ved store utslag — 7. november 2026
+
+Prosjekteieren ønsket mer svingkraft: små rattbevegelser nær sentrum skal være omtrent som før, mens maksimalt utslag skal gi 50 % mer sving. Ny kurve for nettverkets rattutgang u i [-1,1] er **Δretning = 0,045 × (u + 0,5 × u³)** per simuleringssteg. Stigningen i sentrum er uendret og kurven er symmetrisk: 10 % utslag gir 0,5 % ekstra sving, 50 % utslag gir 12,5 % ekstra, fullt utslag gir 50 % ekstra. Maksimal vinkelendring øker fra 0,045 til 0,0675 radianer per steg.
+
+Kurven brukes både i Python-simuleringen og hele Rust-evalueringen, for treningsbiler, forelder og passiv trafikk. Modellen og historikken lagrer fortsatt samme rattutgang; det er koblingen til fysisk sving som endres. Ingen vekter nullstilles. `--steering-boost 0.5` lagres i forsøksinnstillingene; avspilling leser innstillingen automatisk. Historiske modeller uten innstillingen beholder lineær styring.
+
+Ny serie `car-traffic25-steering-1000` er klargjort etter fullført generasjon 886 eller senere. Forelderen er valgbar fra første generasjon; den avsluttede femgenerasjoners ekkotilvenningen skal ikke gjentas. Øvrig oppsett, inkludert 10 treningsbiler, 15 passive, GPU-batcher og maksbrems til 30 % av normalfarten, beholdes. Tester kontrollerer sentrum, fullutslag, symmetri og samsvar mellom Python og Rust. Engangsvakt `.ai-service/switch-steering.py` gjør byttet fra siste fullførte modell og registrerer nøyaktig generasjonsgrense. Optimizer/historikk/RNG starter på nytt ved prosessbyttet.
+
+Ikke-lineær styring aktivert etter fullført generasjon 886; første nye generasjon er 887. Vektene er kontrollert identiske ved overgangen. Treningen fortsetter til 1000. Optimizer, treningshistorikk og tilfeldig generator starter på nytt ved prosessbyttet; ingen fullført generasjon forkastes.
+
+<a id="endring-54"></a>
+### Endring 54: forelderen bare som referanse, uten automatisk retur — 7. november 2026
+
+Etter flere generasjoner hvor forelderen vant etter styringsendringen, ba prosjekteieren om å fjerne den fra utvelgelsen. Hans hypotese er at kandidatene trenger rom til å tilpasse seg den endrede styringen, i stedet for at den gamle løsningen vinner mens de utforsker. Dette er en begrunnelse for forsøket, ikke en bekreftet forklaring på stagnasjonen.
+
+Ny serie `car-traffic25-trainedonly-1000` bruker `--trained-only`: alle ti trente kandidater og forelderen testes fortsatt på samme oppsett, men bare de ti kandidatene kan vinne. Forelderen er kun referanse, og det finnes ingen femgenerasjoners tidsgrense eller automatisk gjeninnføring denne gangen. Det totale evalueringsbudsjettet beholdes. Forelderen vil fremdeles være utgangspunkt for neste generasjons kandidater, men da som videreført vinner fra den foregående generasjonen.
+
+Vektene fra siste fullførte generasjon videreføres. Ekkostyrke, ikke-lineær styring, brems, 10 treningsbiler, 15 passive og GPU-batcher beholdes. Den gamle serien arkiveres; en eventuell påbegynt ny generasjon ved prosessbyttet kjøres på nytt. Optimizer, handlingshistorikk og tilfeldig generator starter på nytt. Dette kan tillate både fremgang og midlertidig tilbakegang; resultatene mot forelderen logges fortsatt.
+
+Utvelgelse uten foreldervinner aktivert etter fullført generasjon 891; første nye generasjon er 892. Vektene er kontrollert identiske ved overgangen. Treningen fortsetter til 1000. Optimizer, treningshistorikk og tilfeldig generator starter på nytt ved prosessbyttet; ingen fullført generasjon forkastes.
+
+### Treningsmålet utvidet til 1200 — 7. november 2026
+
+Prosjekteieren ba om trening gjennom natten og nytt mål på generasjon 1200. Den aktive serien får fortsette uavbrutt til 1000. En lokal videreføringsprosess starter deretter 1001–1200 fra lagret vinner i en separat serie, `car-traffic25-trainedonly-1200`, med samme innstillinger og kontrollert uendrede vekter. Forelderen forblir kun referanse. Optimizer/historikk/RNG starter på nytt ved den naturlige prosessgrensen på 1000; ingen ny metodeendring er innført nå. Plan og status lagres i `.ai-service/training-plan-1200.json`.
+
+`caffeinate -i` hindrer automatisk inaktivitetsdvale mens videreføringsprosessen og deretter den nye treneren kjører. Skjermen kan fortsatt slukkes og låses. Lukket lokk, eksplisitt dvale, utlogging, omstart eller strømbrudd kan fortsatt avbryte kjøringen. Dette er et mål til 1200, ikke et løfte om ferdig trening i løpet av én natt.
+
+<a id="endring-55"></a>
+### Neste forsøk 55: to høyder med laserstråler — foreslått 7. november 2026
+
+**Status: dokumentert forslag, ikke implementert eller aktivert.** Prosjekteieren observerer at biler foran skjuler veikanten og kommende krappe svinger for dagens sektorsyn. Bilen ser hindringene, men får ikke nødvendigvis informasjon nok om veien bak dem. Den velger da ofte lav fart og forsøker å unngå trafikken, men kan likevel kjøre rett inn i svingen. Dette er hans forklaring og motivasjon for neste forsøk, ikke en isolert måling av årsaken.
+
+Vi har landet på følgende retning for sensorene:
+
+- Erstatt nærmeste punkt i hver sone med **mange enkelte laserstråler**. Hver stråle måler treff langs sin egen linje, slik at åpninger mellom objekter kan gi utsyn videre. Et objekt skal ikke fylle en hel sektor bare fordi det finnes et sted i sektoren.
+- Bruk **to sensorlag over hverandre**. Det nederste går under bilene og ser frem til veikanten, også når bilen ligger tett bak andre biler. Det øverste treffer bilene og gir informasjon om trafikken omtrent som i dag.
+- Behold omtrent dagens vinkelspredning og tette dekning foran. På sidene kan strålene ligge enda litt glisnere. Antall stråler, vinkler og høyder er ennå ikke fastsatt.
+- Målet er å gi informasjon både om veiens retning og om hindringer samtidig, slik at bilen kan forutse svingen uten at trafikken skjuler hele veibildet. Dette garanterer ikke bedre kjøring; det må prøves.
+
+Ved implementering må høydene defineres i forhold til bilen/veien, og kontrolleres i stigning, nedoverbakke og ved overpass. «Under bilene» er en ønsket geometrisk egenskap som må modelleres eksplisitt. Vi har ennå ikke bestemt hvilke av dagens avstands-, tilnærmingsfarts- og ekkokanaler som videreføres per stråle, eller om vektene skal migreres eller startes på nytt. Disse valgene er ikke gjort gjennom denne dokumentasjonsendringen.
+
+**Utgangspunkt bevart:** generasjon 968 er filmet ovenfra i 1× på åttetallsbanen, med fem grønne biler med denne modellen og 15 grå biler med faste eldre modeller, uten kjegler. [Video](media/echo-generation968-eight-overhead.mp4) og [opptaksmetadata](experiments/2026-11-07-generation968.json). Dette er avspilling uten læring, med kollisjoner og omstarter, ikke en feilfri demonstrasjon eller selve evalueringen. Treningen fortsetter separat med eksisterende sektorradar.
+
+Dagens modell har 30 soner over 220°, avstand, tilnærmingsfart og geometrisk ekkostyrke (90 innganger), tre lokale synslag og fem beslutningslag. Ratt og samlet brems/gass er de to utgangene; maksimal brems gir 30 % av normalfarten, og maksimalt rattutslag er 50 % sterkere enn tidligere. Ti kandidatnett roterer mellom ti treningsbiler sammen med 15 passive biler. Bare trente kandidater kan vinne; forelderen er referanse. Forbikjøring gir +25, bilkollisjon −100 og vegg/kjegle −50. Treningsmålet er 1200.
+
+Den siste utviklingen viser avveiningen prosjekteieren peker på: gjennomsnittet for generasjon 958–967 var omtrent 2134 banenheter, 19,9 krasj og 13,5 passeringer per generasjons evaluering, mot 2585, 42 og 101,8 for 892–901. Gjennomsnittlig kjøretid steg fra 739 til 887 steg. Bilene overlever altså lenger i disse testene, men kjører kortere og passerer sjeldnere. Oppsettene er randomiserte; tallene beviser ikke at sensorene eller straffen alene er årsaken. Opptaket på åttetallsbanen er dessuten en annen situasjon enn treningsbanens evaluering. Neste forsøk handler om bedre situasjonsinformasjon, ikke bare om å justere risiko gjennom straff.
+
+#### Presisering fra prosjekteieren: lokalt syn i to dimensjoner og dypere beslutningsnett
+
+Prosjekteieren presiserte deretter arkitekturen: **tre lokale synslag**, tilsvarende prinsippet i dagens nett, men nå med mest kontakt mellom nærmeste sensorer i **to dimensjoner: vinkel og høyde**. De to fysiske sensorhøydene er inngangens rader; de tre synslagene er nettverkets etterfølgende bearbeiding. Hvert lokalt område skal kunne kombinere nabostråler sideveis med tilsvarende og nærliggende stråler i den andre høyden. Dermed kan nettet knytte veikanten i nederste lag til trafikken i øverste lag på omtrent samme sted i synsfeltet. Lokal kobling betyr ikke at vektene nødvendigvis er delte som i et konvolusjonsnett; dette er ennå ikke bestemt.
+
+Etter de tre synslagene ønskes **7–8 skjulte beslutningslag**, mot dagens fem, før de to handlingsutgangene for ratt og samlet brems/gass. Dette tolkes som 7–8 lag i tillegg til synslagene og selve utgangslaget. Konkret lagbredde, antall stråler, lokal koblingsradius og endelig valg mellom sju og åtte beslutningslag gjenstår. Oppsettet er fortsatt et forslag, ikke en aktiv modell.
+
+Prosjekteierens begrunnelse er at tilgjengelig GPU-kapasitet gir rom for et dypere nett. Vi skal måle faktisk tid per generasjon og fordeling mellom simulering, nettverkskjøring og trening ved implementering. Flere lag gir ikke i seg selv bedre læring, og GPU avlaster ikke automatisk Rust-simuleringen eller all evaluering. Dagens kjøring og vekter er uendret av denne presiseringen.
+
+#### Presisering fra prosjekteieren: visualisering og passive biler
+
+Visualiseringen skal ligne dagens visning, men bruke ulike sensorfarger for de to høydene, slik at tolags lasersyn kan skilles fra gammelt syn i ett lag. Nedre stråler mot veikanten og øvre stråler mot trafikken skal ha hver sin farge og en tydelig forklaring. Bilfargene beholder sin egen betydning: grønne biler bruker modellen som undersøkes, grå biler er passiv trafikk. Endelige sensorfarger velges ved implementering og kontrolleres visuelt.
+
+De passive bilene kan fortsatt bruke **gamle modeller med det gamle sensorprinsippet**. Det betyr at observasjonene må beregnes etter modellen hver bil faktisk bruker: tolags laser for den nye modellen, eksisterende sektorsyn for de passive modellene. De passive nettverkene skal ikke tvinges til å tolke nye laserinnganger eller få tilfeldige ekstra forbindelser. Visningen skal gjengi hver bils faktiske sensorer, og samme skille må gjelde i trening, evaluering og avspilling. Dette bevarer kjent trafikk mens den nye sensormodellen prøves. Presiseringen er dokumentert; implementering og aktivering gjenstår.
+
+
+#### Aktivert: ny modell fra tilfeldige vekter — 7. november 2026, fra generasjon 972
+
+Prosjekteieren bestemte at de nye bilene/sensorene skal starte helt fra scratch, og at strålene skal levere samme typer informasjon som tidligere: **avstand, relativ tilnærmingsfart og vinkelbasert ekkostyrke**. Ekko er fortsatt refleksjonsstyrken ut fra innfallsvinkelen, ikke en ekstra rå vinkel eller en objekttype. Ingen gamle treningsvekter migreres til den nye modellen. Tidligere forslag ovenfor beskriver beslutningsforløpet; denne delen angir det faktisk aktiverte oppsettet.
+
+Konkrete implementeringsvalg fra Codex:
+
+- **61 stråler per høyde, to høyder og tre kanaler = 366 innganger.** Dagens 30 brede sektorer deles ved midtpunktene til 61 strålevinkler, inkludert endepunktene ±110°. Dermed er det omtrent 2,28° mellom strålene nær sentrum og 17,18° ytterst. Dette er rette stråler, ikke nærmeste punkt innenfor en sone.
+- Sensorhøydene er **0,5 og 3 banenheter** over bilens veihøyde. Veikanten modelleres som en lav flate fra 0 til 2 over veien. Bilenes sensorlegeme har bakkeklaring 1 og topp 5; den nedre strålen passerer under en bil på samme plane vei. Dette er idealisert sensorgeometri, ikke en ny kollisjonsmodell. Kjegler bruker høyde 0–3 dersom et senere oppsett aktiverer dem.
+- Strålene følger bilens lokale veistigning ved utsending og fortsetter rett. Veikantens høyde interpoleres ved faktisk treffpunkt. Overpass, rampe og bilhøyde kontrolleres geometrisk, i stedet for å bruke gammel sektorfiltrering på gjennomsnittshøyde. Det er fortsatt en forenklet verden uten komplette karosserimesher eller veidekkets flater som okkluderende objekter. En stråle følger ikke automatisk en vei som bøyer seg opp/ned lenger frem.
+- Avstand normaliseres med rekkevidden, relativ tilnærming med 10,8 og klippes til [-1,1], ekko ligger i [0,1]. Manglende treff gir **[1,0,0]**, altså maksimal rekkevidde, ingen tilnærming og intet ekko. Det tilsvarer dagens sektorkonvensjon.
+- Nettet er **366 → 488 → 488 → 488 → 64 → 64 → 48 → 32 → 24 → 16 → 8 → 4 → 2**, med **74 838 vekter/biaser**. De tre første lagene har fire kanaler per stråle/høyde og kobler egen vinkel og nabovinklene i begge høyder. Ingen kobling rundt ytterkantene. Deretter følger åtte fulle beslutningslag og to utganger. Vektene er nye tilfeldige initialiseringer, biaser starter på null.
+- Nedre lasere tegnes cyan, øvre fiolett/stiplet; passiv sektorradar beholder gråfargen. Bilene beholder grønn/grå rollemarkering. Visningen beregner faktiske sensorer for hver modelltype.
+
+Rust gjør stråletreff, nettverkskjøring, kollisjonsberegninger og hele evalueringen. Rust-evalueringen støtter nå ulike nettverk og sensorer i samme trafikkbilde. GPU-batcher på 50 beholdes for læring. Passive biler bruker sine frosne gamle modeller og egne 30-sonersobservasjoner; de får verken laserinnganger eller nye tilfeldige forbindelser. Treningen beholder ti roterende kandidatnett, ti treningsbiler, 15 passive, 100 forsøk per kandidat, 20×5 tester per modell, samme belønninger/straffer, ingen kjegler og samme treningsbane. Forelderen er kun evalueringsreferanse. Mål 1200 på den historiske generasjonsskalaen beholdes; 972 er første generasjon i denne nye serien, ikke 972 generasjoner med lasermodellen.
+
+**Arkivering og start:** forrige forsøk ble stoppet etter siste fullførte generasjon **971**; dens modeller og logger er bevart i `car-traffic25-trainedonly-1000`. En eventuell påbegynt gammel generasjon 972 videreføres ikke. Den gamle automatiske videreføringen til 1200 er deaktivert og erstattet av `car-laser2-fresh-1200`, med helt ny initialmodell, optimizer, historikk og tilfeldig generator (seed 20261123). Dette er et nytt læringsforsøk, ikke en forbedring som allerede er demonstrert. [Ny resultatlogg](experiments/laser2-generation-progress.md).
+
+**Validering før start:** 139 tester bestod, inkludert strålegap, nedre veikant/øvre bil, relativ fart og ekko, rampe/overpass, lokale 2D-koblinger, lagring/lasting og samsvar mellom Rust og Python ved blandede sensorarkitekturer. En kort full generasjon med ti nye kandidater, gamle passive modeller og GPU-batcher fullførte. GPU-gradientene for det nye nettet ble sammenlignet med Rust; største absolutte avvik var 2,25×10⁻⁸. Dette validerer implementeringen, ikke læringsresultatet eller hastigheten i et langt forsøk.

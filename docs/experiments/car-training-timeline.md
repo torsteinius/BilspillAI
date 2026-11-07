@@ -53,6 +53,12 @@ Oppføringene følger utviklingsloggen. Hver lenke beskriver forslag, begrunnels
 | E47 | 859 / traffic20 | [Maksbrems ned til 30 % av normalfarten](../UTVIKLINGSLOGG_BIL.md#endring-47) |
 | E48 | 862 / traffic20 | [Hele evalueringen flyttet til Rust](../UTVIKLINGSLOGG_BIL.md#endring-48) |
 | E49 | 863 / traffic20 | [Ti treningsbiler og GPU-batcher på 50](../UTVIKLINGSLOGG_BIL.md#endring-49) |
+| E50 | 871 / traffic20 | [Ekkostyrke inn i lokalt synsnett](../UTVIKLINGSLOGG_BIL.md#endring-50) |
+| E51 | 873 / traffic20 | [Fem generasjoner tilvenning uten foreldervinner](../UTVIKLINGSLOGG_BIL.md#endring-51) |
+| E52 | 878 / traffic20 | [Forelderen blir valgbar igjen etter ekkotilvenning](../UTVIKLINGSLOGG_BIL.md#endring-51) |
+| E53 | 887 / traffic20 | [Ikke-lineær styring med 50 % sterkere fullt utslag](../UTVIKLINGSLOGG_BIL.md#endring-53) |
+| E54 | 892 / traffic20 | [Bare trente kandidater kan vinne](../UTVIKLINGSLOGG_BIL.md#endring-54) |
+| E55 | 972 / laser2 | [Ny start: to laserhøyder, lokale 2D-lag og åtte beslutningslag](../UTVIKLINGSLOGG_BIL.md#endring-55) |
 
 ## Sammenlignbar del av forsøket
 

@@ -1,6 +1,7 @@
 //! Whole deterministic evaluation rollout. No learning, respawns, cones or UI.
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use crate::laser::LaserRadar;
 use crate::{track::RoadGeometry, sectors::SectorRadar, local::LocalNetwork, car::swept};
 type Pose = (f64,f64,f64,f64,f64,f64,f64,bool,f64);
 #[derive(Clone)]
@@ -28,15 +29,30 @@ fn passes(cars:&[Car],road:&mut RoadGeometry,perimeter:f64,range:f64,pairs:&mut 
  }}result
 }
 #[pyclass]
-pub struct SectorEvaluation { road:RoadGeometry,radar:SectorRadar,net:LocalNetwork,weights:Vec<Vec<f64>>,perimeter:f64,range:f64,brake:f64 }
+pub struct SectorEvaluation { road:RoadGeometry,radar:SectorRadar,net:LocalNetwork,weights:Vec<Vec<f64>>,perimeter:f64,range:f64,brake:f64, channels:usize, steering_boost:f64, laser:Option<LaserRadar>, models:Vec<LocalNetwork>, modes:Vec<usize> }
 #[pymethods]
 impl SectorEvaluation {
  #[new]
  fn new(segments:Vec<Vec<f64>>,half_width:f64,walls:Vec<(f64,f64,f64,f64,f64)>,edges:Vec<f64>,sizes:Vec<usize>,links:Vec<Vec<Vec<usize>>>,weights:Vec<Vec<f64>>,perimeter:f64,range:f64,brake:f64)->PyResult<Self>{
-  if sizes.last()!=Some(&2)||sizes.first()!=Some(&(2*(edges.len().saturating_sub(1))))||weights.len()<2||!perimeter.is_finite()||perimeter<=0.||!range.is_finite()||range<=0.||!brake.is_finite()||brake<0.||brake>=1. {return Err(PyValueError::new_err("Invalid sector evaluation configuration"));}
+  if sizes.last()!=Some(&2)||!(sizes.first()==Some(&(2*(edges.len().saturating_sub(1))))||sizes.first()==Some(&(3*(edges.len().saturating_sub(1)))))||weights.len()<2||!perimeter.is_finite()||perimeter<=0.||!range.is_finite()||range<=0.||!brake.is_finite()||brake<0.||brake>=1. {return Err(PyValueError::new_err("Invalid sector evaluation configuration"));}
   let net=LocalNetwork::new(sizes.clone(),links)?;
   for w in &weights {net.forward(vec![0.;sizes[0]],w.clone(),false)?;}
-  Ok(Self{road:RoadGeometry::new(segments,half_width)?,radar:SectorRadar::new(walls,Some(edges))?,net,weights,perimeter,range,brake})
+  let channels=sizes[0]/(edges.len()-1);
+  Ok(Self{road:RoadGeometry::new(segments,half_width)?,radar:SectorRadar::new(walls,Some(edges))?,net,weights,perimeter,range,brake,channels,steering_boost:0.,laser:None,models:vec![],modes:vec![]})
+ }
+ fn set_laser_models(&mut self,walls:Vec<(f64,f64,f64,f64,f64,f64)>,angles:Vec<f64>,sizes:Vec<Vec<usize>>,links:Vec<Vec<Vec<Vec<usize>>>>,weights:Vec<Vec<f64>>,modes:Vec<usize>)->PyResult<()> {
+  if sizes.len()!=weights.len()||links.len()!=weights.len()||modes.len()!=weights.len()||weights.len()<2 {return Err(PyValueError::new_err("Mixed model count mismatch"));}
+  let mut models=vec![];
+  for i in 0..weights.len(){
+   let count=match modes[i]{2=>60,3=>90,6=>366,_=>return Err(PyValueError::new_err("Unknown mixed sensor mode"))};
+   if sizes[i].first()!=Some(&count)||sizes[i].last()!=Some(&2){return Err(PyValueError::new_err("Mixed model shape mismatch"));}
+   let net=LocalNetwork::new(sizes[i].clone(),links[i].clone())?;net.forward(vec![0.;count],weights[i].clone(),false)?;models.push(net);
+  }
+  self.laser=Some(LaserRadar::new(walls,angles)?);self.models=models;self.modes=modes;self.weights=weights;Ok(())
+ }
+ fn set_steering_boost(&mut self,boost:f64)->PyResult<()> {
+  if !boost.is_finite()||boost<0. {return Err(PyValueError::new_err("Invalid steering boost"));}
+  self.steering_boost=boost;Ok(())
  }
  // Model order: candidate, fixed traffic reference, then background models.
  fn run(&mut self,initial:Vec<Pose>,role:usize,steps:usize,pass_reward:f64,car_penalty:f64)->PyResult<(f64,f64,usize,usize,bool)>{
@@ -52,10 +68,18 @@ impl SectorEvaluation {
    for i in 0..n {
     let c=&cars[i];if c.dead {continue;}
     let objects=cars.iter().enumerate().filter(|(j,o)|*j!=i&&!o.dead).map(|(_,o)|(o.x,o.y,o.z,7.,o.speed*o.h.cos(),o.speed*o.h.sin(),2)).collect();
-    let rows=self.radar.scan(c.x,c.y,c.z,c.h,c.speed,self.range,objects)?;
-    let input=rows.iter().flat_map(|r|[r.0/self.range,(r.1/10.8).clamp(-1.,1.)]).collect();
     let index=if i>=5 {i-3}else if i==role {0}else{1};
-    let out=self.net.forward(input,self.weights[index].clone(),false)?;
+    let mode=if self.models.is_empty(){self.channels}else{self.modes[index]};
+    let input=if mode==6 {
+        let pitch=self.road.pitch(c.x,c.y,c.z,c.h);
+        self.laser.as_ref().unwrap().scan(c.x,c.y,c.z,c.h,pitch,c.speed,self.range,objects)?.iter().flat_map(|r|[r.0/self.range,(r.1/10.8).clamp(-1.,1.),r.6]).collect()
+    } else if mode==3 {
+        self.radar.scan_echo(c.x,c.y,c.z,c.h,c.speed,self.range,objects)?.iter().flat_map(|r|[r.0/self.range,(r.1/10.8).clamp(-1.,1.),r.6]).collect()
+    } else {
+        self.radar.scan(c.x,c.y,c.z,c.h,c.speed,self.range,objects)?.iter().flat_map(|r|[r.0/self.range,(r.1/10.8).clamp(-1.,1.)]).collect()
+    };
+    let net=if self.models.is_empty(){&self.net}else{&self.models[index]};
+    let out=net.forward(input,self.weights[index].clone(),false)?;
     controls[i]=(out[0],(-out[1]).max(0.),out[1].max(0.));
    }
    let old:Vec<_>=cars.iter().map(|c|c.point()).collect();let active:Vec<_>=cars.iter().map(|c|!c.dead).collect();
@@ -63,7 +87,7 @@ impl SectorEvaluation {
    for i in 0..n {
     let c=&mut cars[i];if c.dead{continue;}
     let along=self.road.progress(c.x,c.y,c.z);let (steer,brake,throttle)=controls[i];
-    c.h+=steer*0.045;c.speed=3.*c.factor*(1.-self.brake*brake)*(1.+0.5*throttle);
+    c.h+=0.045*(steer+self.steering_boost*steer.powi(3));c.speed=3.*c.factor*(1.-self.brake*brake)*(1.+0.5*throttle);
     c.x+=c.speed*c.h.cos();c.y+=c.speed*c.h.sin();c.z=self.road.locate(c.x,c.y,c.z).2;
     c.travel+=((self.road.progress(c.x,c.y,c.z)-along+self.perimeter/2.).rem_euclid(self.perimeter)-self.perimeter/2.)*c.direction;
     for t in [0.,0.5,1.] {if self.road.clearance(old[i].0+(c.x-old[i].0)*t,old[i].1+(c.y-old[i].1)*t,old[i].2+(c.z-old[i].2)*t)<=7. {c.dead=true;}}

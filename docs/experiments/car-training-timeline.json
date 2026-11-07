@@ -403,6 +403,54 @@
       "series": "traffic20",
       "first_generation": 863,
       "chart_label": "10 treningsbiler · GPU batch 50"
+    },
+    {
+      "id": "E50",
+      "title": "Ekkostyrke inn i lokalt synsnett",
+      "log_anchor": "endring-50",
+      "series": "traffic20",
+      "first_generation": 871,
+      "chart_label": "Ekkostyrke · 90 input"
+    },
+    {
+      "id": "E51",
+      "title": "Fem generasjoner tilvenning uten foreldervinner",
+      "log_anchor": "endring-51",
+      "series": "traffic20",
+      "first_generation": 873,
+      "chart_label": "Ekko: 5 gen. uten foreldervinner"
+    },
+    {
+      "id": "E52",
+      "title": "Forelderen blir valgbar igjen etter ekkotilvenning",
+      "log_anchor": "endring-51",
+      "series": "traffic20",
+      "first_generation": 878,
+      "chart_label": "Forelder kan vinne igjen"
+    },
+    {
+      "id": "E53",
+      "title": "Ikke-lineær styring med 50 % sterkere fullt utslag",
+      "log_anchor": "endring-53",
+      "series": "traffic20",
+      "first_generation": 887,
+      "chart_label": "Styring: +50 % ved fullt utslag"
+    },
+    {
+      "id": "E54",
+      "title": "Bare trente kandidater kan vinne",
+      "log_anchor": "endring-54",
+      "series": "traffic20",
+      "first_generation": 892,
+      "chart_label": "Forelder kun referanse"
+    },
+    {
+      "id": "E55",
+      "title": "Ny start: to laserhøyder, lokale 2D-lag og åtte beslutningslag",
+      "log_anchor": "endring-55",
+      "series": "laser2",
+      "first_generation": 972,
+      "chart_label": "To laserhøyder · nye vekter"
     }
   ]
 }

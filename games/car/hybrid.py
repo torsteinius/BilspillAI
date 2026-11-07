@@ -18,19 +18,26 @@ PROGRESS_REWARD = .05
 COLLISION_PENALTY = 50.
 
 
+def select_winner(evaluations, generation, generation_offset, *, trained_only=False, adaptation_generations=0):
+    reference_only=trained_only or generation<=generation_offset+adaptation_generations
+    return max(range(1 if reference_only else 0,len(evaluations)),key=lambda i:evaluations[i]['score'])
+
+
 def driving_reward(delta, collided):
     # Safe time and signed road progress; circling/backwards motion is not progress.
     return (0. if collided else SAFE_REWARD) + PROGRESS_REWARD*delta
 
 
-def features(car, cars):
+def features(car, cars, model=None):
+    if model is not None and model.metadata.get('radar_mode','').startswith(('sectors','laser')):return app.model_observations(model,car,cars)
     readings = app.observations(car,cars)
-    if app.RADAR_MODE in ('sectors15','sectors30','sectors30wide'):return readings
+    if app.RADAR_MODE in ('sectors15','sectors30','sectors30wide','sectors30echo','laser2'):return readings
     return [1-d/180 for d in readings[:7]] + readings[7:]
 
 
 def wide_sector_view(network):
-    if network.architecture[0]!=60 or network.metadata.get('radar_mode') not in ('sectors30','sectors30wide'):
+    if network.architecture[0]==90 and network.metadata.get('radar_mode')=='sectors30echo':return
+    if network.architecture[0]!=60 or network.metadata.get('radar_mode') not in ('sectors30','sectors30wide','sectors30echo'):
         raise ValueError('Wide vision requires the existing 30-sector model')
     network.metadata.update(radar_mode='sectors30wide',observation_version='thirty_wide_sectors_distance_closing_v1')
 
@@ -218,7 +225,7 @@ def evaluate_candidate(actor, traffic, steps, offset=0, initial_cars=None,overta
             controls=[]
             for i,c in enumerate(cars):
                 network=background_models[i-5] if i>=5 else actor if i==role else traffic
-                controls.append(app.decode_outputs(network.forward(features(c,cars)[:network.architecture[0]])) if not c['crashed'] else 0.)
+                controls.append(app.decode_outputs(network.forward(features(c,cars,network)[:network.architecture[0]])) if not c['crashed'] else 0.)
             before=cars[role]['travel']
             events=[]
             if car_collision_penalty==50.:app.step(cars,[],controls=controls)
@@ -253,6 +260,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     source=parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--initial-model',type=Path)
+    source.add_argument('--fresh-laser2',action='store_true',help='Fresh two-height laser model with eight decision layers')
     source.add_argument('--fresh-sectors30',action='store_true',help='Fresh 30-sector front-focused local-vision model')
     source.add_argument('--fresh-sectors',action='store_true',help='New 15-sector local-vision model, signed speed output')
     source.add_argument('--fresh-brake',action='store_true',help='Fresh random 23-input, two-output steering/brake network')
@@ -260,11 +268,13 @@ def main():
     parser.add_argument('--cone-count',type=int,choices=range(34),help='Evenly spaced cones (0–33)')
     parser.add_argument('--no-cones',action='store_true',help='Train and evaluate without cones')
     parser.add_argument('--wide-sector-view',action='store_true',help='Keep 30-sector weights; switch to 220-degree coarse side vision')
+    parser.add_argument('--radar-echo',action='store_true')
     parser.add_argument('--training-cars',type=int,choices=(5,10),default=5)
     parser.add_argument('--batch-size',type=int,choices=(0,50),default=0)
     parser.add_argument('--batch-backend',choices=('rust','mlx-gpu'),default='rust')
     parser.add_argument('--continue-survivors',action='store_true')
     parser.add_argument('--rust-evaluation',action='store_true',help='Whole evaluation rollout in Rust (pass-only sectors, no cones)')
+    parser.add_argument('--steering-boost',type=float,default=0.)
     parser.add_argument('--max-brake',type=float,default=.5)
     parser.add_argument('--car-collision-penalty',type=float,default=50.,help='Penalty for car contact; wall/cone penalties stay 50')
     parser.add_argument('--background-speed-scale',type=float,default=1.,help='Multiplier for background cars only, in (0,1]')
@@ -280,6 +290,7 @@ def main():
     parser.add_argument('--wall-credit',choices=('latest40_last25','uniform_last3'),help='Wall-only collision credit schedule')
     parser.add_argument('--history-stride',type=int,default=1,help='Save one action per N steps; aggregate intervening rewards (rotating trainer)')
     parser.add_argument('--rotate',action='store_true',help='Asynchronous round-robin assignment across cars')
+    parser.add_argument('--adaptation-generations',type=int,default=0,help='First N generations exclude parent from selection, then restore eligibility')
     parser.add_argument('--trained-only',action='store_true',help='Choose among trained candidates; keep parent as reference only')
     parser.add_argument('--generations',type=int,default=2)
     parser.add_argument('--random-scenarios',action='store_true',help='4–8 random cones, random starts and alternating convoy direction each generation')
@@ -290,6 +301,11 @@ def main():
     parser.add_argument('--seed',type=int,default=20261105)
     parser.add_argument('--generation-offset',type=int,default=0)
     args=parser.parse_args()
+    if not math.isfinite(args.steering_boost) or args.steering_boost<0:
+        parser.error('--steering-boost must be nonnegative and finite')
+    app.STEERING_BOOST=args.steering_boost
+    if args.adaptation_generations<0 or (args.adaptation_generations and args.trained_only):
+        parser.error('Adaptation count must be nonnegative and cannot combine with --trained-only')
     if (args.training_cars!=5 or args.batch_size or args.continue_survivors) and not (args.rotate and args.random_scenarios):
         parser.error('New batching/slots require rotation and random scenarios')
     if not math.isfinite(args.max_brake) or not 0<=args.max_brake<1:
@@ -326,7 +342,11 @@ def main():
         parser.error('Counts must be positive')
     if args.output.exists():
         parser.error('Output must be a new directory')
-    if args.fresh_sectors or args.fresh_sectors30:
+    if args.fresh_laser2:
+        from ai.laser_vision import LaserVisionNetwork
+        parent=LaserVisionNetwork(seed=args.seed).set_backend('rust');parent.randomize()
+        parent.metadata.update(game='car',track='training',traffic='convoy',radar_scale=3.,action_version='steering_signed_speed50_v1')
+    elif args.fresh_sectors or args.fresh_sectors30:
         from ai.local_vision import LocalVisionNetwork, DEFAULT, FOCUSED
         parent=LocalVisionNetwork(FOCUSED if args.fresh_sectors30 else DEFAULT,seed=args.seed).set_backend('rust');parent.randomize()
         parent.metadata.update(game='car',track='training',traffic='convoy',radar_scale=3.,action_version='steering_signed_speed50_v1',observation_version='thirty_focused_sectors_distance_closing_v1' if args.fresh_sectors30 else 'fifteen_sectors_distance_closing_v1',radar_mode='sectors30' if args.fresh_sectors30 else 'sectors15')
@@ -338,11 +358,14 @@ def main():
     else:
         parent=NeuralNetwork.load(args.initial_model).set_backend('rust')
     if args.wide_sector_view:wide_sector_view(parent)
+    if args.radar_echo:
+        from ai.local_vision import add_echo_input
+        parent=add_echo_input(parent)
     if args.add_radar_angles:parent=add_radar_angles(parent,args.seed+199)
     if args.add_throttle:parent=add_throttle_output(parent,args.seed+99)
-    if parent.architecture[0] not in (11,23,30,31,60) or parent.architecture[-1] not in (1,2,3):
+    if parent.architecture[0] not in (11,23,30,31,60,90,366) or parent.architecture[-1] not in (1,2,3):
         parser.error('Expected 11, 23 or 31 input cone-radar model with one, two or three outputs')
-    if not (args.fresh_brake or args.fresh_sectors or args.fresh_sectors30) and parent.metadata.get('observation_version') not in ('seven_rays_four_relative_targets_v6','seven_rays_four_relative_angles_v7','fifteen_sectors_distance_closing_v1','thirty_focused_sectors_distance_closing_v1','thirty_wide_sectors_distance_closing_v1'):
+    if not (args.fresh_brake or args.fresh_sectors or args.fresh_sectors30 or args.fresh_laser2) and parent.metadata.get('observation_version') not in ('seven_rays_four_relative_targets_v6','seven_rays_four_relative_angles_v7','fifteen_sectors_distance_closing_v1','thirty_focused_sectors_distance_closing_v1','thirty_wide_sectors_distance_closing_v1','thirty_wide_sectors_distance_closing_echo_v1','laser2_distance_closing_echo_v1'):
         parser.error('Relative-speed inputs differ from older checkpoints; use --fresh-brake for this experiment')
     source_generation=parent.generation
     if parent.architecture[0]==11:
@@ -351,9 +374,10 @@ def main():
         parent.metadata=dict(original.metadata)
         parent.generation=original.generation
         parent.score=original.score
+    laser_inputs=parent.metadata.get('model_type')=='two_height_laser_local_v1'
     sector_inputs=parent.metadata.get('model_type')=='sector_local_vision_v1'
     angle_inputs=parent.architecture[0]==31
-    if not sector_inputs:parent.metadata.update(radar_mode='cone4angles' if angle_inputs else 'cone4relative',observation_version='seven_rays_four_relative_angles_v7' if angle_inputs else 'seven_rays_four_relative_targets_v6')
+    if not (sector_inputs or laser_inputs):parent.metadata.update(radar_mode='cone4angles' if angle_inputs else 'cone4relative',observation_version='seven_rays_four_relative_angles_v7' if angle_inputs else 'seven_rays_four_relative_targets_v6')
     args.output.mkdir(parents=True)
     parent.save(args.output/'initial.json')
     app.configure_track('training',args.steps,cones=not args.no_cones,cone_count=args.cone_count);app.configure_traffic('convoy')
@@ -361,33 +385,44 @@ def main():
     rng=random.Random(args.seed)
     test_rng=random.Random(args.seed+1)
     test_offsets=[test_rng.uniform(-12.,12.) for _ in range(args.test_rounds)]
-    settings=dict(batch_size=args.batch_size,batch_backend=args.batch_backend,continue_survivors=args.continue_survivors,evaluation_car_count=5+len(args.background_model),native_evaluation=args.rust_evaluation,random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake or args.fresh_sectors or args.fresh_sectors30,action_outputs=parent.architecture[-1],throttle_max_increase=.5 if parent.architecture[-1]==3 else 0.,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,brake_max_reduction=args.max_brake if parent.architecture[-1]>=2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=parent.architecture[0],radar_angles=angle_inputs,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
+    settings=dict(steering_boost=args.steering_boost,steering_curve='0.045*(u+boost*u^3)',adaptation_generations=args.adaptation_generations,parent_eligible_from=args.generation_offset+args.adaptation_generations+1 if not args.trained_only else None,batch_size=args.batch_size,batch_backend=args.batch_backend,continue_survivors=args.continue_survivors,evaluation_car_count=5+len(args.background_model),native_evaluation=args.rust_evaluation,random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake or args.fresh_sectors or args.fresh_sectors30 or args.fresh_laser2,action_outputs=parent.architecture[-1],throttle_max_increase=.5 if parent.architecture[-1]==3 else 0.,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,brake_max_reduction=args.max_brake if parent.architecture[-1]>=2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=parent.architecture[0],radar_angles=angle_inputs,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
                   learners=args.learners,training_attempts_per_generation=args.learners*args.rounds,history=50,history_stride=args.history_stride,history_reward='sum_between_samples',history_boundary='new_sample_on_new_session',credit=args.collision_credit,wall_credit=args.wall_credit,safe_reward=SAFE_REWARD,
                   progress_reward=PROGRESS_REWARD,collision_penalty=COLLISION_PENALTY,car_collision_penalty=args.car_collision_penalty,
                   exploration_sigma=.15,learning_rate=.0003,mutation_sigma=.03,
-                  initial_generation=source_generation,protected_parent=not args.trained_only,
+                  initial_generation=source_generation,protected_parent=not args.trained_only and not args.adaptation_generations,
                   selection='20 test scenarios by default, each in all five slots/speeds against fixed initial-model opponents; no learning or exploration',
                   holdout='Offsets -8 and +8, reported only, not used for selection')
     if sector_inputs:
-        settings.update(model_type='sector_local_vision_v1',radar_mode=app.RADAR_MODE,radar_targets=None,radar_sectors=parent.architecture[0]//2,radar_angle_degrees=220 if app.RADAR_MODE=='sectors30wide' else 180,sector_width_degrees=12 if app.RADAR_MODE=='sectors15' else None,observation_version=parent.metadata['observation_version'],local_layers=3,local_channels=[2,4,4,4],decision_hidden=[32,24,16,8,4],action_version='steering_signed_speed50_v1',throttle_max_increase=.5)
+        settings.update(model_type='sector_local_vision_v1',radar_mode=app.RADAR_MODE,radar_targets=None,radar_sectors=parent.sectors,radar_angle_degrees=220 if app.RADAR_MODE in ('sectors30wide','sectors30echo') else 180,sector_width_degrees=12 if app.RADAR_MODE=='sectors15' else None,observation_version=parent.metadata['observation_version'],local_layers=3,local_channels=parent.metadata.get('sector_channels',[2,4,4,4]),decision_hidden=[32,24,16,8,4],action_version='steering_signed_speed50_v1',throttle_max_increase=.5)
     if sector_inputs:
         from .sector_radar import sector_edges
         settings['sector_edges_radians']=sector_edges(app.RADAR_MODE)
-        settings['front_to_side_density']=None if app.RADAR_MODE=='sectors30wide' else 2 if app.RADAR_MODE=='sectors30' else 1
+        settings['front_to_side_density']=None if app.RADAR_MODE in ('sectors30wide','sectors30echo') else 2 if app.RADAR_MODE=='sectors30' else 1
+    if laser_inputs:
+        from .laser_radar import ray_angles
+        settings.update(model_type=parent.metadata['model_type'],radar_mode='laser2',radar_targets=None,radar_sectors=None,radar_angle_degrees=220,ray_angles=ray_angles(),rays_per_height=61,sensor_heights=[.5,3.],curb_height=2.,car_body_height=[1.,5.],local_layers=3,local_channels=[3,4,4,4],decision_hidden=list(parent.architecture[4:-1]),action_version='steering_signed_speed50_v1',observation_version=parent.metadata['observation_version'],throttle_max_increase=.5)
     if args.random_scenarios:
         settings.update(cone_count=None,cone_count_range=[4,8],starts='random_each_attempt',direction='alternates_each_generation',training_continuation='new_random_pose_each_attempt',selection='Parent and children reevaluated on identical new starts and layout each generation',holdout='Two additional random starts on the current layout; not used for selection')
     (args.output/'settings.json').write_text(json.dumps(settings,indent=2))
     traffic=clone_network(NeuralNetwork.load(args.traffic_model) if args.traffic_model else parent)
     if args.wide_sector_view:wide_sector_view(traffic)
-    if ((traffic.architecture[1:-1] != parent.architecture[1:-1] or traffic.architecture[0] not in (23,parent.architecture[0])) or traffic.architecture[-1] not in (2,parent.architecture[-1])) or traffic.metadata.get("observation_version") not in ("seven_rays_four_relative_targets_v6",parent.metadata.get("observation_version")):
+    if parent.architecture[0]==90:
+        from ai.local_vision import add_echo_input
+        traffic=add_echo_input(traffic)
+    if not laser_inputs and (((traffic.architecture[1:-1] != parent.architecture[1:-1] or traffic.architecture[0] not in (23,parent.architecture[0])) or traffic.architecture[-1] not in (2,parent.architecture[-1])) or traffic.metadata.get("observation_version") not in ("seven_rays_four_relative_targets_v6",parent.metadata.get("observation_version"))):
         parser.error("Traffic model must share hidden architecture and observations; legacy two-output traffic is allowed")
+    if laser_inputs and traffic.metadata.get('radar_mode') not in ('sectors30wide','sectors30echo'):
+        parser.error('Laser experiment requires a frozen old 30-wide-sector traffic model')
     traffic.save(args.output/"traffic-reference.json")
     background=[];background_paths=[]
     for i,path in enumerate(args.background_model):
         net=NeuralNetwork.load(path).set_backend('rust')
         if args.wide_sector_view:wide_sector_view(net)
-        if net.architecture!=parent.architecture or net.metadata.get('observation_version')!=parent.metadata.get('observation_version'):
+        if parent.architecture[0]==90:net=add_echo_input(net)
+        if not laser_inputs and (net.architecture!=parent.architecture or net.metadata.get('observation_version')!=parent.metadata.get('observation_version')):
             parser.error('Background models must match actor architecture and observations')
+        if laser_inputs and net.metadata.get('radar_mode') not in ('sectors30wide','sectors30echo'):
+            parser.error('Laser background requires old 30-wide-sector observations')
         dest=args.output/f'background-{i}.json';net.save(dest)
         background.append(net);background_paths.append(str(dest.resolve()))
     settings.update(car_count=args.training_cars+len(background),training_cars=args.training_cars,background_models=background_paths,background_speed_scale=args.background_speed_scale,
@@ -452,7 +487,7 @@ def main():
                 result=evaluate_current(n)
                 evaluations.append(result)
                 log.write(json.dumps(dict(generation=gen,test_candidate=candidate_index,evaluation=result))+'\n');log.flush()
-            winner=max(range(1 if args.trained_only else 0,len(candidates)),key=lambda i:evaluations[i]['score'])
+            winner=select_winner(evaluations,gen,args.generation_offset,trained_only=args.trained_only,adaptation_generations=args.adaptation_generations)
             parent=clone_network(candidates[winner])
             parent.generation=gen;parent.score=evaluations[winner]['score']
             if scenario is not None:parent.metadata['scenario']=scenario.payload()
@@ -463,7 +498,7 @@ def main():
                 learner.actor.score=evaluations[i+1]['score']
                 learner.actor.metadata.update(training_method='hybrid_uniform50_v1',experiment=settings)
                 learner.actor.save(args.output/f'generation-{gen}-learner-{i}.json')
-            row=dict(generation=gen,winner='parent' if winner==0 else f'learner-{winner-1}',
+            row=dict(generation=gen,parent_eligible=not args.trained_only and gen>args.generation_offset+args.adaptation_generations,winner='parent' if winner==0 else f'learner-{winner-1}',
                      evaluations=evaluations,holdout=holdout_current(parent),
                      elapsed_seconds=time.monotonic()-started)
             log.write(json.dumps(row)+'\n');log.flush();print(json.dumps(row),flush=True)

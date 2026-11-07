@@ -112,6 +112,9 @@ class NeuralNetwork:
         if saved.get('model_type') == 'sector_local_vision_v1':
             from ai.local_vision import LocalVisionNetwork
             model_class = LocalVisionNetwork
+        if saved.get('model_type') == 'two_height_laser_local_v1':
+            from ai.laser_vision import LaserVisionNetwork
+            model_class = LaserVisionNetwork
         network = model_class(saved['architecture'], seed=saved.get('seed'))
         if expected_architecture is not None and network.architecture != tuple(expected_architecture):
             raise ValueError('Saved model has incompatible architecture')

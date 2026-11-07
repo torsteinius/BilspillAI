@@ -9,10 +9,10 @@ from ai.rust_backend import native_module
 
 _CACHE=None
 
-@lru_cache(maxsize=3)
+@lru_cache(maxsize=4)
 def sector_edges(mode):
     if mode=='sectors15':return [-math.pi/2+i*math.pi/15 for i in range(16)]
-    if mode=='sectors30wide':
+    if mode in ('sectors30wide','sectors30echo'):
         old=sector_edges('sectors30');a=old[16]-old[15];b=4*(old[-1]-old[-2])
         low,high=.01,100.
         for _ in range(60):
@@ -43,18 +43,21 @@ def road_edges(track):
         for side,sign in zip(boundaries,(-1,1)):side.append((p[0]+sign*track.half_width*nx,p[1]+sign*track.half_width*ny,p[2]))
     return [(a[0],a[1],b[0],b[1],(a[2]+b[2])/2) for side in boundaries for a,b in zip(side,side[1:]+side[:1])]
 
-def scan(world,car,cars):
+def scan(world,car,cars,mode=None):
     global _CACHE
-    edges=sector_edges(world.RADAR_MODE)
-    if _CACHE is None or _CACHE[0] is not world.TRACK or _CACHE[2]!=world.RADAR_MODE:
-        _CACHE=(world.TRACK,native_module().SectorRadar(road_edges(world.TRACK),edges),world.RADAR_MODE)
+    mode=mode or world.RADAR_MODE
+    edges=sector_edges(mode)
+    if _CACHE is None or _CACHE[0] is not world.TRACK or _CACHE[2]!=mode:
+        _CACHE=(world.TRACK,native_module().SectorRadar(road_edges(world.TRACK),edges),mode)
     objects=[]
     for c in world.others(car,cars)+world.TRACK.cones:
         if c.get('crashed',False):continue
         cone=c.get('kind')=='cone';speed=0. if cone else c.get('speed',3*c.get('speed_factor',1.))
         objects.append((c['x'],c['y'],c.get('z',0.),c.get('radius',world.CAR_RADIUS),speed*math.cos(c.get('heading',0.)),speed*math.sin(c.get('heading',0.)),1 if cone else 2))
-    rows=_CACHE[1].scan(car['x'],car['y'],car.get('z',0.),car['heading'],car.get('speed',3*car.get('speed_factor',1.)),world.RADAR_RANGE,objects)
-    return [dict(distance=d,closing_speed=v,forward=x,lateral=y,kind=('wall','cone','car')[k] if k>=0 else None,detected=k>=0,angle=(edges[i]+edges[i+1])/2,angle_low=edges[i],angle_high=edges[i+1]) for i,(d,v,x,y,k,_) in enumerate(rows)]
+    reader=_CACHE[1].scan_echo if mode=='sectors30echo' else _CACHE[1].scan
+    rows=reader(car['x'],car['y'],car.get('z',0.),car['heading'],car.get('speed',3*car.get('speed_factor',1.)),world.RADAR_RANGE,objects)
+    return [dict(distance=r[0],closing_speed=r[1],forward=r[2],lateral=r[3],kind=('wall','cone','car')[r[4]] if r[4]>=0 else None,detected=r[4]>=0,echo_strength=r[6] if len(r)>6 else None,angle=(edges[i]+edges[i+1])/2,angle_low=edges[i],angle_high=edges[i+1]) for i,r in enumerate(rows)]
 
-def inputs(world,car,cars):
-    return [v for r in scan(world,car,cars) for v in (r['distance']/world.RADAR_RANGE,max(-1.,min(1.,r['closing_speed']/10.8)))]
+def inputs(world,car,cars,mode=None):
+    mode=mode or world.RADAR_MODE
+    return [v for r in scan(world,car,cars,mode) for v in (r['distance']/world.RADAR_RANGE,max(-1.,min(1.,r['closing_speed']/10.8)))+((r['echo_strength'],) if mode=='sectors30echo' else ())]

@@ -26,6 +26,25 @@ impl SectorRadar {
         }
         Ok(Self{walls,edges})
     }
+    // Dimensionless incidence amplitude: 1 normal incidence, 0 grazing/no hit.
+    pub(crate) fn scan_echo(&self,x:f64,y:f64,z:f64,heading:f64,speed:f64,range:f64,objects:Vec<(f64,f64,f64,f64,f64,f64,i32)>)->PyResult<Vec<(f64,f64,f64,f64,i32,i32,f64)>> {
+        let rows=self.scan(x,y,z,heading,speed,range,objects.clone())?;
+        let cs=heading.cos();let sn=heading.sin();
+        Ok(rows.into_iter().map(|r| {
+            let strength=if r.4<0 {0.} else if r.0<1e-8 {1.} else {
+                let (nx,ny)=if r.4==0 {
+                    let w=self.walls[r.5 as usize];let dx=w.2-w.0;let dy=w.3-w.1;
+                    (-dy*cs+dx*sn,dy*sn+dx*cs)
+                } else {
+                    let o=objects[r.5 as usize];let dx=o.0-x;let dy=o.1-y;
+                    (r.2-(dx*cs+dy*sn),r.3-(-dx*sn+dy*cs))
+                };
+                let norm=(nx*nx+ny*ny).sqrt();
+                if norm<1e-8 {1.} else {((r.2*nx+r.3*ny).abs()/(r.0*norm)).clamp(0.,1.)}
+            };
+            (r.0,r.1,r.2,r.3,r.4,r.5,strength)
+        }).collect())
+    }
     // Obstacles: x,y,z,radius,vx,vy,kind (1 cone, 2 car). Wall kind is zero.
     pub(crate) fn scan(&self,x:f64,y:f64,z:f64,heading:f64,speed:f64,range:f64,objects:Vec<(f64,f64,f64,f64,f64,f64,i32)>)->PyResult<Vec<(f64,f64,f64,f64,i32,i32)>>{
         if !range.is_finite() || range<=0.{return Err(PyValueError::new_err("Invalid radar range"));}

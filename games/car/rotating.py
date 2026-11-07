@@ -170,7 +170,7 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
         for i,(session,car) in enumerate(zip(sessions,cars)):
             if i>=training_count:
                 net=background_models[i-training_count]
-                controls.append(0. if car['crashed'] else app.decode_outputs(net.forward(features(car,cars))))
+                controls.append(0. if car['crashed'] else app.decode_outputs(net.forward(features(car,cars,net))))
                 continue
             if not active[i]:controls.append(0.);continue
             owner=session['owner'];p=policies[owner]
