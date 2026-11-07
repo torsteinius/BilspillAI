@@ -74,7 +74,7 @@ def publish(run,output):
     completed=(run/'complete.json').exists()
     settings=json.loads((run/'settings.json').read_text())
     target=settings['generation_offset']+settings['generations']
-    text=['# Forbedring per generasjon — fire skjulte lag og brems','',
+    text=['# Forbedring per generasjon — biltrening','',
           f"Sist fullførte generasjon: **{rows[-1]['generation']} av {target}**. Hele kjøringen er " + ('ferdig.' if completed else 'ikke registrert ferdig.'),'',
           'Denne loggen oppdateres automatisk fra lagrede testresultater. Generasjoner som fortsatt trener eller testes tas ikke med.',
           f"Arkitektur: {' → '.join(map(str,settings['architecture']))}. Seed: {settings['seed']}. Testoppsettet er det samme mellom generasjonene i denne kjøringen.",'',
