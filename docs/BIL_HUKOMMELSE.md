@@ -559,3 +559,90 @@ Etter prosjekteierens presisering fordeles −50 nå jevnt over de tre siste lag
 ### 30 soner fra generasjon 826
 
 Prosjekteieren foreslo høyere oppløsning for smale åpninger: 30 soner med jevnt varierende bredde og dobbelt tetthet rett foran. Nye vekter, gammel modell arkivert; se [endring 43](UTVIKLINGSLOGG_BIL.md#endring-43).
+
+## 7. november 2026 — Hypotese: spesialister som lærere ved korte omspillinger
+
+**Status: prosjekteierens hypotese, ikke implementert eller evaluert.** Forslaget
+skal undersøke om målrettet, styrt trening kan hjelpe bilen ut av fastlåst eller
+forsiktig kjøring, uten et ferdig datasett med menneskelige kjøredemonstrasjoner.
+Saktekjøring kan skyldes et lokalt optimum, men dette er ikke påvist; det kan også
+være at belønningssystemet gjør slik kjøring lønnsom.
+
+### Grunntanke og spesialistroller
+
+Prosjekteieren foreslår å trene separate nettverk på enklere kjøreoppgaver og la
+dem foreslå løsninger når hovednettverket feiler. Fem nettverk ble først nevnt;
+fire roller er konkretisert, mens en eventuell femte rolle er åpen:
+
+| Spesialistens treningsmiljø | Tiltenkt grunnferdighet |
+| --- | --- |
+| Bane uten hindringer | Følge veien og holde framdrift |
+| Bane med hindringer | Unngå hindringer og finne passasjer |
+| Trange baner | Presis plassering og kontroll med liten klaring |
+| Mer lineære baner | Stabil kjøring på rette eller svakt svingende strekninger |
+
+Rollene er erfaringsområder, ikke faste kommandoer som å bremse eller svinge til
+én bestemt side. Prosjekteierens forventning er at disse deloppgavene er enklere
+å lære enn hele kjøreoppgaven samlet. **En sentral del av hypotesen er at de
+forskjellige ferdighetene og treningsmålene da vil motarbeide hverandre i mindre
+grad under innlæringen.** Hovednettverket skal deretter lære av den spesialisten
+som faktisk løser den enkelte situasjonen best. Mindre konflikt og enklere
+trening er forventninger som må testes, ikke dokumenterte egenskaper.
+
+### Korte omspillinger lager treningsgrunnlaget
+
+1. Ved krasj eller en annen definert feil beholdes tilstander, sensorinput og
+   handlinger fra et kort tidsvindu før feilen, foreslått til omtrent tre sekunder.
+2. Simulatoren gjenoppretter starten av vinduet. Spesialistene får prøve hver
+   sin handlingssekvens fra samme utgangspunkt. Det kreves ikke en hel vellykket
+   kjøretur; oppgaven er å forbedre akkurat disse sekundene.
+3. Randomiserte handlinger eller korreksjoner kan gi flere alternativer, alene
+   eller sammen med spesialistene. Tilfeldige forslag skal være reproduserbare
+   med lagrede frø. Sammenligningen må bruke samme omgivelsesbetingelser og
+   samme regler for andre bilers eventuelle reaksjoner.
+4. Simulatoren måler hva som fungerte best etter felles, kjente kriterier.
+   Aktuelle kriterier er kollisjon, klaring, framdrift og kontroll ved slutten av
+   vinduet. Den konkrete rangeringen og vektingen er ikke valgt.
+5. Vinnerens observasjoner og handlinger brukes som lokale treningsmål for
+   hovednettverket. Simulatoren avgjør vinneren; spesialistens rolle gir ikke
+   automatisk forrang. Dette lager treningsdata gjennom forsøk, i stedet for å
+   forutsette et eksisterende datasett eller en kjent optimal handling.
+
+Prosjekteieren vil med dette rette korrigering eller straff mot konkrete valg
+som burde vært annerledes, fremfor bare å straffe hele forløpet som endte i
+krasj. Når grunnferdighetene er på plass, foreslås større vekt på mål på høyere
+nivå, som samlet framdrift, flyt og samspill med trafikken. Eksakt læringsregel,
+overgang mellom fasene og samspill med videre evolusjon er fortsatt åpne valg.
+
+### Kontrollpunkter foreslått av Codex
+
+- Behold hovednettverkets opprinnelige forløp som referanse. Et lærerforslag
+  bør bare bli et korrigerende mål når det faktisk forbedrer resultatet.
+  «Best blant de prøvde» betyr ikke nødvendigvis optimalt eller kollisjonsfritt.
+- Lagre lærerens egne sensorobservasjoner før hver handling. Etter at en
+  alternativ handling endrer banen, må senere handlinger knyttes til den nye
+  tilstanden, ikke til observasjonene fra den opprinnelige krasjsekvensen.
+- Ikke anta at alle handlingene før krasjet var feil. En sen handling kan være
+  et riktig redningsforsøk etter en tidligere feil. Hvordan forbedringen skal
+  fordeles på enkelthandlinger må avklares gjennom kontrollerte omspillinger.
+- Vurder sluttposisjon, retning, fart og klaring, eventuelt med en kort ekstra
+  kontrollperiode, slik at det ikke lønner seg å utsette krasjet til rett etter
+  treningsvinduet.
+- Varier starttilstander, avstander, vinkler og hastigheter i spesialisttreningen.
+  God kjøring fra normal start garanterer ikke evne til å redde en vanskelig
+  tilstand som hovednettverket har havnet i.
+- Separate lærere kan fortsatt gi motstridende råd. Situasjonsbasert utvelgelse
+  og felles vurderingskriterier skal undersøkes som en måte å redusere denne
+  konflikten på; oppdelingen alene garanterer ikke at konflikten forsvinner.
+
+### Hvordan hypotesen kan undersøkes
+
+Sammenlign videre trening fra samme hovedmodell med og uten spesialistbaserte
+omspillinger, med et sammenlignbart samlet beregningsbudsjett. Ta med kostnaden
+ved å trene spesialistene og prøve alternativene. En variant med bare tilfeldige
+korreksjoner kan skille effekten av spesialistene fra effekten av mer lokalt søk.
+Bruk egne testsituasjoner som ikke inngår i lærereksemplene, og mål både lokale
+forbedringer og stabilitet under lengre, sammenhengende kjøring. Registrer
+kollisjoner, framdrift, unødig saktekjøring og hvilke lærere som vinner. Bedre
+tresekundersforløp alene dokumenterer ikke at hovednettverket har lært robust
+kjøring eller at konflikten mellom ferdighetene er redusert.

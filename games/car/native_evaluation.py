@@ -21,6 +21,7 @@ def evaluate(actor, traffic, steps, offset=0, initial_cars=None, overtake_reward
         modes={'laser2':6,'sectors30echo':3,'sectors30wide':2}
         engine.set_laser_models(walls(app.TRACK),ray_angles(),[list(n.architecture) for n in models],[n.links for n in models],[n.weights for n in models],[modes[n.metadata['radar_mode']] for n in models])
     engine.set_steering_boost(app.STEERING_BOOST)
+    engine.set_reward_rules(app.PROGRESS_ONLY_REWARD,app.DIRECTIONAL_COLLISIONS)
     cars=app.initial(offset) if initial_cars is None else initial_cars
     initial=[(c['x'],c['y'],c.get('z',0.),c['heading'],c.get('speed_factor',1.),
               c['direction'],c.get('travel',0.),c['crashed'],c.get('speed',3*c.get('speed_factor',1.))) for c in cars]

@@ -29,7 +29,7 @@ fn passes(cars:&[Car],road:&mut RoadGeometry,perimeter:f64,range:f64,pairs:&mut 
  }}result
 }
 #[pyclass]
-pub struct SectorEvaluation { road:RoadGeometry,radar:SectorRadar,net:LocalNetwork,weights:Vec<Vec<f64>>,perimeter:f64,range:f64,brake:f64, channels:usize, steering_boost:f64, laser:Option<LaserRadar>, models:Vec<LocalNetwork>, modes:Vec<usize> }
+pub struct SectorEvaluation { road:RoadGeometry,radar:SectorRadar,net:LocalNetwork,weights:Vec<Vec<f64>>,perimeter:f64,range:f64,brake:f64, channels:usize, steering_boost:f64, laser:Option<LaserRadar>, models:Vec<LocalNetwork>, modes:Vec<usize>,progress_reward:f64,directional_collisions:bool }
 #[pymethods]
 impl SectorEvaluation {
  #[new]
@@ -38,7 +38,7 @@ impl SectorEvaluation {
   let net=LocalNetwork::new(sizes.clone(),links)?;
   for w in &weights {net.forward(vec![0.;sizes[0]],w.clone(),false)?;}
   let channels=sizes[0]/(edges.len()-1);
-  Ok(Self{road:RoadGeometry::new(segments,half_width)?,radar:SectorRadar::new(walls,Some(edges))?,net,weights,perimeter,range,brake,channels,steering_boost:0.,laser:None,models:vec![],modes:vec![]})
+  Ok(Self{road:RoadGeometry::new(segments,half_width)?,radar:SectorRadar::new(walls,Some(edges))?,net,weights,perimeter,range,brake,channels,steering_boost:0.,laser:None,models:vec![],modes:vec![],progress_reward:0.,directional_collisions:false})
  }
  fn set_laser_models(&mut self,walls:Vec<(f64,f64,f64,f64,f64,f64)>,angles:Vec<f64>,sizes:Vec<Vec<usize>>,links:Vec<Vec<Vec<Vec<usize>>>>,weights:Vec<Vec<f64>>,modes:Vec<usize>)->PyResult<()> {
   if sizes.len()!=weights.len()||links.len()!=weights.len()||modes.len()!=weights.len()||weights.len()<2 {return Err(PyValueError::new_err("Mixed model count mismatch"));}
@@ -49,6 +49,10 @@ impl SectorEvaluation {
    let net=LocalNetwork::new(sizes[i].clone(),links[i].clone())?;net.forward(vec![0.;count],weights[i].clone(),false)?;models.push(net);
   }
   self.laser=Some(LaserRadar::new(walls,angles)?);self.models=models;self.modes=modes;self.weights=weights;Ok(())
+ }
+ fn set_reward_rules(&mut self,progress_reward:f64,directional_collisions:bool)->PyResult<()> {
+  if !progress_reward.is_finite()||progress_reward<0.{return Err(PyValueError::new_err("Invalid progress reward"));}
+  self.progress_reward=progress_reward;self.directional_collisions=directional_collisions;Ok(())
  }
  fn set_steering_boost(&mut self,boost:f64)->PyResult<()> {
   if !boost.is_finite()||boost<0. {return Err(PyValueError::new_err("Invalid steering boost"));}
@@ -62,7 +66,7 @@ impl SectorEvaluation {
   let mut pairs=vec![Pair::default();n*n];
   for i in 0..n {for j in 0..n {pairs[i*n+j].travel=(cars[i].travel,cars[j].travel);}}
   passes(&cars,&mut self.road,self.perimeter,self.range,&mut pairs);
-  let mut reward=0.;let mut distance=0.;let mut count=0;let mut survived=0;
+  let mut reward=0.;let mut distance=0.;let mut count=0;let mut survived=0;let mut progress_pending=0.;
   for tick in 0..steps {
    let mut controls=vec![(0.,0.,0.);n];
    for i in 0..n {
@@ -83,6 +87,7 @@ impl SectorEvaluation {
     controls[i]=(out[0],(-out[1]).max(0.),out[1].max(0.));
    }
    let old:Vec<_>=cars.iter().map(|c|c.point()).collect();let active:Vec<_>=cars.iter().map(|c|!c.dead).collect();
+   let old_headings:Vec<_>=cars.iter().map(|c|c.h).collect();
    let before=cars[role].travel;let mut car_hit=vec![false;n];
    for i in 0..n {
     let c=&mut cars[i];if c.dead{continue;}
@@ -92,10 +97,22 @@ impl SectorEvaluation {
     c.travel+=((self.road.progress(c.x,c.y,c.z)-along+self.perimeter/2.).rem_euclid(self.perimeter)-self.perimeter/2.)*c.direction;
     for t in [0.,0.5,1.] {if self.road.clearance(old[i].0+(c.x-old[i].0)*t,old[i].1+(c.y-old[i].1)*t,old[i].2+(c.z-old[i].2)*t)<=7. {c.dead=true;}}
    }
-   for i in 0..n {for j in i+1..n {if active[i]&&active[j]&&swept(old[i],old[j],cars[i].point(),cars[j].point())-14.<=0. {cars[i].dead=true;cars[j].dead=true;car_hit[i]=true;car_hit[j]=true;}}}
+   let wall_hit:Vec<_>=cars.iter().enumerate().map(|(i,c)|active[i]&&c.dead).collect();
+   for i in 0..n {for j in i+1..n {if active[i]&&active[j]&&swept(old[i],old[j],cars[i].point(),cars[j].point())-14.<=0. {
+    cars[i].dead=true;cars[j].dead=true;
+    for (a,b) in [(i,j),(j,i)]{
+     let h=old_headings[a];let dx=old[b].0-old[a].0;let dy=old[b].1-old[a].1;
+     let forward=dx*h.cos()+dy*h.sin();let lateral= -dx*h.sin()+dy*h.cos();
+     let closing=((cars[b].x-old[b].0)-(cars[a].x-old[a].0))*h.cos()+((cars[b].y-old[b].1)-(cars[a].y-old[a].1))*h.sin();
+     let rear=forward< -lateral.abs()&&(old_headings[b]-h).cos()>0.5&&closing>1e-8;
+     if !self.directional_collisions||!rear{car_hit[a]=true;}
+    }
+   }}}
+
    let passed=passes(&cars,&mut self.road,self.perimeter,self.range,&mut pairs)[role];count+=passed;reward+=pass_reward*passed as f64;
-   distance+=(cars[role].travel-before).max(0.);survived=tick+1;
-   if cars[role].dead {reward-=if car_hit[role]{car_penalty}else{50.};break;}
+   let delta=cars[role].travel-before;distance+=delta.max(0.);survived=tick+1;progress_pending+=delta;
+   if (tick+1)%10==0||cars[role].dead||tick+1==steps{reward+=self.progress_reward*progress_pending.max(0.);progress_pending=0.;}
+   if cars[role].dead {reward-=if car_hit[role]{car_penalty.max(if wall_hit[role]{50.}else{0.})}else if !self.directional_collisions||wall_hit[role]{50.}else{0.};break;}
   }
   Ok((reward,distance,count,survived,cars[role].dead))
  }

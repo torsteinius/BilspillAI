@@ -16,7 +16,7 @@ utformer og utfordrer hypotesene; Codex implementerer, tester og bidrar med
 tekniske forslag. Loggen viser også forsøk som forverret kjøringen, og skiller
 mellom fungerende kode og dokumentert bedre læring. Dette er et arbeid underveis.
 
-[Gjeldende logg: nytt tolags laserforsøk fra tilfeldige vekter](docs/experiments/laser2-generation-progress.md).
+[Gjeldende logg: nytt tolags laserforsøk fra tilfeldige vekter](docs/experiments/laser2-recent3-generation-progress.md).
 Fra generasjon 383 trekkes 4–8 kjegler og startposisjoner tilfeldig. Alle fem biler kjører samme vei, vekselvis med og mot klokka per generasjon. Videoene nedenfor viser tidligere oppsett.
 Treningsbudsjettet er utvidet til **1200 generasjoner totalt**, med videreføring fra bevarte vekter. Målet er bedre passeringer og håndtering av biler og kjegler.
 Nettverkene bytter nå bil mellom kjøringer; den forrige metoden er bevart nedenfor.
@@ -352,3 +352,25 @@ Detaljer og tidligere designnotater for bilspillet finnes i [games/car/README.md
 
 
 Gjeldende bilforsøk bruker to laserhøyder med 61 stråler hver, ti treningsbiler og 15 passive biler med gamle sensorer. Den nye modellen startet fra tilfeldige vekter ved generasjon 972. Se [status og begrunnelse](docs/UTVIKLINGSLOGG_BIL.md#endring-55).
+
+Fra **generasjon 990** beholdes laservektene og belønningen endres: fremdrift gir
++0,05 per banenhet, utbetalt hvert tiende steg og fordelt jevnt over historikken.
+Bil- og veggkrasj gir −50 fordelt i to like potter: siste 0–2 og 2–20 billengder,
+jevnt innenfor hver sone. Bilen som tydelig blir påkjørt bakfra slipper
+kollisjonsstraffen. [Presiseringer og validering](docs/UTVIKLINGSLOGG_BIL.md#endring-56).
+
+Fra **generasjon 998** deles **tre kandidatnettverk mellom ti treningsbiler**,
+med opptil fire samtidige kjøringer per nett. De 15 passive bilene beholdes.
+Dette reduserer treningsbudsjettet fra 1000 til 300 forsøk og antall evaluerte
+modeller fra 11 til 4 per generasjon. Vektene er videreført; målet er raskere
+generasjoner med færre alternativer. [Metode og begrunnelse](docs/UTVIKLINGSLOGG_BIL.md#endring-57).
+
+Fra **generasjon 1007** økes budsjettet til **150 forsøk per nettverk, 450 totalt**.
+Evalueringen beholdes på 100 tester per modell, 400 totalt inkludert forelderen.
+[Endringen og overgangen](docs/UTVIKLINGSLOGG_BIL.md#endring-58).
+
+Fra **generasjon 1019** evalueres kandidatene etter **100 forsøk per nett**,
+300 totalt. Selve evalueringen og belønningene er uendret.
+[Avklaringen og overgangen](docs/UTVIKLINGSLOGG_BIL.md#endring-59).
+
+Fra generasjon **1029** går en tredel av krasjstraffen til de tre siste faktiske handlingene; resten følger samme avstandsfordeling som før. Vektene er videreført. [Metode og begrunnelse](docs/UTVIKLINGSLOGG_BIL.md#endring-60).

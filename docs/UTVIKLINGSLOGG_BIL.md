@@ -1931,3 +1931,108 @@ Rust gjør stråletreff, nettverkskjøring, kollisjonsberegninger og hele evalue
 **Arkivering og start:** forrige forsøk ble stoppet etter siste fullførte generasjon **971**; dens modeller og logger er bevart i `car-traffic25-trainedonly-1000`. En eventuell påbegynt gammel generasjon 972 videreføres ikke. Den gamle automatiske videreføringen til 1200 er deaktivert og erstattet av `car-laser2-fresh-1200`, med helt ny initialmodell, optimizer, historikk og tilfeldig generator (seed 20261123). Dette er et nytt læringsforsøk, ikke en forbedring som allerede er demonstrert. [Ny resultatlogg](experiments/laser2-generation-progress.md).
 
 **Validering før start:** 139 tester bestod, inkludert strålegap, nedre veikant/øvre bil, relativ fart og ekko, rampe/overpass, lokale 2D-koblinger, lagring/lasting og samsvar mellom Rust og Python ved blandede sensorarkitekturer. En kort full generasjon med ti nye kandidater, gamle passive modeller og GPU-batcher fullførte. GPU-gradientene for det nye nettet ble sammenlignet med Rust; største absolutte avvik var 2,25×10⁻⁸. Dette validerer implementeringen, ikke læringsresultatet eller hastigheten i et langt forsøk.
+
+<a id="endring-56"></a>
+### Endring 56: fremdriftsbonus, to historikkpotter og fritak ved påkjørsel bakfra — fra generasjon 990
+
+Prosjekteieren tok opp at den nye tilfeldige modellen nesten bare fikk straff. Etter status for laserforsøket ba han om en liten belønning for fremdrift, lik straff for bil og veikant og skille mellom å kjøre inn i en bil foran og å bli truffet bakfra. Han presiserte fremdriften flere ganger: jevnt fordelt over all tilgjengelig historikk, opptjent kontinuerlig, men utbetalt omtrent hvert tiende steg og samlet opp til GPU-trening. Til slutt presiserte han at belønningen skal være lineær med hastigheten.
+
+Historikkforslaget ble også presisert underveis. Først ble lengre, lineært avtakende veggstraff til omtrent 20 billengder foreslått. Deretter ønsket prosjekteieren to potter: halvparten av straffen innenfor de siste to billengdene, den andre halvparten fra to til 20. Den endelige presiseringen var **jevn fordeling innenfor begge soner**, og at samme prinsipp skal brukes for bilkrasj. Den lineære straffefordelingen ble derfor ikke aktivert i hovedtreningen.
+
+**Aktive regler:**
+
+| Hendelse | Beløp | Fordeling bakover |
+| --- | --- | --- |
+| Fremdrift langs banen | +0,05 per banenhet netto fremover per intervall | Utbetaling hvert 10. simuleringssteg, lik andel til hver oppføring i hele tilgjengelige historikken |
+| Vegg/kjegle eller vanlig bilkollisjon | −50 | −25 jevnt innenfor siste 0–2 billengder, −25 jevnt fra over 2 til og med 20 billengder |
+| Tydelig påkjørsel bakfra, bilen foran | 0 kollisjonsstraff | Ingen negativ kreditering for dette biltreffet |
+| Bekreftet forbikjøring | +25, uendret | Jevnt over opptil siste 50 oppføringer, som før |
+
+Fremdriftsbelønning følger banen, ikke bare fart i vilkårlig retning. Dobbel fremdriftshastighet gjennom samme ti steg gir dobbel bonus. Eksempel: 20 banenheter gir +1, 40 gir +2. Stillstand gir null; et intervall uten positiv netto fremdrift gir null. En rest på færre enn ti steg utbetales når forsøket slutter eller bilen krasjer, slik at opptjent fremdrift ikke forsvinner. Ingen separat belønning bare for å overleve. Beløpet fordeles én gang; senere GPU-oppdateringer konsumerer bare nye beløp, ikke gammel belønning på nytt.
+
+**Avstand fremfor fast tidsvindu:** kollisjonsfysikken bruker radius 7, så én billengde defineres her som diameter 14 banenheter: nærsonen er 28 og hele vinduet 280. Hver lagret handling merkes med faktisk kjørt 3D-strekning. Historikken lagres fortsatt hvert tredje steg, men kan nå inneholde opptil 512 oppføringer, og oppføringer eldre enn avstandsvinduet tas ut ved neste innlegging. Dette gir plass til 20 billengder også ved lav fart. Ved kort historikk fordeles hele −50 over sonen som faktisk finnes. Hvis begge soner finnes, får de nøyaktig −25 hver uansett antall oppføringer. Det er ingen lineær vekting inne i sonene. Oppføringer utenfor 20 billengder får ingen kollisjonsstraff.
+
+**Bakfrapåkjørsel:** med posisjon og retning før bevegelsen kontrolleres at den andre bilen ligger i bakre 90°-kile, kjører omtrent samme vei (mindre enn 60° retningsforskjell) og tar innpå bakfra. Da slipper bilen foran straff, mens bilen bak fortsatt straffes for å kjøre inn i den. Sidekontakt og møtende biler fritas ikke. Dette er en eksplisitt geometrisk klassifisering, ikke en full modell av skyld. Begge biler krasjer fortsatt fysisk og starter på nytt som tidligere. Et samtidig selvstendig veggtreff gir fortsatt veggstraff; bakfratreff sletter ikke andre hendelser.
+
+**Gjennomføring:** ny serie `car-laser2-progress-1200` startet fra den bevarte vinneren i **989**, med første nye generasjon **990**. Vektene ble kontrollert identiske ved overgangen; ingen ny nullstilling. Den gamle seriens fullførte modeller og logger er bevart. Påbegynt gammel generasjon 990 ble avbrutt og kjøres nå med nye regler. Optimizer, historikk og tilfeldig generator starter på nytt ved prosessbyttet. Mål 1200, sensorene, nettverket, rotasjonen, trafikken, GPU-batchstørrelse 50 og evalueringsbudsjettet beholdes. [Ny resultatlogg](experiments/laser2-progress-generation-progress.md).
+
+Både Python-trening og full Rust-evaluering bruker samme beløp, ti-stegsintervall og bakfraklassifisering. Historisk fordeling skjer bare under læring; evalueringen summerer de samme hendelsesbeløpene uten å oppdatere vekter. 145 tester består, inkludert bevaring av totalbeløp, lik fremdriftsandel til mer enn 50 oppføringer, utbetaling hvert tiende steg og ved avslutning, begge avstandssonene, bakfra/front/side, samtidig veggtreff og samsvar mellom Rust og Python. En kort hel generasjon med den endelige to-pottersregelen og GPU-batcher fullførte før hovedkjøringen ble byttet. Dette viser at endringen kjører, ikke at den allerede har gitt bedre læring.
+
+<a id="endring-57"></a>
+### Endring 57: tre delte nettverk på ti treningsbiler — fra generasjon 998
+
+Prosjekteieren ønsket først fem kandidatnettverk og at to biler kunne bruke samme nett samtidig. Han reduserte deretter ønsket til **tre nettverk**, og presiserte at ti treningsbiler skal beholdes, slik at 3–4 biler bruker hvert nett samtidig. De 15 passive bilene beholdes. Begrunnelsen hans er å få raskere trening: han tror vi ikke trenger så mange alternativer per generasjon. Dette er en reduksjon i antall kandidater og samlet arbeid, ikke en dokumentert forbedring i læringseffektivitet.
+
+`--learners 3 --training-cars 10 --balanced-sharing` er aktivert. Ved hver ny kjøring velges et tilgjengelig nett med færrest aktive kjøringer; likt belastede nett velges sirkulært. Maksimalt fire samtidige kjøringer per nett. Ved starten fylles de ti plassene 4/3/3. Asynkrone krasj, venting på ledig startplass og oppbrukte forsøksbudsjetter kan gi færre aktive biler mot slutten. Det er ikke tre faste grupper av biler: nettene roterer mellom bilplassene.
+
+Hvert nett har én felles treningspolicy, baseline, optimizer og GPU-kø. Erfaringer fra alle bilene som bruker nettet rutes til denne felles oppdateringen. Hver bil beholder sin egen handlingshistorikk og en frossen kopi av nettets vekter for den pågående kjøringen, som før. To biler som starter på ulike tidspunkt kan derfor kjøre med ulike øyeblikkskopier av samme nett; begge trener den samme levende policyen. Dette hindrer at en pågående kjøring får byttet handlingenes grunnlag midt i forsøket, og historikkens opprinnelse beholdes ved rotasjon.
+
+| Budsjett per generasjon | Før | Nå |
+| --- | --- | --- |
+| Trente kandidatnett | 10 | 3 |
+| Treningsbiler / passive | 10 / 15 | 10 / 15 |
+| Forsøk per kandidat | 100 | 100 |
+| Treningsforsøk totalt | 1000 | 300 |
+| Evaluerte modeller, inkludert forelder som referanse | 11 | 4 |
+| Utvelgelsestester (100 per modell) | 1100 | 400 |
+
+De separate kontrolltestene beholdes per modell. Forelderen er fortsatt kun referanse og kan ikke vinne. Belønninger, to historikkpotter, bakfrapåkjørsel, sensorer, nettarkitektur og GPU-batcher på 50 er uendret. Kortere generasjoner inneholder mindre samlet trening, så antall generasjoner alene kan ikke brukes som mål på mer læring. Faktisk tidsgevinst må måles etter byttet.
+
+Ny serie `car-laser2-three-nets-1200` starter fra siste fullførte vinner **997**, med første generasjon **998**. Modellvektene ble kontrollert identiske ved overgangen. Den gamle serien og alle fullførte modeller er bevart; påbegynt gammel generasjon 998 ble erstattet av det nye oppsettet. Optimizer, historikk og tilfeldig generator starter på nytt ved prosessbyttet. Målet er fortsatt 1200. [Ny resultatlogg](experiments/laser2-three-nets-generation-progress.md).
+
+Validering: 18 relevante tester består, blant annet balansert 4/3/3-start, asynkrone avslutninger, felles oppdateringskøer, riktige forsøksbudsjetter og eksisterende historikk-/batchoppførsel. En kort full generasjon med tre nye kandidater fra eksisterende vekter, ti biler, 15 passive og GPU-batcher fullførte. Loggen viser maksimalt 4, 3 og 4 samtidige kjøringer for de tre nettene i prøven; dette er teknisk validering, ikke et læringsresultat.
+
+
+<a id="endring-58"></a>
+### Endring 58: 150 forsøk per nett, uendret evaluering — fra generasjon 1007
+
+Etter avklaringen om at tre nett med 100 forsøk ga 300 forsøk per generasjon, ønsket prosjekteieren **150 × 3 = 450 treningsforsøk per generasjon**, mens testen skal være den samme. Dette øker treningsbudsjettet med 50 % uten flere kandidatnettverk. Ti treningsbiler deler fortsatt tre nett, med 15 passive biler.
+
+Aktivert i `car-laser2-three-nets150-1200`, fra vinneren i **1006**, med første nye generasjon **1007**. Vektene er kontrollert identiske ved overgangen. Evalueringen er uendret: 20 startoppsett × fem roller = 100 tester per modell, tre kandidater og forelderen som referanse = 400 utvelgelsestester, med de samme separate kontrolltestene. Samme steggrense, sensorer, belønninger, historikk og GPU-batcher. Konfigurasjonen er sammenlignet med forrige serie for å kontrollere at evalueringsinnstillingene er beholdt.
+
+Tidligere fullførte modeller og logger beholdes. Påbegynt gammel generasjon 1007 erstattes av det nye budsjettet. Optimizer, historikk og tilfeldig generator starter på nytt ved prosessbyttet; modellvektene nullstilles ikke. Mål 1200 beholdes. [Ny resultatlogg](experiments/laser2-three-nets150-generation-progress.md). Tidsbruken per generasjon må måles; 50 % flere treningsforsøk betyr ikke nødvendigvis 50 % lengre totaltid når evalueringen er uendret.
+
+
+<a id="endring-59"></a>
+### Endring 59: evaluering etter 100 treningsforsøk per nett — fra generasjon 1019
+
+Prosjekteieren ønsket en ny evaluering etter «100 iterasjoner» og presiserte at dette betyr **100 treningsforsøk per nettverk**, ikke 100 nye generasjoner. Evalueringsintervallet settes derfor tilbake fra 150 til 100 forsøk per nett: tre nett gir **300 treningsforsøk per generasjon**. Selve testen er uendret, med 100 tester per modell og fire modeller inkludert forelderen som referanse. Belønninger og historikkfordeling beholdes for å samle erfaring med samme metode. Krasjstraffen registreres ved kollisjonen og fordeles på tidligere handlinger; vektoppdateringen skjer senere i batcher.
+
+Aktivert i `car-laser2-eval100-1200` fra vinneren i **1018**, med første nye generasjon **1019**. Vektene er kontrollert identiske; evaluerings- og belønningsinnstillinger er sammenlignet med foregående serie. Fullførte modeller og logger er bevart. Påbegynt gammel generasjon 1019 erstattes; optimizer, historikk og tilfeldig generator starter på nytt ved prosessbyttet. Målet er fortsatt 1200. [Resultatlogg](experiments/laser2-eval100-generation-progress.md). Den automatiske visningen følger aktiv serie og oppdateres fortsatt etter tre nye fullførte generasjoner.
+
+
+<a id="endring-60"></a>
+### Endring 60: en tredel av krasjstraffen på de tre siste handlingene — fra generasjon 1029
+
+Prosjekteieren ønsket mer tyngde på handlingene rett før krasjet: **en tredel til de tre siste stegene, resten fordelt som tidligere med samme innbyrdes forhold**. Hypotesen er at bilen da lettere kan lære at det er mulig å kjøre tett på veggen uten at tidligere, ufarlig kjøring langs kanten straffes like sterkt. Dette er hensikten med forsøket, ikke en påvist effekt.
+
+Totalstraffen er fortsatt −50 for vegg- og ordinære bilkrasj. En tredel (−16,67) fordeles jevnt på de tre faktiske handlingene som leder fram til kollisjonen, inkludert handlingen i steget som ender i krasj. De resterende to tredelene (−33,33) følger den eksisterende fordelingen: halvparten jevnt innen de siste to billengdene, halvparten jevnt fra to til tjue billengder. Dette skalerer alle tidligere historikkvekter med 2/3. En handling kan få bidrag fra begge fordelinger. Ved kort historikk normaliseres hver pott over tilgjengelige handlinger; hele straffen bevares. Påkjørsel bakfra er fortsatt unntatt bilstraff.
+
+Den vanlige historikken lagres fortsatt hvert tredje steg. En separat kø beholder de siste tre **faktiske** input/output-handlingene, slik at tre steg ikke blir tolket som tre historikkpunkter eller omtrent ni steg. Overlappende poster krediteres samlet én gang, til nettverket som utførte handlingen. Fremdrifts- og forbikjøringsbelønningene beholdes. Forslaget om å erstatte fremdriftsbelønning med en bonus bare fra normalfart og opp er fortsatt ikke aktivert.
+
+Aktivert som `split_distance20_recent3` i `car-laser2-recent3-1200`, fra den bevarte vinneren **1028**; første nye generasjon er **1029**. Startvektene er kontrollert identiske. Tre nett, ti treningsbiler, femten passive, 100 forsøk per nett og evalueringen er uendret. Påbegynt generasjon i forrige prosess erstattes. Optimizer, kjørehistorikk og tilfeldig generator starter på nytt ved prosessbyttet; modellvektene nullstilles ikke. Målet er fortsatt 1200, og automatisk replay følger den nye aktive serien.
+
+Validering: 26 relevante tester består, inkludert bevart totalstraff, overlapp mellom kort og lang historikk, korte liv, bakfrakollisjon og eksisterende deling/batchtrening. En kort full GPU-generasjon med tre nett, ti treningsbiler og femten passive fullførte før aktivering. [Resultatlogg](experiments/laser2-recent3-generation-progress.md).
+
+### Hypotese 7. november 2026: spesialister som lokale lærere etter feil
+
+**Prosjekteierens forslag, ikke implementert:** Tren separate nettverk på kjøring
+uten hindringer, hinderunngåelse, trange baner og mer lineære baner. Fem nett ble
+først foreslått, men bare disse fire rollene er konkretisert. Ved feil får de
+prøve samme korte tidsvindu før hendelsen, foreslått til omtrent tre sekunder,
+eventuelt med reproduserbare tilfeldige handlingsvariasjoner. Simulatoren velger
+det beste utfallet etter felles kriterier, og vinnerens handlinger blir lokale
+treningsmål for hovednettverket. Ingen av lærerne trenger å levere en hel
+vellykket kjøretur for å gi et nyttig eksempel.
+
+**Prosjekteierens begrunnelse:** Lag styrt trening uten et ferdig datasett ved å
+generere bedre handlingseksempler i simuleringen. Separate grunnferdigheter skal
+kunne læres med mindre innbyrdes konflikt, slik at de forskjellige tingene ikke
+jobber like mye mot hverandre. Først målrettet korrigering av konkrete handlinger;
+deretter større vekt på mål på høyere nivå når grunnferdighetene er etablert.
+At dette er enklere å trene eller gir bedre kjøring er foreløpig en hypotese.
+
+**Codex sine kontrollforslag:** Sammenlign med den opprinnelige kjøringen, knytt
+handlingsmål til lærerens faktiske observasjoner, kontroller tilstanden ved
+vinduets slutt og test overføring til lengre kjøring i egne testsituasjoner.
+Se [hypotese, forsøksopplegg og åpne valg](BIL_HUKOMMELSE.md#7-november-2026--hypotese-spesialister-som-lærere-ved-korte-omspillinger).

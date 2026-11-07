@@ -39,6 +39,8 @@ SIMULATION_STEPS = 650
 TRAFFIC = 'opposite'
 REPLAY_SCENARIO = None
 REPLAY_BACKGROUND = []
+DIRECTIONAL_COLLISIONS = False
+PROGRESS_ONLY_REWARD = 0.
 RADAR_MODE = 'legacy'
 RADAR_SCALE = 1.
 SPEED_FACTORS = (.8, .9, 1., 1.1, 1.2)
@@ -388,6 +390,22 @@ def restart_crashed(cars, offset=0):
         car.update(start)
 
 
+def rear_impact(old_a,old_b,heading_a,heading_b,new_a,new_b):
+    """Conservative exemption: same-direction vehicle approaches rear 90-degree wedge."""
+    dx,dy=old_b[0]-old_a[0],old_b[1]-old_a[1]
+    cs,sn=math.cos(heading_a),math.sin(heading_a)
+    forward=dx*cs+dy*sn;lateral=-dx*sn+dy*cs
+    closing=((new_b[0]-old_b[0])-(new_a[0]-old_a[0]))*cs+((new_b[1]-old_b[1])-(new_a[1]-old_a[1]))*sn
+    return forward < -abs(lateral) and math.cos(heading_b-heading_a)>.5 and closing>1e-8
+
+
+def collision_cost(events,index,car_penalty=50.):
+    kinds={kind for i,kind,_ in events if i==index}
+    if 'car' in kinds:return max(car_penalty,50. if kinds & {'wall','cone'} else 0.)
+    if kinds & {'wall','cone'}:return 50.
+    return 0. if kinds=={'car_rear'} else 50.
+
+
 def step(cars, weights, *, controls=None, events=None):
     # All decisions use the same pre-movement state.
     if controls is None:
@@ -397,6 +415,7 @@ def step(cars, weights, *, controls=None, events=None):
         raise ValueError('Each car needs steering in [-1,1] and brake/throttle in [0,1]')
     active = [not c['crashed'] for c in cars]
     old = [(c['x'], c['y'], c.get('z', 0.)) for c in cars]
+    old_headings=[c['heading'] for c in cars]
     reward = 0.
     reason = ''
     for idx, (c, (steer, brake, throttle)) in enumerate(zip(cars, controls)):
@@ -448,7 +467,9 @@ def step(cars, weights, *, controls=None, events=None):
                 reason = 'Bilene kolliderte'
                 cars[i]['crashed'] = cars[j]['crashed'] = True
                 if events is not None:
-                    events.extend([(i, 'car', cars[j].get('target_id')), (j, 'car', cars[i].get('target_id'))])
+                    for a,b in ((i,j),(j,i)):
+                        kind='car_rear' if DIRECTIONAL_COLLISIONS and rear_impact(old[a],old[b],old_headings[a],old_headings[b],(cars[a]['x'],cars[a]['y']),(cars[b]['x'],cars[b]['y'])) else 'car'
+                        events.append((a,kind,cars[b].get('target_id')))
     if reason:
         reward -= COLLISION_PENALTY
     return reward, reason

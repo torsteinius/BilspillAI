@@ -59,6 +59,11 @@ Oppføringene følger utviklingsloggen. Hver lenke beskriver forslag, begrunnels
 | E53 | 887 / traffic20 | [Ikke-lineær styring med 50 % sterkere fullt utslag](../UTVIKLINGSLOGG_BIL.md#endring-53) |
 | E54 | 892 / traffic20 | [Bare trente kandidater kan vinne](../UTVIKLINGSLOGG_BIL.md#endring-54) |
 | E55 | 972 / laser2 | [Ny start: to laserhøyder, lokale 2D-lag og åtte beslutningslag](../UTVIKLINGSLOGG_BIL.md#endring-55) |
+| E56 | 990 / laser2 | [Fremdrift hvert 10. steg, to straffepotter og fritak bakfra](../UTVIKLINGSLOGG_BIL.md#endring-56) |
+| E57 | 998 / laser2 | [Tre delte kandidatnett på ti biler, færre forsøk per generasjon](../UTVIKLINGSLOGG_BIL.md#endring-57) |
+| E58 | 1007 / laser2 | [150 forsøk per nett: 450 totalt, uendret evaluering](../UTVIKLINGSLOGG_BIL.md#endring-58) |
+| E59 | 1019 / laser2 | [Evaluering etter 100 forsøk per nett, samme test](../UTVIKLINGSLOGG_BIL.md#endring-59) |
+| E60 | 1029 / laser2 | [En tredel krasjstraff på tre siste faktiske handlinger](../UTVIKLINGSLOGG_BIL.md#endring-60) |
 
 ## Sammenlignbar del av forsøket
 

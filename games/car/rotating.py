@@ -24,6 +24,7 @@ class Record:
     credited: bool = False
     origin: object = None
     span_steps: int = 0
+    path_distance: float = 0.
 
 
 class PoolPolicy:
@@ -77,10 +78,13 @@ class PoolPolicy:
         self.pending.clear()
 
 
-def next_owner(policies,cursor,budget):
+def next_owner(policies,cursor,budget,active_counts=None,max_active=None):
+    eligible=[i for i,p in enumerate(policies) if p.started<budget and (active_counts is None or max_active is None or active_counts[i]<max_active)]
+    if not eligible:return None,cursor
+    minimum=min(active_counts[i] for i in eligible) if active_counts is not None else None
     for delta in range(len(policies)):
         owner=(cursor+delta)%len(policies)
-        if policies[owner].started<budget:
+        if owner in eligible and (minimum is None or active_counts[owner]==minimum):
             return owner,(owner+1)%len(policies)
     return None,cursor
 
@@ -108,17 +112,49 @@ def collision_weights(count, mode='uniform50'):
     return [w/total for w in weights]
 
 
-def credit_history(history,policies,collision=False,credit_mode='uniform50',penalty=50.):
+def wall_distance_weights(history,current_distance,horizon=280.):
+    weights=[max(0.,1.-max(0.,current_distance-r.path_distance)/horizon) for r in history]
+    total=sum(weights)
+    if not total:return [0.]*(len(history)-1)+[1.] if history else []
+    return [w/total for w in weights]
+
+
+def split_wall_distance_weights(history,current_distance,horizon=280.,near=28.):
+    """Two equal pots, uniform within 0–2 and 2–20 car lengths."""
+    ages=[max(0.,current_distance-r.path_distance) for r in history]
+    recent=[1. if age<=near else 0. for age in ages]
+    older=[1. if near<age<=horizon else 0. for age in ages]
+    a,b=sum(recent),sum(older)
+    if not a and not b:return [0.]*(len(history)-1)+[1.] if history else []
+    recent_share=.5 if a and b else 1. if a else 0.
+    return [(recent_share*r/a if a else 0.)+((1-recent_share)*o/b if b else 0.) for r,o in zip(recent,older)]
+
+
+def credit_history(history,policies,collision=False,credit_mode='uniform50',penalty=50.,current_distance=0.,recent_history=None):
+    recent=list(recent_history or []) if credit_mode=='split_distance20_recent3' else []
+    extra=[]
     if collision and history:
-        for record,weight in zip(history,collision_weights(len(history),credit_mode)):
-            record.reward-=penalty*weight
+        selected=list(history) if credit_mode in ('linear_distance20','split_distance20','split_distance20_recent3') else list(history)[-50:]
+        if credit_mode in ('split_distance20','split_distance20_recent3'):weights=split_wall_distance_weights(selected,current_distance,40*app.CAR_RADIUS,4*app.CAR_RADIUS)
+        elif credit_mode=='linear_distance20':weights=wall_distance_weights(selected,current_distance,40*app.CAR_RADIUS)
+        else:weights=collision_weights(len(selected),credit_mode)
+        scale=2./3 if recent else 1.
+        for record,weight in zip(selected,weights):
+            record.reward-=penalty*scale*weight
+        if recent:
+            known={id(r) for r in history}
+            for record in recent:
+                record.reward-=penalty/(3*len(recent))
+                if id(record) not in known:extra.append(record)
     retired=set()
-    for record in history:
+    for record in [*history,*extra]:
         policy=record.origin or policies[record.owner]
         policy.credit(record)
         if policy not in policies:retired.add(policy)
     for policy in retired:policy.update(force=True)
-    if collision:history.clear()
+    if collision:
+        history.clear()
+        if recent_history is not None:recent_history.clear()
 
 
 def reward_overtake(history, bonus, mode='latest'):
@@ -127,23 +163,40 @@ def reward_overtake(history, bonus, mode='latest'):
         raise ValueError('Unknown overtaking credit mode')
     if not history or not bonus:
         return
-    records=list(history) if mode=='uniform50' else [history[-1]]
+    records=list(history)[-50:] if mode=='uniform50' else [history[-1]]
     share=bonus/len(records)
     for record in records:
         record.reward+=share
 
 
-def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None,overtake_reward=0.,overtake_credit='latest',background_models=(),pass_only=False,car_collision_penalty=50.,batch_size=0,batch_backend="rust",continue_survivors=False):
+def reward_progress(history,bonus):
+    if history:
+        for record in history:record.reward+=bonus/len(history)
+
+
+def progress_payout(session,delta,terminal=False):
+    session['progress_pending']+=delta;session['progress_ticks']+=1
+    if session['progress_ticks']<10 and not terminal:return 0.
+    reward=app.PROGRESS_ONLY_REWARD*max(0.,session['progress_pending'])
+    session['progress_pending']=0.;session['progress_ticks']=0
+    return reward
+
+
+def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None,overtake_reward=0.,overtake_credit='latest',background_models=(),pass_only=False,car_collision_penalty=50.,batch_size=0,batch_backend="rust",continue_survivors=False,balanced_sharing=False):
     """Exactly `attempts` completed drives per policy, with no shared round barrier."""
     if type(history_stride) is not int or history_stride < 1:
         raise ValueError('History stride must be a positive integer')
     reward_overtake([],0.,overtake_credit)
-    collision_weights(0,credit_mode)
-    if wall_credit_mode is not None:collision_weights(0,wall_credit_mode)
+    if credit_mode not in ('linear_distance20','split_distance20','split_distance20_recent3'):collision_weights(0,credit_mode)
+    spatial_history=wall_credit_mode in ('linear_distance20','split_distance20','split_distance20_recent3') or credit_mode in ('linear_distance20','split_distance20','split_distance20_recent3')
+    if wall_credit_mode is not None and not spatial_history:collision_weights(0,wall_credit_mode)
+    recent_credit=credit_mode=='split_distance20_recent3' or wall_credit_mode=='split_distance20_recent3'
     training_count=len(cars)-len(background_models)
     if not 1<=training_count<=10:raise ValueError('Expected up to ten training cars')
     policies=[PoolPolicy(actor,seed+i,training_count,batch_size,batch_backend) for i,actor in enumerate(actors)]
     sessions=[None]*len(cars)
+    max_shared=math.ceil(training_count/len(policies)) if balanced_sharing else None
+    peak_active=[0]*len(policies)
     cursor=0;tick=0;assignment_cursor=0
     records=[]
     from .overtaking import OvertakeTracker
@@ -155,17 +208,20 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
         for i in [(assignment_cursor+j)%training_count for j in range(training_count)]:
             car=cars[i]
             if sessions[i] is not None or car['crashed']:continue
-            owner,cursor=next_owner(policies,cursor,attempts)
+            active_counts=[sum(s is not None and s['owner']==k for s in sessions) for k in range(len(policies))]
+            owner,cursor=next_owner(policies,cursor,attempts,active_counts if balanced_sharing else None,max_shared)
             if owner is None:continue
             p=policies[owner];p.started+=1;p.car_counts[i]+=1
+            peak_active[owner]=max(peak_active[owner],active_counts[owner]+1)
             assigned=True
-            sessions[i]=dict(owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.,overtakes=0,start_pose={k:car[k] for k in ('x','y','heading','direction') if k in car})
+            sessions[i]=dict(owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.,progress_pending=0.,progress_ticks=0,overtakes=0,start_pose={k:car[k] for k in ('x','y','heading','direction') if k in car})
         if assigned:assignment_cursor=(assignment_cursor+1)%training_count
         active=[s is not None and not c['crashed'] for s,c in zip(sessions,cars)]
         if not any(active):
             raise RuntimeError('All cars blocked from spawning before training budget completed')
         if tracker:tracker.update(cars,advance=False)
         before=[c['travel'] for c in cars]
+        before_positions=[(c['x'],c['y'],c.get('z',0.)) for c in cars] if spatial_history else None
         controls=[]
         for i,(session,car) in enumerate(zip(sessions,cars)):
             if i>=training_count:
@@ -179,51 +235,61 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
             means=tuple(forward_latent(session['snapshot'],inputs))
             samples=tuple(p.rng.gauss(mean,.15) for mean in means)
             action=app.decode_outputs([math.tanh(z) for z in samples]);controls.append(action)
+            current_record=Record(owner,inputs,samples,means,action,origin=p,path_distance=car.get('_credit_distance',0.))
+            if recent_credit:car.setdefault('_recent_credit',deque(maxlen=3)).append(current_record)
             # Start a new sample at each policy/snapshot boundary; never assign
             # the new driver's rewards to a record belonging to the previous one.
             if session['steps']==0 or not histories[i] or histories[i][-1].span_steps >= history_stride:
-                if len(histories[i])==50:
+                limit=512 if spatial_history else 50
+                horizon=40*app.CAR_RADIUS
+                while histories[i] and (len(histories[i])>=limit or (spatial_history and car.get('_credit_distance',0.)-histories[i][0].path_distance>horizon)):
                     old=histories[i].popleft();origin=old.origin or policies[old.owner];origin.credit(old)
                     if origin not in policies:origin.update(force=True)
                     elif p.batch_size:origin.update()
-                histories[i].append(Record(owner,inputs,samples,means,action,origin=p))
+                histories[i].append(current_record)
         # Finished-budget cars are parked while remaining drives finish.
         parked=[(i,c['crashed']) for i,c in enumerate(cars) if i<training_count and not active[i]]
         for i,_ in parked:cars[i]['crashed']=True
         events=[]
-        if wall_credit_mode is None and car_collision_penalty==50.:app.step(cars,[],controls=controls)
+        if wall_credit_mode is None and car_collision_penalty==50. and not app.DIRECTIONAL_COLLISIONS:app.step(cars,[],controls=controls)
         else:app.step(cars,[],controls=controls,events=events)
         # Mixed wall/object contacts keep the longer object history.
-        wall_only={i for i,kind,_ in events if kind=='wall'} - {i for i,kind,_ in events if kind!='wall'}
+        wall_only={i for i,kind,_ in events if kind=='wall'} - {i for i,kind,_ in events if kind not in ('wall','car_rear')}
         car_contacts={i for i,kind,_ in events if kind=='car'}
         passed=tracker.update(cars) if tracker else [0]*len(cars)
         for i,crashed in parked:cars[i]['crashed']=crashed
         for i,(session,car) in enumerate(zip(sessions,cars)):
             if not active[i]:continue
             delta=car['travel']-before[i]
+            if spatial_history:car['_credit_distance']=car.get('_credit_distance',0.)+math.dist(before_positions[i],(car['x'],car['y'],car.get('z',0.)))
             reward=0. if pass_only else driving_reward(delta,car['crashed'])
+            if app.PROGRESS_ONLY_REWARD:
+                reward=progress_payout(session,delta,car['crashed'] or session['steps']+1>=steps)
             bonus=overtake_reward*passed[i]
             reward_overtake(histories[i],bonus,overtake_credit)
             session['overtakes']+=passed[i]
-            histories[i][-1].reward+=reward
+            if app.PROGRESS_ONLY_REWARD:reward_progress(histories[i],reward)
+            else:histories[i][-1].reward+=reward
             histories[i][-1].span_steps+=1
             session['reward']+=reward+bonus;session['distance']+=max(0.,delta);session['steps']+=1
             if car['crashed'] or session['steps']>=steps:
                 owner=session['owner'];p=policies[owner]
-                credit_history(histories[i],policies,collision=car['crashed'],credit_mode=wall_credit_mode if i in wall_only else credit_mode,penalty=car_collision_penalty if i in car_contacts else 50.)
+                penalty=app.collision_cost(events,i,car_collision_penalty) if app.DIRECTIONAL_COLLISIONS else (car_collision_penalty if i in car_contacts else 50.)
+                credit_history(histories[i],policies,collision=car['crashed'],credit_mode=wall_credit_mode if i in wall_only else credit_mode,penalty=penalty,current_distance=car.get('_credit_distance',0.),recent_history=car.get('_recent_credit'))
                 p.update();p.completed+=1
                 row=dict(network=owner,car=i,overtakes=session['overtakes'],attempt=p.completed,steps=session['steps'],
                          collision=car['crashed'],collision_kinds=sorted({kind for index,kind,_ in events if index==i}),distance=session['distance'],
-                         reward=session['reward']-((car_collision_penalty if i in car_contacts else 50.) if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'])
+                         reward=session['reward']-(penalty if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'])
                 records.append(row)
                 if on_attempt:on_attempt(row)
                 sessions[i]=None
                 if scenario is not None and not continue_survivors:
                     histories[i].clear()
+                    if recent_credit:car.pop('_recent_credit',None)
                     if not car['crashed']:scenario.restart_car(cars,i)
         tick+=1
     # Include late collision credit attributed to a policy that already finished.
     for p in policies:
         p.update(force=True) if p.batch_size else p.update()
     return dict(attempts=[p.completed for p in policies],assignments=[p.car_counts for p in policies],
-                ticks=tick,records=records,batch_updates=[p.batch_updates for p in policies])
+                ticks=tick,records=records,max_concurrent_drives=peak_active,balanced_sharing=balanced_sharing,batch_updates=[p.batch_updates for p in policies])
