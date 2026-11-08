@@ -1,11 +1,13 @@
 import unittest,math,tempfile
+from unittest.mock import patch
 from pathlib import Path
 from ai.laser_vision import LaserVisionNetwork,ARCHITECTURE
 from ai.local_vision import LocalVisionNetwork,ECHO
 from ai.network import NeuralNetwork
 from ai.rust_backend import native_module
 from games.car import app,hybrid
-from games.car.laser_radar import ray_angles
+from games.car.laser_radar import ray_angles,scan,walls
+from games.car.track import Track
 from games.car.native_evaluation import evaluate
 
 class LaserTests(unittest.TestCase):
@@ -25,6 +27,27 @@ class LaserTests(unittest.TestCase):
         radar=native_module().LaserRadar([(40.,-20.,40.,40.,20.,40.)],[0.])
         rows=radar.scan(0.,0.,0.,0.,0.,3.,100.,[(20.,0.,40.,4.,0.,0.,2)])
         self.assertTrue(all(r[4]==-1 for r in rows))
+    def test_training_lasers_follow_real_ramp_in_both_directions(self):
+        track=Track.generate('figure_eight').set_backend('rust')
+        segment=track.segments[170]
+        pose=track.pose(segment[5]+segment[8]/2)
+        radar=native_module().LaserRadar(walls(track),ray_angles())
+        actor=LaserVisionNetwork()
+        for reverse in (False,True):
+            car=dict(pose,heading=pose['heading']+(math.pi if reverse else 0.),
+                     crashed=False,speed=3.,speed_factor=1.)
+            pitch=track.pitch(car['x'],car['y'],car['z'],car['heading'])
+            self.assertGreater(abs(pitch),.15)
+            with patch.object(app,'TRACK',track),patch.object(app,'RADAR_RANGE',540.),patch.object(app,'ROAD_ONLY',True):
+                rays=scan(app,car,[car])
+                inputs=app.model_observations(actor,car,[car])
+            tilted=radar.scan(car['x'],car['y'],car['z'],car['heading'],pitch,3.,540.,[])
+            horizontal=radar.scan(car['x'],car['y'],car['z'],car['heading'],0.,3.,540.,[])
+            self.assertGreater(sum(r['kind']=='wall' for r in rays[:61]),20)
+            self.assertLess(sum(r[4]==0 for r in horizontal[:61]),5)
+            for index,(ray,expected) in enumerate(zip(rays,tilted)):
+                self.assertAlmostEqual(ray['distance'],expected[0])
+                self.assertAlmostEqual(inputs[index*3],expected[0]/540.)
     def test_locality_and_roundtrip(self):
         n=LaserVisionNetwork(seed=8);n.randomize();self.assertEqual(len(ray_angles()),61)
         row=n.links[0][4*30]

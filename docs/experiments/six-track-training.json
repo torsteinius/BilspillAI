@@ -1,0 +1,95 @@
+{
+  "tracks": {
+    "training": {
+      "label": "Treningsbane",
+      "points": 1520,
+      "length": 5083.055197143575,
+      "min_height": 0.0,
+      "max_height": 0.0,
+      "max_grade": 0.0,
+      "width": 76.0,
+      "geometry_sha256": "0c277ab2fdd254f0942895a0c02fd9e2a0a81e61b00478050423e6d0f5fa6936"
+    },
+    "figure_eight": {
+      "label": "Åttetall med overpass",
+      "points": 3200,
+      "length": 7159.1330211036375,
+      "min_height": 0.0,
+      "max_height": 40.0,
+      "max_grade": 0.19010112391201722,
+      "width": 76.0,
+      "geometry_sha256": "ada7380da6b7e80194056e56aba91d7137f0827fa59b30d66b42f77fb2708294"
+    },
+    "rolling_hills": {
+      "label": "Kupert svingbane",
+      "points": 2600,
+      "length": 7969.41382060698,
+      "min_height": 1.172706753701613,
+      "max_height": 92.8272932462984,
+      "max_grade": 0.11479441991194146,
+      "width": 76.0,
+      "geometry_sha256": "092e38d2380823f439158d3684607a81caec5a41b39b3da6f9aaf2c7e95b8399"
+    },
+    "ridge_switchbacks": {
+      "label": "Hårnåler og høyder",
+      "points": 4894,
+      "length": 15388.278958200803,
+      "min_height": 20.0,
+      "max_height": 120.0,
+      "max_grade": 0.08768259684476995,
+      "width": 76.0,
+      "geometry_sha256": "64ed9945bb8f62c5244a7f87b321c7e7fce6a592b23766dccaab652f39769a66"
+    },
+    "bridge_loops": {
+      "label": "Broløkker · to nivåer",
+      "points": 2622,
+      "length": 7923.046616550602,
+      "min_height": 0.0,
+      "max_height": 80.0,
+      "max_grade": 0.08611184876744384,
+      "width": 76.0,
+      "geometry_sha256": "7af9120fa43666b8e393a3c1671e2d0be4a66ca675f9a79e6b9fd912873b5e8f"
+    },
+    "triple_stack": {
+      "label": "Kryssing · tre nivåer",
+      "points": 6738,
+      "length": 20388.63140337115,
+      "min_height": 0.0,
+      "max_height": 160.0,
+      "max_grade": 0.15874462536442063,
+      "width": 76.0,
+      "geometry_sha256": "6440440c69ea5c15480478af8bda54d112ac2490c81469df68170e242949a513"
+    }
+  },
+  "training": "all_six_each_generation",
+  "directions": "each_track_alternates_between_generations; evaluations_always_both",
+  "tests_passed": 173,
+  "continuation": {
+    "source_generation": 30,
+    "first_generation": 31,
+    "source_checkpoint": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-vertical-fan-figure-eight-103/generation-30.json",
+    "run": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-six-track-103",
+    "optimizer_restart": true
+  },
+  "training_attempts_per_generation": 600,
+  "selection_attempts_per_track": 20,
+  "fixed_attempts_per_track": 20,
+  "preflight": {
+    "generations": 2,
+    "optimizer_steps": [
+      6,
+      12
+    ],
+    "completed": true
+  },
+  "active_run": ".ai-service/car-laser2-six-track-live-103",
+  "live_training": {
+    "first_training_track": "triple_stack",
+    "generation_restarted": 31,
+    "source_generation": 30,
+    "initial_evaluation_reused": true,
+    "frames": "live-frame.json",
+    "view_is_read_only": true,
+    "tests_passed": 178
+  }
+}

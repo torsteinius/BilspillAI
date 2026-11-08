@@ -1,0 +1,742 @@
+{
+  "old_generation_1192": {
+    "checkpoint": ".ai-service/car-road-distance-limits-1500/generation-1192.json",
+    "diagnostics": {
+      "observations": 120,
+      "saturation_threshold": 0.99,
+      "steering": {
+        "min": -0.028055940221984862,
+        "max": -0.027872066312700495,
+        "span": 0.00018387390928436761
+      },
+      "outputs": [
+        {
+          "min": -0.028055940221984862,
+          "max": -0.027872066312700495,
+          "span": 0.00018387390928436761
+        },
+        {
+          "min": 0.9830509709596594,
+          "max": 0.9830696020798945,
+          "span": 1.8631120235035326e-05
+        }
+      ],
+      "hidden_layers": [
+        {
+          "layer": 1,
+          "width": 488,
+          "saturated_fraction": 0.00507172131147541,
+          "sign_change_fraction": 0.23770491803278687
+        },
+        {
+          "layer": 2,
+          "width": 488,
+          "saturated_fraction": 0.029115437158469946,
+          "sign_change_fraction": 0.26024590163934425
+        },
+        {
+          "layer": 3,
+          "width": 488,
+          "saturated_fraction": 0.061185109289617484,
+          "sign_change_fraction": 0.26639344262295084
+        },
+        {
+          "layer": 4,
+          "width": 64,
+          "saturated_fraction": 0.9990885416666667,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 5,
+          "width": 64,
+          "saturated_fraction": 0.374609375,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 6,
+          "width": 48,
+          "saturated_fraction": 0.39600694444444445,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 7,
+          "width": 32,
+          "saturated_fraction": 0.40625,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 8,
+          "width": 24,
+          "saturated_fraction": 0.3333333333333333,
+          "sign_change_fraction": 0.041666666666666664
+        },
+        {
+          "layer": 9,
+          "width": 16,
+          "saturated_fraction": 0.1875,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 10,
+          "width": 8,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 11,
+          "width": 4,
+          "saturated_fraction": 0.25,
+          "sign_change_fraction": 0.0
+        }
+      ]
+    },
+    "mean_vision_gradient_rms": 4.28049497419467e-06,
+    "first_dense_weight_std": 0.3157877912417274,
+    "evaluation": {
+      "attempts": 100,
+      "collisions": 100,
+      "mean_distance": 163.98623934245705,
+      "score": -2567.971725527252
+    }
+  },
+  "fresh_shallow": {
+    "checkpoint": ".ai-service/car-laser2-shallow-no-mutation-smoke-20261107/initial.json",
+    "diagnostics": {
+      "observations": 120,
+      "saturation_threshold": 0.99,
+      "steering": {
+        "min": -0.24208038148775202,
+        "max": -0.010957150437855865,
+        "span": 0.23112323104989616
+      },
+      "outputs": [
+        {
+          "min": -0.24208038148775202,
+          "max": -0.010957150437855865,
+          "span": 0.23112323104989616
+        },
+        {
+          "min": -0.4160115902682698,
+          "max": -0.1332651954359429,
+          "span": 0.2827463948323269
+        }
+      ],
+      "hidden_layers": [
+        {
+          "layer": 1,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.305327868852459
+        },
+        {
+          "layer": 2,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.29098360655737704
+        },
+        {
+          "layer": 3,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.29918032786885246
+        },
+        {
+          "layer": 4,
+          "width": 64,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.265625
+        },
+        {
+          "layer": 5,
+          "width": 32,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.125
+        }
+      ]
+    },
+    "mean_vision_gradient_rms": 0.012186590849379144,
+    "first_dense_weight_std": 0.04534734970598575,
+    "evaluation": {
+      "attempts": 100,
+      "collisions": 100,
+      "mean_distance": 159.05359009325582,
+      "score": -4427.948380974788
+    }
+  },
+  "trained_shallow_generation_3": {
+    "checkpoint": ".ai-service/car-laser2-shallow-no-mutation-smoke-20261107/model.json",
+    "diagnostics": {
+      "observations": 120,
+      "saturation_threshold": 0.99,
+      "steering": {
+        "min": -0.6744021565345029,
+        "max": -0.5600296619668403,
+        "span": 0.11437249456766252
+      },
+      "outputs": [
+        {
+          "min": -0.6744021565345029,
+          "max": -0.5600296619668403,
+          "span": 0.11437249456766252
+        },
+        {
+          "min": 0.805993840719084,
+          "max": 0.8977682543872639,
+          "span": 0.09177441366817995
+        }
+      ],
+      "hidden_layers": [
+        {
+          "layer": 1,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.30327868852459017
+        },
+        {
+          "layer": 2,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.2889344262295082
+        },
+        {
+          "layer": 3,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.29918032786885246
+        },
+        {
+          "layer": 4,
+          "width": 64,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.203125
+        },
+        {
+          "layer": 5,
+          "width": 32,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.125
+        }
+      ]
+    },
+    "mean_vision_gradient_rms": 0.009484804745922653,
+    "first_dense_weight_std": 0.045380349857816416,
+    "evaluation": {
+      "attempts": 100,
+      "collisions": 100,
+      "mean_distance": 87.85811044020133,
+      "score": -3793.839426859072
+    }
+  },
+  "protocol": {
+    "seed": 20261123,
+    "observations": 120,
+    "evaluation_seed": 21161124,
+    "evaluation_scenarios": 20,
+    "directions": [
+      1,
+      -1
+    ],
+    "steps": 1000,
+    "same_starts_for_all_models": true,
+    "speed_weighted_progress": true,
+    "road_only": true
+  },
+  "training": {
+    "settings": {
+      "speed_weighted_progress": true,
+      "collision_recent_steps": 3,
+      "collision_recent_share": 0.5,
+      "wall_immediate_steps": 3,
+      "wall_immediate_share": 0.5,
+      "balanced_sharing": true,
+      "max_concurrent_drives_per_network": 2,
+      "progress_only_reward": 0.05,
+      "collision_credit_zones": "half_uniform_0_2_half_uniform_2_20_car_lengths",
+      "progress_credit": "uniform_actual_actions_in_payout_window",
+      "progress_interval_steps": 10,
+      "wall_recent_distance": 28.0,
+      "wall_recent_share": 0.5,
+      "wall_history_distance": 280.0,
+      "directional_collisions": true,
+      "rear_collision_penalty": 0.0,
+      "steering_boost": 0.5,
+      "steering_curve": "0.045*(u+boost*u^3)",
+      "adaptation_generations": 0,
+      "parent_eligible_from": null,
+      "batch_size": 50,
+      "batch_backend": "mlx-gpu",
+      "continue_survivors": true,
+      "evaluation_car_count": 5,
+      "native_evaluation": true,
+      "random_scenarios": true,
+      "engine": "rust_gradients_radar_collisions_v1",
+      "traffic_model": ".ai-service/car-traffic20-slow1000/traffic-reference.json",
+      "rotating_networks": true,
+      "trained_candidates_only": true,
+      "architecture": [
+        366,
+        488,
+        488,
+        488,
+        64,
+        32,
+        2
+      ],
+      "hidden_layers": [
+        488,
+        488,
+        488,
+        64,
+        32
+      ],
+      "weight_count": 66762,
+      "radar_speed_reference": "ego_longitudinal_and_radial_relative_velocity",
+      "fresh_initialization": true,
+      "action_outputs": 2,
+      "throttle_max_increase": 0.5,
+      "overtake_reward": 0.0,
+      "overtake_credit": "latest",
+      "brake_max_reduction": 0.7,
+      "training_continuation": "new_random_pose_each_attempt",
+      "delayed_credit": "current_policy_gradient_with_importance_ratio_capped_at_2",
+      "radar_targets": null,
+      "network_inputs": 366,
+      "radar_angles": false,
+      "radar_angle_degrees": 220,
+      "cone_count": 0,
+      "generation_offset": 0,
+      "test_rounds": 3,
+      "test_offsets": [
+        7.773480923169934,
+        4.207639745287473,
+        -11.917881302023716
+      ],
+      "generations": 3,
+      "rounds": 10,
+      "steps": 1000,
+      "seed": 20261123,
+      "learners": 6,
+      "training_attempts_per_generation": 60,
+      "history": 512,
+      "history_stride": 3,
+      "history_reward": "sum_between_samples",
+      "history_boundary": "new_sample_on_new_session",
+      "credit": "split_distance20_recent3",
+      "wall_credit": "split_distance20_recent3",
+      "safe_reward": 0.0,
+      "progress_reward": 0.05,
+      "collision_penalty": 50.0,
+      "car_collision_penalty": 50.0,
+      "exploration_sigma": 0.15,
+      "learning_rate": 0.0003,
+      "mutation_sigma": 0.0,
+      "training_state_inheritance": "selected_parent_baseline_and_adam",
+      "initial_generation": 0,
+      "protected_parent": false,
+      "selection": "Parent and children reevaluated on identical new starts and layout each generation",
+      "holdout": "Two additional random starts on the current layout; not used for selection",
+      "model_type": "two_height_laser_local_v1",
+      "radar_mode": "laser2",
+      "radar_sectors": null,
+      "ray_angles": [
+        -1.9198621771937625,
+        -1.6200125050562693,
+        -1.3201628329187762,
+        -1.2037304184731907,
+        -1.0872980040276052,
+        -1.0270347127798094,
+        -0.9667714215320133,
+        -0.9221156573547994,
+        -0.8774598931775854,
+        -0.8366718259779535,
+        -0.7958837587783215,
+        -0.7559316473860431,
+        -0.7159795359937647,
+        -0.6761804504235258,
+        -0.6363813648532869,
+        -0.5966050764618441,
+        -0.5568287880704014,
+        -0.5170551132440369,
+        -0.47728143841767245,
+        -0.43750797603980063,
+        -0.39773451366192875,
+        -0.3579610620725159,
+        -0.31818761048310307,
+        -0.27841415917088724,
+        -0.23864070785867142,
+        -0.19886725654889081,
+        -0.1590938052391102,
+        -0.11932035392933266,
+        -0.0795469026195551,
+        -0.03977345130977755,
+        0.0,
+        0.03977345130977755,
+        0.0795469026195551,
+        0.11932035392933266,
+        0.1590938052391102,
+        0.19886725654889081,
+        0.23864070785867142,
+        0.27841415917088724,
+        0.31818761048310307,
+        0.3579610620725159,
+        0.39773451366192875,
+        0.43750797603980063,
+        0.47728143841767245,
+        0.5170551132440369,
+        0.5568287880704014,
+        0.5966050764618441,
+        0.6363813648532869,
+        0.6761804504235258,
+        0.7159795359937647,
+        0.7559316473860431,
+        0.7958837587783215,
+        0.8366718259779535,
+        0.8774598931775854,
+        0.9221156573547994,
+        0.9667714215320133,
+        1.0270347127798094,
+        1.0872980040276052,
+        1.2037304184731907,
+        1.3201628329187762,
+        1.6200125050562693,
+        1.9198621771937625
+      ],
+      "rays_per_height": 61,
+      "sensor_heights": [
+        0.5,
+        3.0
+      ],
+      "curb_height": 2.0,
+      "car_body_height": [
+        1.0,
+        5.0
+      ],
+      "local_layers": 3,
+      "local_channels": [
+        3,
+        4,
+        4,
+        4
+      ],
+      "decision_hidden": [
+        64,
+        32
+      ],
+      "action_version": "steering_signed_speed50_v1",
+      "observation_version": "laser2_distance_closing_echo_v1",
+      "cone_count_range": [
+        0,
+        0
+      ],
+      "starts": "random_each_attempt",
+      "direction": "alternates_each_generation",
+      "random_distance_limits": false,
+      "distance_reference_source": null,
+      "initial_distance_history": [],
+      "distance_limit_factors": null,
+      "road_only": true,
+      "car_count": 10,
+      "training_cars": 10,
+      "background_models": [],
+      "background_speed_scale": 0.85,
+      "reward_mode": "progress_passes_directional_collisions",
+      "diagnostics": {
+        "observations": 120,
+        "saturation_threshold": 0.99,
+        "source": "diagnostic-observations.json"
+      }
+    },
+    "completion": {
+      "generations": 3,
+      "last_generation": 3,
+      "elapsed_seconds": 32.44591262517497
+    },
+    "generations": [
+      {
+        "generation": 0,
+        "winner": null,
+        "optimizer_steps": null,
+        "diagnostics": {
+          "observations": 120,
+          "saturation_threshold": 0.99,
+          "steering": {
+            "min": -0.24208038148775202,
+            "max": -0.010957150437855865,
+            "span": 0.23112323104989616
+          },
+          "outputs": [
+            {
+              "min": -0.24208038148775202,
+              "max": -0.010957150437855865,
+              "span": 0.23112323104989616
+            },
+            {
+              "min": -0.4160115902682698,
+              "max": -0.1332651954359429,
+              "span": 0.2827463948323269
+            }
+          ],
+          "hidden_layers": [
+            {
+              "layer": 1,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.305327868852459
+            },
+            {
+              "layer": 2,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.29098360655737704
+            },
+            {
+              "layer": 3,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.29918032786885246
+            },
+            {
+              "layer": 4,
+              "width": 64,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.265625
+            },
+            {
+              "layer": 5,
+              "width": 32,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.125
+            }
+          ]
+        }
+      },
+      {
+        "generation": 1,
+        "winner": "learner-4",
+        "optimizer_steps": 9,
+        "diagnostics": {
+          "observations": 120,
+          "saturation_threshold": 0.99,
+          "steering": {
+            "min": -0.7178146853935408,
+            "max": -0.6034761403697365,
+            "span": 0.11433854502380425
+          },
+          "outputs": [
+            {
+              "min": -0.7178146853935408,
+              "max": -0.6034761403697365,
+              "span": 0.11433854502380425
+            },
+            {
+              "min": 0.5535474620303419,
+              "max": 0.7599243681015614,
+              "span": 0.2063769060712195
+            }
+          ],
+          "hidden_layers": [
+            {
+              "layer": 1,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.3073770491803279
+            },
+            {
+              "layer": 2,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.29098360655737704
+            },
+            {
+              "layer": 3,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.30327868852459017
+            },
+            {
+              "layer": 4,
+              "width": 64,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.28125
+            },
+            {
+              "layer": 5,
+              "width": 32,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.15625
+            }
+          ]
+        }
+      },
+      {
+        "generation": 2,
+        "winner": "learner-0",
+        "optimizer_steps": 16,
+        "diagnostics": {
+          "observations": 120,
+          "saturation_threshold": 0.99,
+          "steering": {
+            "min": -0.711913024993603,
+            "max": -0.6069874723736824,
+            "span": 0.10492555261992054
+          },
+          "outputs": [
+            {
+              "min": -0.711913024993603,
+              "max": -0.6069874723736824,
+              "span": 0.10492555261992054
+            },
+            {
+              "min": 0.780452937742175,
+              "max": 0.8866553627500651,
+              "span": 0.10620242500789012
+            }
+          ],
+          "hidden_layers": [
+            {
+              "layer": 1,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.3073770491803279
+            },
+            {
+              "layer": 2,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.2889344262295082
+            },
+            {
+              "layer": 3,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.29713114754098363
+            },
+            {
+              "layer": 4,
+              "width": 64,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.203125
+            },
+            {
+              "layer": 5,
+              "width": 32,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.15625
+            }
+          ]
+        }
+      },
+      {
+        "generation": 3,
+        "winner": "learner-3",
+        "optimizer_steps": 21,
+        "diagnostics": {
+          "observations": 120,
+          "saturation_threshold": 0.99,
+          "steering": {
+            "min": -0.6744021565345029,
+            "max": -0.5600296619668403,
+            "span": 0.11437249456766252
+          },
+          "outputs": [
+            {
+              "min": -0.6744021565345029,
+              "max": -0.5600296619668403,
+              "span": 0.11437249456766252
+            },
+            {
+              "min": 0.805993840719084,
+              "max": 0.8977682543872639,
+              "span": 0.09177441366817995
+            }
+          ],
+          "hidden_layers": [
+            {
+              "layer": 1,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.30327868852459017
+            },
+            {
+              "layer": 2,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.2889344262295082
+            },
+            {
+              "layer": 3,
+              "width": 488,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.29918032786885246
+            },
+            {
+              "layer": 4,
+              "width": 64,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.203125
+            },
+            {
+              "layer": 5,
+              "width": 32,
+              "saturated_fraction": 0.0,
+              "sign_change_fraction": 0.125
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "fixed_evaluation_progression": [
+    {
+      "generation": 0,
+      "mean_distance": 159.05359009325582,
+      "mean_reward": -44.27948380974788,
+      "collisions": 100,
+      "attempts": 100
+    },
+    {
+      "generation": 1,
+      "mean_distance": 76.91938254078691,
+      "mean_reward": -40.74021117734754,
+      "collisions": 100,
+      "attempts": 100
+    },
+    {
+      "generation": 2,
+      "mean_distance": 80.8994602447941,
+      "mean_reward": -38.99091364617135,
+      "collisions": 100,
+      "attempts": 100
+    },
+    {
+      "generation": 3,
+      "mean_distance": 87.85811044020133,
+      "mean_reward": -37.93839426859072,
+      "collisions": 100,
+      "attempts": 100
+    }
+  ],
+  "paired_selection_progression": [
+    {
+      "generation": 1,
+      "parent_mean_reward": -44.633509085497145,
+      "winner_mean_reward": -39.289802334594654,
+      "parent_mean_distance": 147.48640896251044,
+      "winner_mean_distance": 89.41412545808367
+    },
+    {
+      "generation": 2,
+      "parent_mean_reward": -38.55939466772238,
+      "winner_mean_reward": -36.21452045132722,
+      "parent_mean_distance": 95.53908741192605,
+      "winner_mean_distance": 101.58449152230223
+    },
+    {
+      "generation": 3,
+      "parent_mean_reward": -39.732535920645816,
+      "winner_mean_reward": -39.025507607418604,
+      "parent_mean_distance": 75.05115057145994,
+      "winner_mean_distance": 79.51770970199892
+    }
+  ]
+}

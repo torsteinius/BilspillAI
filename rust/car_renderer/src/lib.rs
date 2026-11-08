@@ -45,17 +45,17 @@ impl Mesh {
 }
 
 #[cfg(any(target_arch = "wasm32", test))]
-fn road_mesh(points: &[[f32; 3]], half: f32) -> Mesh {
+fn road_mesh(points: &[[f32; 3]], half: f32, closed: bool) -> Mesh {
     let mut mesh = Mesh::default();
     let normals: Vec<_> = (0..points.len())
         .map(|i| {
-            let a = points[(i + points.len() - 1) % points.len()];
-            let b = points[(i + 1) % points.len()];
+            let a = points[if closed {(i + points.len() - 1) % points.len()}else{i.saturating_sub(1)}];
+            let b = points[if closed {(i + 1) % points.len()}else{(i+1).min(points.len()-1)}];
             let length = (b[0] - a[0]).hypot(b[1] - a[1]);
             [-(b[1] - a[1]) / length, (b[0] - a[0]) / length]
         })
         .collect();
-    for i in 0..points.len() {
+    for i in 0..(points.len()-if closed {0}else{1}) {
         let j = (i + 1) % points.len();
         let edge = |idx: usize, d: f32, z: f32| {
             let p = points[idx];
@@ -273,7 +273,9 @@ impl Renderer {
         canvas: web_sys::HtmlCanvasElement,
         coordinates: Vec<f32>,
         half_width: f32,
+        closed: Option<bool>,
     ) -> Result<Renderer, JsValue> {
+        let closed=closed.unwrap_or(true);
         console_error_panic_hook::set_once();
         if coordinates.len() < 9
             || coordinates.len() % 3 != 0
@@ -287,9 +289,9 @@ impl Renderer {
             .chunks_exact(3)
             .map(|p| [p[0], p[1], p[2]])
             .collect();
-        for i in 0..points.len() {
+        for i in 0..(points.len()-if closed {0}else{1}) {
             let a = points[i];
-            let b = points[(i + 1) % points.len()];
+            let b = points[if closed {(i + 1) % points.len()}else{(i+1).min(points.len()-1)}];
             if (a[0] - b[0]).hypot(a[1] - b[1]) < 0.001 {
                 return Err(error("Zero-length road segment"));
             }
@@ -414,7 +416,7 @@ impl Renderer {
         };
         let pipeline = make_pipeline(false);
         let hud_pipeline = make_pipeline(true);
-        let mesh = road_mesh(&points, half_width);
+        let mesh = road_mesh(&points, half_width, closed);
         let road_count = mesh.vertices.len() as u32;
         let road = vertex_buffer(&device, "static-road", &mesh);
         let hud_mesh = cockpit_mesh();
@@ -655,7 +657,7 @@ mod tests {
             [100., 100., 0.],
             [0., 100., 0.],
         ];
-        let mesh = road_mesh(&points, 38.);
+        let mesh = road_mesh(&points, 38., true);
         assert!(mesh.vertices.iter().any(|v| v.position[2] == 150.));
         assert!(mesh.vertices.iter().any(|v| v.position[2] == 162.));
         assert!(mesh

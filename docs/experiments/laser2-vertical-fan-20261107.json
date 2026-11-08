@@ -1,0 +1,112 @@
+{
+  "vertical_half_angle_degrees": 12,
+  "ray_count": 122,
+  "network_inputs": 366,
+  "road_opaque": true,
+  "rows": [
+    {
+      "segment": 100,
+      "grade_percent": -4.240137973637433,
+      "old_forward_curb_hits": 0,
+      "new_forward_curb_hits": 6,
+      "front_directions": 27,
+      "old_ray_40_distance": 540.0,
+      "new_ray_40_distance": 540.0,
+      "new_ray_40_kind": -1
+    },
+    {
+      "segment": 140,
+      "grade_percent": -14.827322702297959,
+      "old_forward_curb_hits": 1,
+      "new_forward_curb_hits": 24,
+      "front_directions": 27,
+      "old_ray_40_distance": 540.0,
+      "new_ray_40_distance": 92.0796841296543,
+      "new_ray_40_kind": 0
+    },
+    {
+      "segment": 170,
+      "grade_percent": -19.010112391201723,
+      "old_forward_curb_hits": 0,
+      "new_forward_curb_hits": 24,
+      "front_directions": 27,
+      "old_ray_40_distance": 540.0,
+      "new_ray_40_distance": 93.82990356302781,
+      "new_ray_40_kind": 0
+    },
+    {
+      "segment": 200,
+      "grade_percent": -15.799025051904966,
+      "old_forward_curb_hits": 0,
+      "new_forward_curb_hits": 24,
+      "front_directions": 27,
+      "old_ray_40_distance": 540.0,
+      "new_ray_40_distance": 94.92606245240792,
+      "new_ray_40_kind": 0
+    },
+    {
+      "segment": 230,
+      "grade_percent": -9.824206946196128,
+      "old_forward_curb_hits": 0,
+      "new_forward_curb_hits": 27,
+      "front_directions": 27,
+      "old_ray_40_distance": 540.0,
+      "new_ray_40_distance": 94.97473621323934,
+      "new_ray_40_kind": 0
+    },
+    {
+      "segment": 260,
+      "grade_percent": -4.630612104532148,
+      "old_forward_curb_hits": 0,
+      "new_forward_curb_hits": 27,
+      "front_directions": 27,
+      "old_ray_40_distance": 540.0,
+      "new_ray_40_distance": 94.3756314266788,
+      "new_ray_40_kind": 0
+    },
+    {
+      "segment": 290,
+      "grade_percent": -1.1447109374361066,
+      "old_forward_curb_hits": 3,
+      "new_forward_curb_hits": 27,
+      "front_directions": 27,
+      "old_ray_40_distance": 540.0,
+      "new_ray_40_distance": 93.00367490230482,
+      "new_ray_40_kind": 0
+    }
+  ],
+  "benchmark_ms_per_scan": {
+    "old": 1.0526154722486223,
+    "new": 3.580572609124439
+  },
+  "benchmark_samples_per_mode": 70,
+  "continuation": {
+    "source_generation": 29,
+    "source_checkpoint": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-shallow-figure-eight-103/generation-29.json",
+    "source_sha256": "2a794a1733296e4b3eedaa95b13d6412920582f33a4fa45cdf0c7530ff00c904",
+    "first_generation": 30,
+    "run": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-vertical-fan-figure-eight-103",
+    "optimizer_restart": true,
+    "weights_preserved": true,
+    "observation_version": "laser2_distance_closing_echo_fan_v2"
+  },
+  "validation": {
+    "v2_tests_passed": 165,
+    "full_generation_preflight_complete": true
+  },
+  "same_weights_fixed_evaluation": {
+    "source_generation": 29,
+    "old_sensors": {
+      "mean_distance": 484.555995190359,
+      "mean_reward": 21.535943072386036,
+      "attempts": 100
+    },
+    "new_sensors": {
+      "mean_distance": 588.5972469721498,
+      "mean_reward": 38.275521993537296,
+      "attempts": 100
+    },
+    "distance_gain_percent": 21.471461051868324,
+    "identical_starts_verified": true
+  }
+}

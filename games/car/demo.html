@@ -13,6 +13,7 @@
 <div class="stats"><div class="stat"><span>Generasjon</span><strong id="gen">0 / 100</strong></div><div class="stat"><span>Beste poeng hittil</span><strong id="score">—</strong></div><div class="stat"><span>Runde per bil</span><strong id="lap"><b>0.0 %</b><b>0.0 %</b></strong></div></div>
 <p><strong id="candidate">Starter trening …</strong><br><span id="attempt"></span></p>
 <label>Visningshastighet <select id="speed"><option value="1" selected>1×</option><option value="3">3×</option><option value="10">10×</option><option value="30">30×</option></select></label><p id="speedError"></p>
+<p class="liveNotice note" role="status" hidden style="padding:12px;background:#2c3540;border-radius:10px"></p>
 <section aria-label="Førerplass i 3D" style="margin:24px 0">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px"><strong>Fra førersetet · 3D</strong><label>Følg <select id="driver"><option value="0">Grønn bil</option><option value="1">Blå bil</option></select></label></div>
 <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><label>Kamera <select id="cameraMode"><option value="cockpit">Førerplass</option><option value="chase">Bak bilen · 3D</option></select></label><button id="fullscreen3d" type="button">Fullskjerm 3D</button><span id="elevationInfo" class="note"></span></div>
@@ -26,17 +27,19 @@
 <video id="recordPreview" controls playsinline hidden style="width:100%;max-height:360px;margin:12px 0" aria-label="Forhåndsvisning av videoopptak"></video>
 <p class="note">Velg oversiktskart eller 3D-kamera. Opptaket merkes med faktisk generasjon, kandidat og avspillingshastighet. 1600 × 1080, uten lyd. Hold fanen synlig under opptaket.</p>
 <p id="trackInfo" class="note"></p>
-<label>Kartutsnitt <select id="mapZoom"><option value="overview">Hele banen</option><option value="follow">Følg valgt bil</option><option value="crossing">Overpasset (åttetallsbanen)</option></select></label>
+<p id="practiceLegend" class="note" hidden>Kryss: veggkrasj · ring: øvingsstart ti billengder tidligere · teller: fullførte forsøk av 20.</p>
+<label>Kartutsnitt <select id="mapZoom"><option value="overview">Hele banen</option><option value="follow">Følg valgt bil</option><option value="crossing">Kryssing / overpass</option></select></label>
+<p class="liveNotice note" role="status" hidden style="padding:12px;background:#2c3540;border-radius:10px"></p>
 <svg id="trackView" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 540" aria-label="Bane med biler og sensorer sett ovenfra">
 <path class="track" d="" fill="none" stroke="#8b9ca7" stroke-width="80"/>
 <path class="track" d="" fill="none" stroke="#344550" stroke-width="76"/>
 <path class="track" d="" fill="none" stroke="#70828b" stroke-dasharray="9 13" stroke-width="1.5"/>
-<g id="bridges"></g><g id="cones"></g>
+<g id="bridges"></g><g id="cones"></g><g id="practicePoints"></g>
 <path id="startLine" d="M400 372 V448" stroke="white" stroke-width="3" stroke-dasharray="5 5"/>
 <text id="mapTitle" x="400" y="262" fill="#a9bac7" text-anchor="middle" font-size="20">PYTHON KJØRER</text><text id="mode" x="400" y="290" fill="#72e4b0" text-anchor="middle" font-size="14">Treningen starter …</text>
 <g id="radars"></g><g id="rays" stroke="#f3c969" stroke-width="2" opacity=".85"></g>
 <g id="cars"></g></svg>
-<p class="note">De grønne treningsbilene bruker modellen som vises. I oppsett med ekstra trafikk kjører de øvrige bilene med faste modeller; de trenes ikke. Sensorene følger modellversjonen. Tolags laser vises cyan nederst mot veikanten og fiolett øverst mot trafikken; strålene måler enkeltlinjer. Sektorradaren måler nærmeste veikant, kjegle eller bil i hver radarsone rundt bilens front, også litt bak sidene ved 220°, uten separate kantfølere. Eldre modeller bruker sju stråler og objektradar. Startsteder følger forsøksoppsettet; i randomiserte forsøk trekkes nye, ledige startsteder ved hver start. Fartsforskjellene gjør at de etter hvert tar igjen hverandre. Ved kollisjon starter bare involverte biler på nytt når startplassen er ledig. Modellen styrer selv; vellykkede forbikjøringer er ikke garantert. Fargene identifiserer bilene i visningen og er ikke sensorinput.</p><p id="validation" class="note"></p></main>
+<p class="note">De grønne treningsbilene bruker modellen som vises. I oppsett med ekstra trafikk kjører de øvrige bilene med faste modeller; de trenes ikke. Sensorene følger modellversjonen. Tolags laser vises cyan nederst mot veikanten og fiolett øverst mot trafikken; vanlige stråler måler enkeltlinjer. Ved vertikalt søk prøver det nedre sjiktet også retninger over og under bilens helning. Sektorradaren måler nærmeste veikant, kjegle eller bil i hver radarsone rundt bilens front, også litt bak sidene ved 220°, uten separate kantfølere. Eldre modeller bruker sju stråler og objektradar. Startsteder følger forsøksoppsettet; i randomiserte forsøk trekkes nye, ledige startsteder ved hver start. Fartsforskjellene gjør at de etter hvert tar igjen hverandre. Ved kollisjon starter bare involverte biler på nytt når startplassen er ledig. Modellen styrer selv; vellykkede forbikjøringer er ikke garantert. Fargene identifiserer bilene i visningen og er ikke sensorinput.</p><p id="validation" class="note"></p></main>
 <script type="module" src="/renderer/bridge.js"></script>
 <script>
 const overheadOnly=location.hash==='#ovenfra';
@@ -60,17 +63,39 @@ function updateMapView(){
  if(!trackData)return;
  const mode=$('mapZoom').value,car=cockpitState?.cars[Number($('driver').value)];
  let box=trackData.view_box;
- if(mode==='crossing'&&trackData.name==='figure_eight')box=[-450,-300,900,600];
+ if(mode==='crossing'&&['figure_eight','bridge_loops','triple_stack'].includes(trackData.name))box=[-450,-300,900,600];
  else if(mode==='follow'&&car)box=[car.x-450,car.y-300,900,600];
  $('trackView').setAttribute('viewBox',box.join(' '));
 }
 $('mapZoom').onchange=updateMapView;
 async function update(){
  try{
-  const r=await fetch('/api/state');if(!r.ok)throw Error(r.status);const s=await r.json();cockpitState=s;prepareCars(s);drawCockpit();updateMapView();$('architecture').textContent=s.architecture.join(' → ');$('sensorLabel').textContent=s.radar_mode==='laser2'?'2 × 61 laserstråler · 220° · avstand, relativ fart og ekko · cyan: nedre / fiolett: øvre · grå: passiv sektorradar':s.radar_mode?.startsWith('sectors')?`${s.radar_mode==='sectors30echo'?30:s.architecture[0]/2} radarsektorer · ${['sectors30wide','sectors30echo'].includes(s.radar_mode)?220:180}° · avstand og tilnærmingsfart${s.radar_mode==='sectors30echo'?' · ekkostyrke':''}`:'sju sensorstråler og radar';
-  $('connection').textContent=s.fast?'Trener raskt · rolig avspilling':'Python tilkoblet';$('speed').disabled=false;$('gen').textContent=s.generation+' / '+s.generations;
-  $('score').textContent=s.best_score ?? '—';$('candidate').textContent=s.phase==='training'?'Viser generasjon '+(s.display_generation ?? '—')+', kandidat '+(s.display_candidate ?? '—')+' · Trener kandidat '+s.candidate+' / '+s.population:s.phase==='validation'?'Kontrollerer andre startplasseringer':'Avspilling av beste nettverk';$('attempt').textContent='Steg '+s.step+' / '+(s.simulation_steps||650)+' · Poeng: '+s.current_score+' · Omstarter: '+s.cars.map(c=>c.restarts).join(' / ');$('speed').value=String(s.speed);s.cars.slice(0,s.training_cars||5).forEach((c,i)=>{$('lap').children[i].textContent=carNames[i]+' '+Number(c.lap).toFixed(1)+' %';});
+  const r=await fetch('/api/state');if(!r.ok)throw Error(r.status);const s=await r.json();if(s.live_training&&trackData&&trackData.name!==s.track){location.reload();return;}cockpitState=s;prepareCars(s);
+  if(s.live_training){
+   const selected=Number($('driver').value);
+   if(s.cars[selected]?.waiting){const next=s.cars.findIndex(c=>!c.waiting&&!c.crashed);if(next>=0)$('driver').value=String(next);}
+   [...$('driver').options].forEach((option,i)=>option.disabled=!!s.cars[i]?.waiting);
+  }
+  drawCockpit();updateMapView();$('architecture').textContent=s.architecture.join(' → ');$('sensorLabel').textContent=s.radar_mode==='laser2'?`${s.laser_vertical_fan_degrees?'61 veikantsøk + 61 laserstråler':'2 × 61 laserstråler'} · 220°${s.laser_vertical_fan_degrees?` · nedre sjikt søker ±${s.laser_vertical_fan_degrees}° vertikalt`:''} · avstand, relativ fart og ekko · cyan: nedre / fiolett: øvre · grå: passiv sektorradar`:s.radar_mode?.startsWith('sectors')?`${s.radar_mode==='sectors30echo'?30:s.architecture[0]/2} radarsektorer · ${['sectors30wide','sectors30echo'].includes(s.radar_mode)?220:180}° · avstand og tilnærmingsfart${s.radar_mode==='sectors30echo'?' · ekkostyrke':''}`:'sju sensorstråler og radar';
+  $('connection').textContent=s.fast?'Trener raskt · rolig avspilling':'Python tilkoblet';$('speed').disabled=!!s.live_training;$('gen').textContent=s.generation+' / '+s.generations;
+  $('score').textContent=s.best_score ?? '—';$('candidate').textContent=s.phase==='training'?'Viser generasjon '+(s.display_generation ?? '—')+', kandidat '+(s.display_candidate ?? '—')+' · Trener kandidat '+s.candidate+' / '+s.population:s.phase==='validation'?'Kontrollerer andre startplasseringer':'Avspilling av beste nettverk';$('attempt').textContent='Steg '+s.step+' / '+(s.simulation_steps||650)+' · Poeng: '+s.current_score+' · Omstarter: '+s.cars.map(c=>c.restarts).join(' / ');$('speed').value=String(s.speed);s.cars.slice(0,s.training_cars||5).forEach((c,i)=>{$('lap').children[i].textContent=carNames[i]+(c.waiting?' · venter':' '+Number(c.lap).toFixed(1)+' %');});
+  if(s.live_training){
+   const waiting=s.cars.filter(c=>c.waiting).length;
+   const notice=s.phase==='evaluation'?'Evaluering pågår — viser siste treningsbilde. Kjøresimuleringen fortsetter etter testene.':s.phase==='complete'?'Treningen er ferdig — viser siste treningsbilde.':s.frame_age_seconds>2.5?'Venter på neste bilde fra treningen.':waiting?`${waiting} biler venter på nytt kjøreoppdrag og er skjult.`:'';
+   document.querySelectorAll('.liveNotice').forEach(element=>{element.hidden=!notice;element.textContent=notice;});
+   $('connection').textContent=s.phase==='training'?'Direkte fra trening':s.phase==='complete'?'Treningen er ferdig':'Evaluerer modeller · siste treningsbilde';
+   $('candidate').textContent='Direkte fra trening · '+s.track+' · nettverk per bil: '+s.owners.map(owner=>owner===null?'—':owner+1).join(' / ');
+   $('attempt').textContent='Fullførte turer: '+s.completed.reduce((a,b)=>a+b,0)+' / '+s.attempts*s.completed.length+' · alle bilene kjører samme retning';
+  }
   $('mode').textContent=s.reason || (s.training?'Opptak fra treningen':'Avspilling · trening ferdig');
+  const points=s.practice_points||[];const markerSize=($('trackView').viewBox.baseVal.width||2000)/160;
+  $('practiceLegend').hidden=!points.length;
+  $('practicePoints').innerHTML=points.map(point=>{
+   const a=point.spawn,b=point.wall,active=point.tests<point.limit,current=point.direction===s.cars[0]?.direction;
+   const color=active&&current?'#ffcf5b':'#95a4af',opacity=active&&current?.95:.4;
+   const label=point.pending||$('trackView').viewBox.baseVal.width<2500?`<text x="${a.x+markerSize*1.4}" y="${a.y-markerSize}" fill="${color}" font-size="${markerSize*2.4}">${point.tests}/${point.limit}</text>`:'';
+   return `<g opacity="${opacity}"><title>Øvingspunkt ${point.id}: ${point.tests}/${point.limit} fullført, ${point.pending} pågår · retning ${point.direction} · høyde ${Number(a.z).toFixed(1)}</title><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="1" vector-effect="non-scaling-stroke" stroke-dasharray="4 4"/><circle cx="${a.x}" cy="${a.y}" r="${markerSize}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M${b.x-markerSize} ${b.y-markerSize}L${b.x+markerSize} ${b.y+markerSize}M${b.x-markerSize} ${b.y+markerSize}L${b.x+markerSize} ${b.y-markerSize}" stroke="#ff7e73" stroke-width="2" vector-effect="non-scaling-stroke"/>${label}</g>`;
+  }).join('');
   let rays='',radars='';s.cars.forEach((c,i)=>{
    const r=c.radar, color=r.detected?'#ff865f':carColors[i];
    if(!c.crashed && r.shape==='laser2'){
@@ -92,6 +117,7 @@ async function update(){
     radars+=`<path d="M ${c.x} ${c.y} L ${c.x+r.range*Math.cos(a)} ${c.y+r.range*Math.sin(a)} A ${r.range} ${r.range} 0 0 1 ${c.x+r.range*Math.cos(b)} ${c.y+r.range*Math.sin(b)} Z" fill="${color}" fill-opacity=".06" stroke="${color}" stroke-opacity=".65"/>`;
    }
    else if(!c.crashed)radars+=`<circle cx="${r.center_x}" cy="${r.center_y}" r="${r.radius}" fill="${color}" fill-opacity="${r.detected?.16:.035}" stroke="${color}" stroke-opacity=".65" stroke-width="1.5"/>`;
+   $('car'+i).style.display=c.waiting?'none':'';
    $('car'+i).setAttribute('opacity',c.crashed?'0.25':'1');
    $('car'+i).setAttribute('transform',`translate(${c.x} ${c.y}) rotate(${c.heading*180/Math.PI})`);
    rays+=c.sensors.map((d,k)=>`<line stroke="${carColors[i]}" x1="${c.x}" y1="${c.y}" x2="${c.x+Math.cos(c.heading+s.angles[k])*d}" y2="${c.y+Math.sin(c.heading+s.angles[k])*d}"/>`).join('');
@@ -104,7 +130,7 @@ fetch('/api/track').then(r=>r.json()).then(t=>{
  $('cones').innerHTML=(t.cones||[]).map(c=>`<circle cx="${c.x}" cy="${c.y}" r="${c.radius}" fill="#ff6b19" stroke="#fff" stroke-width="2"/>`).join('');
  document.querySelectorAll('.track').forEach((p,i)=>{p.setAttribute('d',t.path);p.setAttribute('stroke-width',[t.width+4,t.width,1.5][i]);});
  $('trackView').setAttribute('viewBox',t.view_box.join(' '));
- const names={s_curve:'S-banen',oval:'Opprinnelig oval',figure_eight:'Åttetallsbane med overpass',training:(t.cones?.length?'Treningsbane med kjegler':'Treningsbane uten kjegler')};
+ const names={s_curve:'S-banen',oval:'Opprinnelig oval',figure_eight:'Åttetallsbane med overpass',rolling_hills:'Kupert svingbane',ridge_switchbacks:'Hårnåler og høyder',bridge_loops:'Broløkker i to nivåer',triple_stack:'Kryssing i tre nivåer',training:(t.cones?.length?'Treningsbane med kjegler':'Treningsbane uten kjegler')};
  $('trackInfo').textContent=`${names[t.name]||t.name} · Lengde ${Math.round(t.perimeter)} · Høyde ${Math.min(...t.points.map(p=>p[2]))}–${Math.max(...t.points.map(p=>p[2]))}.`;
  if(t.name!=='s_curve'){
   $('startLine').style.display='none';$('mapTitle').style.display='none';$('mode').style.display='none';
@@ -129,7 +155,7 @@ window.addEventListener('car-gpu-ready',drawCockpit);
 // Clip polygons at the camera plane before projecting, then draw far to near.
 function buildRoad(t){
  road=t.points.map((p,i)=>{
-  const a=t.points[(i-1+t.points.length)%t.points.length],b=t.points[(i+1)%t.points.length];
+  const a=t.points[t.closed===false?Math.max(0,i-1):(i-1+t.points.length)%t.points.length],b=t.points[t.closed===false?Math.min(t.points.length-1,i+1):(i+1)%t.points.length];
   const l=Math.hypot(b[0]-a[0],b[1]-a[1]);
   return {x:p[0],y:p[1],z:p[2],nx:-(b[1]-a[1])/l,ny:(b[0]-a[0])/l,half:t.width/2};
  });
@@ -146,7 +172,7 @@ function drawCockpit(){
  const id=Number($('driver').value),car=cockpitState.cars[id];
  const chase=$('cameraMode').value==='chase';
  const radar=car.radar;
- $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='wall'?'Veikant':radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · relativ fart ${(radar.relative_speed??0).toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
+ $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='wall'?'Veikant':radar.kind==='road'?'Veibane':radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · relativ fart ${(radar.relative_speed??0).toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
  $('elevationInfo').textContent=`Høyde ${Math.round(car.z||0)} · Stigning ${(100*Math.tan(car.pitch||0)).toFixed(1)} %`;
  if(window.carGpu?.ready&&window.carGpu.render(cockpitState,id,chase))return;
  const pitch=(car.pitch||0)+(chase?-.18:0),cp=Math.cos(pitch),sp=Math.sin(pitch);
@@ -172,6 +198,7 @@ function drawCockpit(){
  }
  function edge(p,d,z=0){return [p.x+p.nx*d,p.y+p.ny*d,p.z+z];}
  road.forEach((a,i)=>{
+  if(trackData?.closed===false && i===road.length-1)return;
   const b=road[(i+1)%road.length],h=a.half;
   if(Math.hypot(a.x-car.x,a.y-car.y)>1400)return;
   polygon([edge(a,-h),edge(b,-h),edge(b,h),edge(a,h)],'#37434a');
@@ -197,7 +224,7 @@ function drawCockpit(){
   }
  });
  cockpitState.cars.forEach((other,j)=>{
-  if((j===id&&!chase)||other.crashed)return;
+  if((j===id&&!chase)||other.crashed||other.waiting)return;
   const co=Math.cos(other.heading),si=Math.sin(other.heading);
   const pc=Math.cos(other.pitch||0),ps=Math.sin(other.pitch||0);
   const point=(x,y,z)=>{const along=x*pc-z*ps;return [other.x+along*co-y*si,other.y+along*si+y*co,(other.z||0)+x*ps+z*pc];};
@@ -269,8 +296,8 @@ async function paintVideoFrame(){
   videoContext.fillStyle='#e9eff4';videoContext.font='bold 28px system-ui';
   videoContext.fillText(`${trackData?.name==='figure_eight'?'Åttetallsbane':trackData?.name==='training'?'Treningsbane':trackData?.name||'Bane'} · ${cockpitState?.cars?.length??5} biler · ${trackData?.cones?.length??0} kjegler · radar 3× · ${captureSource==='3d'?'3D':'oversiktskart'}`,28,36);
   videoContext.font='22px system-ui';
-  videoContext.fillText(`Viser generasjon ${s?.display_generation??s?.generation??'—'}, kandidat ${s?.display_candidate??'—'} · steg ${s?.step??0} · ${s?.speed??1}× avspilling`,28,68);
-  videoContext.fillText(s?.cars.length>5?`Grønn: ${s.training_cars||5} treningsbiler · Grå: ${s.cars.length-(s.training_cars||5)} faste trafikkbiler · Avspilling uten vektoppdateringer`:s?.training?'Treningsforsøk med feil og omstarter.':'Avspilling av lagret modell · vektene oppdateres ikke.',28,1032);
+  videoContext.fillText(s?.live_training?`Direkte fra trening · generasjon ${s.generation} · ${s.track}`:`Viser generasjon ${s?.display_generation??s?.generation??'—'}, kandidat ${s?.display_candidate??'—'} · steg ${s?.step??0} · ${s?.speed??1}× avspilling`,28,68);
+  videoContext.fillText(s?.live_training?'Faktiske treningsturer · nettverkene oppdateres under treningen':s?.cars.length>5?`Grønn: ${s.training_cars||5} treningsbiler · Grå: ${s.cars.length-(s.training_cars||5)} faste trafikkbiler · Avspilling uten vektoppdateringer`:s?.training?'Treningsforsøk med feil og omstarter.':'Avspilling av lagret modell · vektene oppdateres ikke.',28,1032);
   videoContext.fillText(`${s?.radar_mode==='laser2'?'Laser: cyan nedre / fiolett øvre · ':''}Omstarter: ${s?.cars.map(c=>c.restarts).join(' / ')||'—'} · ${new Date().toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Oslo'})}`,28,1062);
  }finally{if(url)URL.revokeObjectURL(url);painting=false;}
 }

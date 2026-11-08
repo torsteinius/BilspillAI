@@ -1,0 +1,220 @@
+{
+  "date": "2026-11-08",
+  "share": 0.1,
+  "tests_per_point": 20,
+  "car_length": 14,
+  "approach_distance": 140,
+  "initial_discoveries": [
+    {
+      "track": "training",
+      "directions": {
+        "1": {
+          "points": 2,
+          "discovery_drives": 3
+        },
+        "-1": {
+          "points": 2,
+          "discovery_drives": 2
+        }
+      }
+    },
+    {
+      "track": "bridge_loops",
+      "directions": {
+        "1": {
+          "points": 2,
+          "discovery_drives": 2
+        },
+        "-1": {
+          "points": 2,
+          "discovery_drives": 2
+        }
+      }
+    },
+    {
+      "track": "figure_eight",
+      "directions": {
+        "1": {
+          "points": 2,
+          "discovery_drives": 3
+        },
+        "-1": {
+          "points": 2,
+          "discovery_drives": 3
+        }
+      }
+    },
+    {
+      "track": "ridge_switchbacks",
+      "directions": {
+        "1": {
+          "points": 2,
+          "discovery_drives": 2
+        },
+        "-1": {
+          "points": 2,
+          "discovery_drives": 2
+        }
+      }
+    },
+    {
+      "track": "rolling_hills",
+      "directions": {
+        "1": {
+          "points": 2,
+          "discovery_drives": 2
+        },
+        "-1": {
+          "points": 2,
+          "discovery_drives": 3
+        }
+      }
+    },
+    {
+      "track": "triple_stack",
+      "directions": {
+        "1": {
+          "points": 2,
+          "discovery_drives": 2
+        },
+        "-1": {
+          "points": 2,
+          "discovery_drives": 2
+        }
+      }
+    }
+  ],
+  "preflight": {
+    "complete": true,
+    "share": 1,
+    "attempts": 12,
+    "sources": {
+      "saved": 12
+    },
+    "completed_saved_tests": 12,
+    "by_track": {
+      "triple_stack": 2,
+      "figure_eight": 2,
+      "training": 2,
+      "rolling_hills": 2,
+      "ridge_switchbacks": 2,
+      "bridge_loops": 2
+    },
+    "pending": 0,
+    "steps": 40,
+    "learners": 2
+  },
+  "validation": {
+    "v2_tests": 186,
+    "result": "passed",
+    "javascript_syntax": "passed",
+    "browser_markers": "verified: crash cross, approach ring, completed count"
+  },
+  "learning_improvement": null,
+  "training_activation": {
+    "pid": 1151,
+    "command": [
+      "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.venv-gpu/bin/python",
+      "-u",
+      "-m",
+      "games.car.hybrid",
+      "--initial-model",
+      "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-six-track-live-103/generation-32.json",
+      "--output",
+      "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-crash-practice-103",
+      "--generations",
+      "71",
+      "--generation-offset",
+      "32",
+      "--learners",
+      "6",
+      "--rounds",
+      "100",
+      "--test-rounds",
+      "24",
+      "--fixed-evaluation-rounds",
+      "24",
+      "--steps",
+      "1000",
+      "--seed",
+      "20261123",
+      "--rotate",
+      "--random-scenarios",
+      "--no-cones",
+      "--pass-only",
+      "--history-stride",
+      "3",
+      "--collision-credit",
+      "split_distance20_recent3",
+      "--wall-credit",
+      "split_distance20_recent3",
+      "--overtake-reward",
+      "0",
+      "--traffic-model",
+      "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-traffic20-slow1000/traffic-reference.json",
+      "--background-speed-scale",
+      ".85",
+      "--car-collision-penalty",
+      "50",
+      "--max-brake",
+      ".7",
+      "--rust-evaluation",
+      "--training-cars",
+      "10",
+      "--batch-size",
+      "50",
+      "--batch-backend",
+      "mlx-gpu",
+      "--steering-boost",
+      ".5",
+      "--trained-only",
+      "--progress-only-reward",
+      ".05",
+      "--directional-collisions",
+      "--balanced-sharing",
+      "--speed-weighted-progress",
+      "--road-only",
+      "--mutation-sigma",
+      "0",
+      "--track",
+      "figure_eight",
+      "--laser-vertical-fan",
+      "12",
+      "--tracks",
+      "figure_eight",
+      "training",
+      "rolling_hills",
+      "ridge_switchbacks",
+      "bridge_loops",
+      "triple_stack",
+      "--first-training-track",
+      "triple_stack",
+      "--live-frames",
+      "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-crash-practice-103/live-frame.json",
+      "--defer-initial-tests",
+      "--crash-spawn-share",
+      ".1",
+      "--crash-spawn-db",
+      "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-wall-crash-practice.sqlite"
+    ],
+    "run": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-crash-practice-103",
+    "log": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-crash-practice-103.log",
+    "source_generation": 32,
+    "source_checkpoint": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-six-track-live-103/generation-32.json",
+    "optimizer_restart": true,
+    "tracks": [
+      "figure_eight",
+      "training",
+      "rolling_hills",
+      "ridge_switchbacks",
+      "bridge_loops",
+      "triple_stack"
+    ],
+    "live_frames": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-laser2-crash-practice-103/live-frame.json",
+    "viewer_pid": 1153,
+    "viewer_url": "http://127.0.0.1:50386/",
+    "progress_pid": 1198,
+    "crash_spawn_share": 0.1,
+    "crash_spawn_db": "/Users/torsteinlunde/Documents/GitHub/BilspillAI/.ai-service/car-wall-crash-practice.sqlite"
+  }
+}

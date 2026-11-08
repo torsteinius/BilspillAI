@@ -108,8 +108,9 @@ impl RoadGeometry {
         self.hit(x, y, z).1
     }
     pub(crate) fn pitch(&mut self,x:f64,y:f64,z:f64,heading:f64)->f64 {
-        let i=self.hit(x,y,z).3;let s=&self.segments[i];
-        (s[7]*(s[2]*heading.cos()+s[3]*heading.sin())/s[4]).atan()
+        let dx=6.*heading.cos();let dy=6.*heading.sin();
+        let front=self.hit(x+dx,y+dy,z).2;let rear=self.hit(x-dx,y-dy,z).2;
+        (front-rear).atan2(12.)
     }
     fn sensors(
         &mut self,

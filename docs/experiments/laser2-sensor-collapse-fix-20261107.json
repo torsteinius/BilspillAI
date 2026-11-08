@@ -1,0 +1,314 @@
+{
+  "date": "2026-11-07",
+  "snapshot_generation": 15,
+  "protocol": {
+    "seed": 20261123,
+    "observations": 120,
+    "evaluation_seed": 21161124,
+    "evaluation_scenarios": 20,
+    "directions": [
+      1,
+      -1
+    ],
+    "steps": 1000,
+    "same_starts_for_all_models": true,
+    "speed_weighted_progress": true,
+    "road_only": true
+  },
+  "old_generation_1192": {
+    "checkpoint": ".ai-service/car-road-distance-limits-1500/generation-1192.json",
+    "diagnostics": {
+      "observations": 120,
+      "saturation_threshold": 0.99,
+      "steering": {
+        "min": -0.028055940221984862,
+        "max": -0.027872066312700495,
+        "span": 0.00018387390928436761
+      },
+      "outputs": [
+        {
+          "min": -0.028055940221984862,
+          "max": -0.027872066312700495,
+          "span": 0.00018387390928436761
+        },
+        {
+          "min": 0.9830509709596594,
+          "max": 0.9830696020798945,
+          "span": 1.8631120235035326e-05
+        }
+      ],
+      "hidden_layers": [
+        {
+          "layer": 1,
+          "width": 488,
+          "saturated_fraction": 0.00507172131147541,
+          "sign_change_fraction": 0.23770491803278687
+        },
+        {
+          "layer": 2,
+          "width": 488,
+          "saturated_fraction": 0.029115437158469946,
+          "sign_change_fraction": 0.26024590163934425
+        },
+        {
+          "layer": 3,
+          "width": 488,
+          "saturated_fraction": 0.061185109289617484,
+          "sign_change_fraction": 0.26639344262295084
+        },
+        {
+          "layer": 4,
+          "width": 64,
+          "saturated_fraction": 0.9990885416666667,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 5,
+          "width": 64,
+          "saturated_fraction": 0.374609375,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 6,
+          "width": 48,
+          "saturated_fraction": 0.39600694444444445,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 7,
+          "width": 32,
+          "saturated_fraction": 0.40625,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 8,
+          "width": 24,
+          "saturated_fraction": 0.3333333333333333,
+          "sign_change_fraction": 0.041666666666666664
+        },
+        {
+          "layer": 9,
+          "width": 16,
+          "saturated_fraction": 0.1875,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 10,
+          "width": 8,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.0
+        },
+        {
+          "layer": 11,
+          "width": 4,
+          "saturated_fraction": 0.25,
+          "sign_change_fraction": 0.0
+        }
+      ]
+    },
+    "mean_vision_gradient_rms": 4.28049497419467e-06,
+    "first_dense_weight_std": 0.3157877912417274,
+    "evaluation": {
+      "attempts": 100,
+      "collisions": 100,
+      "mean_distance": 163.98623934245705,
+      "score": -2567.971725527252
+    }
+  },
+  "new_generation_15": {
+    "generation": 15,
+    "checkpoint": ".ai-service/car-laser2-shallow-continue-103/generation-15.json",
+    "diagnostics": {
+      "observations": 120,
+      "saturation_threshold": 0.99,
+      "steering": {
+        "min": -0.26275070620401847,
+        "max": 0.3869020321915757,
+        "span": 0.6496527383955941
+      },
+      "outputs": [
+        {
+          "min": -0.26275070620401847,
+          "max": 0.3869020321915757,
+          "span": 0.6496527383955941
+        },
+        {
+          "min": 0.9989672860582822,
+          "max": 0.9994126957476197,
+          "span": 0.0004454096893374837
+        }
+      ],
+      "hidden_layers": [
+        {
+          "layer": 1,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.30327868852459017
+        },
+        {
+          "layer": 2,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.32991803278688525
+        },
+        {
+          "layer": 3,
+          "width": 488,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.3790983606557377
+        },
+        {
+          "layer": 4,
+          "width": 64,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.203125
+        },
+        {
+          "layer": 5,
+          "width": 32,
+          "saturated_fraction": 0.0,
+          "sign_change_fraction": 0.0625
+        }
+      ]
+    },
+    "mean_vision_gradient_rms": 0.00631001683104611,
+    "first_dense_weight_std": 0.04656789990133941,
+    "evaluation": {
+      "attempts": 100,
+      "collisions": 100,
+      "mean_distance": 443.89403768637595,
+      "mean_reward": 16.553756304067832
+    },
+    "optimizer_steps": 1432
+  },
+  "fixed_evaluation_progression": [
+    {
+      "generation": 3,
+      "mean_distance": 87.85811044020133,
+      "mean_reward": -37.93839426859072,
+      "steering_span": 0.11437249456766252,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": null
+    },
+    {
+      "generation": 4,
+      "mean_distance": 162.72918910659982,
+      "mean_reward": -25.599429430588852,
+      "steering_span": 0.11231852964723335,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 107
+    },
+    {
+      "generation": 5,
+      "mean_distance": 171.1678703324283,
+      "mean_reward": -24.335070680948483,
+      "steering_span": 0.07979438353459661,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 211
+    },
+    {
+      "generation": 6,
+      "mean_distance": 176.15954539549745,
+      "mean_reward": -23.582864551676337,
+      "steering_span": 0.10507271390820146,
+      "dense_saturated_fraction": 0.00026041666666666666,
+      "optimizer_steps": 302
+    },
+    {
+      "generation": 7,
+      "mean_distance": 154.90195322692875,
+      "mean_reward": -26.77449772893352,
+      "steering_span": 0.11504172611707247,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 416
+    },
+    {
+      "generation": 8,
+      "mean_distance": 157.04709669785936,
+      "mean_reward": -26.45291299380813,
+      "steering_span": 0.19106614528166066,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 506
+    },
+    {
+      "generation": 9,
+      "mean_distance": 195.94189401852566,
+      "mean_reward": -20.618585353977355,
+      "steering_span": 0.2608374662950522,
+      "dense_saturated_fraction": 0.00013020833333333333,
+      "optimizer_steps": 619
+    },
+    {
+      "generation": 10,
+      "mean_distance": 241.4261387755692,
+      "mean_reward": -13.80996175453244,
+      "steering_span": 0.4253772275401688,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 733
+    },
+    {
+      "generation": 11,
+      "mean_distance": 212.39527694589876,
+      "mean_reward": -18.152768053217642,
+      "steering_span": 0.33154966567197613,
+      "dense_saturated_fraction": 0.00013020833333333333,
+      "optimizer_steps": 870
+    },
+    {
+      "generation": 12,
+      "mean_distance": 177.48984319513312,
+      "mean_reward": -23.397932104402017,
+      "steering_span": 0.36236213721350097,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 1033
+    },
+    {
+      "generation": 13,
+      "mean_distance": 239.02560869706383,
+      "mean_reward": -14.163557917995842,
+      "steering_span": 0.5641212674715204,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 1143
+    },
+    {
+      "generation": 14,
+      "mean_distance": 252.20117764420363,
+      "mean_reward": -12.189711575008097,
+      "steering_span": 0.6655406639092657,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 1334
+    },
+    {
+      "generation": 15,
+      "mean_distance": 443.89403768637595,
+      "mean_reward": 16.553756304067832,
+      "steering_span": 0.6496527383955941,
+      "dense_saturated_fraction": 0.0,
+      "optimizer_steps": 1432
+    }
+  ],
+  "comparison": {
+    "distance_gain_over_old_percent": 170.6898087707101,
+    "distance_gain_over_continuation_start_percent": 405.23968187149046,
+    "steering_span_ratio": 3533.142580826314,
+    "vision_gradient_rms_ratio": 1474.1325171706978,
+    "reward_gain_over_continuation_start": 54.49215057265855
+  },
+  "sha256": {
+    ".ai-service/car-road-distance-limits-1500/generation-1192.json": "ad0a4839f0778b4ccee1a7d079fe4f48b38a8cf99c4a07a0bb3e70568d476eb9",
+    ".ai-service/car-laser2-shallow-continue-103/generation-15.json": "1ba39d55c42053501479526301d49025ab5dd989e59caff157ebfca80e2c86a2",
+    ".ai-service/car-laser2-shallow-continue-103/diagnostic-observations.json": "5ba29017827e382605a38d187c79fabe01ccfd6cd0412eabaffce0cabc60170d",
+    ".ai-service/car-laser2-shallow-continue-103/fixed-evaluation-starts.json": "86b73c6ad8b551e1097b447401638725cbaa98f6e2139ab303910df166231860"
+  },
+  "sources": {
+    "smoke_measurements": "docs/experiments/laser2-shallow-smoke-20261107.json",
+    "training_metrics": ".ai-service/car-laser2-shallow-continue-103/metrics.jsonl"
+  },
+  "limitations": [
+    "Combined intervention; no per-change ablation",
+    "One training seed and one fixed evaluation suite",
+    "Baseline and Adam reset once between smoke and continuation",
+    "Throttle output remains near +1",
+    "100 of 100 evaluation attempts still end in collision"
+  ]
+}

@@ -2036,3 +2036,352 @@ At dette er enklere å trene eller gir bedre kjøring er foreløpig en hypotese.
 handlingsmål til lærerens faktiske observasjoner, kontroller tilstanden ved
 vinduets slutt og test overføring til lengre kjøring i egne testsituasjoner.
 Se [hypotese, forsøksopplegg og åpne valg](BIL_HUKOMMELSE.md#7-november-2026--hypotese-spesialister-som-lærere-ved-korte-omspillinger).
+
+### Endring 61: seks roterende nettverk — fra generasjon 1107
+
+7. november 2026 ba prosjekteieren om seks nettverk per generasjon igjen, rotert
+mellom bilene, og omstart av treningen. Prosessen er startet på nytt fra siste
+fullførte modell, **1106**, med identiske startvekter i serien
+`car-laser2-six-nets-1200`. Første nye generasjon er **1107**, målet fortsatt 1200.
+Påbegynt generasjon 1107 i forrige serie ble avbrutt; fullførte modeller beholdes.
+Optimizer, kjørehistorikk og tilfeldig generator starter på nytt ved prosessbyttet.
+
+Ti treningsbiler deler nå seks nettverk med balansert rotasjon og maksimalt to
+samtidige kjøringer per nett. Femten passive trafikkbiler beholdes. Med 100
+treningsforsøk per nett blir budsjettet **600 forsøk per generasjon**, mot 300
+tidligere. Evalueringen beholder 100 tester per modell; seks kandidater og
+forelderen som referanse gir nå 700 utvelgelsestester. Forelderen er fortsatt
+ikke valgbar som vinner. Sensorer, belønninger, krasjstraff og GPU-batcher beholdes.
+Dette er flere kandidater med samme læringsopplegg, ikke spesialistlærerne i
+hypotesen over. Mer arbeid per generasjon kan gi lengre kjøretid.
+
+Oppstartskontroll: startvektene er sammenlignet direkte, innstillingene bekrefter
+seks nett, ti treningsbiler og balansert deling, og de to eksisterende testene
+for delte nettverk består. Læringsgevinst er ikke målt ved omstarten.
+[Resultatlogg](experiments/laser2-six-nets-generation-progress.md).
+
+
+<a id="endring-62"></a>
+### Endring 62: fremdrift belønner bare handlingene i siste periode — fra generasjon 1109
+
+Prosjekteieren påpekte at fremdriftsbelønningen ble spredt over hele historikken, selv om den ble beregnet hvert tiende steg. Ønsket er å belønne kun handlingene i denne perioden, mens planlegging lenger bakover fortsatt håndteres av krasjstraffen.
+
+Hver bil samler nå de faktiske input/output-parene for en periode på ti simuleringssteg. Periodens fremdriftsbonus fordeles jevnt på disse handlingene og sendes til det utførende nettverkets treningskø. Periodene overlapper ikke; eldre historikk mottar ingen del av neste periodes bonus. Den separate krasjhistorikken beholder hvert tredje steg og siste-tre-køen som før. En post som får fremdriftsbelønning kan senere få ekstra krasjstraff uten at allerede behandlet belønning brukes på nytt.
+
+Belønningsstørrelsen er fortsatt +0,05 per positiv netto baneenhet. En kort restperiode ved forsøksavslutning eller krasj avregnes over bare sine egne handlinger, som tidligere avregning av restfremdrift. Dette innfører ikke et krav om ti krasjfrie steg før opptjent fremdrift belønnes. Krasjstraff, bakfraunntak, forbikjøringsbonus og evalueringspoeng er uendret. GPU-køen bruker fortsatt batcher på 50 poster; registrering av bonus hvert tiende steg betyr ikke nødvendigvis umiddelbar vektoppdatering. Flere faktiske handlinger brukes nå som treningsposter for fremdrift enn med historikkstride tre.
+
+Aktivert fra **1109**, med identiske startvekter fra siste fullførte vinner **1108**, i `car-laser2-progress10-1200`. Seks nett, ti treningsbiler, femten passive, 100 forsøk per nett og mål 1200 beholdes. Påbegynt forsøk/generasjon i gammel prosess erstattes; optimizer, historikk og tilfeldig generator starter på nytt ved prosessbyttet. Gamle modeller og logger beholdes. 27 relevante tester består, og en kort GPU-generasjon med seks nett fullførte før aktivering. Effekten på læring er ennå ikke målt. [Resultatlogg](experiments/laser2-progress10-generation-progress.md).
+
+
+<a id="endring-63"></a>
+### Endring 63: hastighetsvektet fremdrift, 0×–1×–3× — fra generasjon 1109
+
+Prosjekteieren presiserte at fremdriftsbonusen skal multipliseres med hastigheten ved hver handling: null ved laveste fart, 1× ved normalfart og 3× ved full fart, med lineær overgang mellom punktene. Med dagens brems/gass betyr dette relative hastigheter 0,30 → 0×, 0,65 → 0,5×, 1,00 → 1×, 1,25 → 2× og 1,50 → 3×. Referansen er hver bils egen grunnfart, inklusive dens speed_factor.
+
+For hvert steg beregnes faktisk bane-fremdrift × fartsfaktor. Periodens bonus er 0,05 ganger positiv netto vektet fremdrift over inntil ti steg. Bonusen fordeles innen denne perioden etter de enkelte handlingenes positive vektede bidrag; handlinger med null bidrag får null fremdriftsbonus. Eventuell negativ fremdrift reduserer periodens total. Dermed belønnes hver handling etter sin egen fart og fremdrift, ikke periodens sluttfart. Maksimal bonus per baneenhet er nå 0,15 i stedet for 0,05. Samme distanse ved full fart gir tre ganger normalfartsbonusen, mens høyere fart også gir større distanse per steg.
+
+Endringen er lagt inn i både treningen og Python-/Rust-evalueringen. Krasjstraff og forbikjøringsbonus er uendret. Ingen egen tidsstraff innføres. Det korte forsøket med uvektet ti-stegsbonus (endring 62) rakk ingen fullført generasjon før denne presiseringen; derfor finnes ingen ferdig modell som isolerer effekten av endring 62. Ny serie `car-laser2-speedreward-1200` starter fortsatt fra identiske vekter i vinner **1108**, med første nye generasjon **1109**. Påbegynt generasjon 1109 i forrige serie erstattes. Optimizer, historikk og tilfeldig generator starter på nytt; seks nett, 600 forsøk per generasjon, ti treningsbiler, femten passive og mål 1200 beholdes.
+
+29 relevante tester består, inkludert interpolasjon, forskjellig grunnfart, riktig fordeling per handling og samsvar mellom Rust og Python. En kort full GPU-generasjon fullførte før aktivering. [Resultatlogg](experiments/laser2-speedreward-generation-progress.md).
+
+
+<a id="endring-64"></a>
+### Endring 64: ny start med tilfeldige vekter og hastighetsbonus — fra generasjon 1109
+
+Prosjekteieren ønsket å nullstille læringen fordi modellen hadde lært å kjøre sakte. Alle vektene i treningsmodellen initialiseres derfor på nytt tilfeldig, inkludert synslagene og beslutningslagene; «nullstilling» betyr ikke at alle vekter settes til tallet null. De seks kandidatnettene bygger videre fra denne nye initialiseringen. De femten passive trafikkbilene beholder sine faste modeller.
+
+Aktiv serie er `car-laser2-speedreward-fresh-1200`. Første generasjon er fortsatt **1109**, fordi ingen generasjon fullførte i de korte mellomseriene med ti-stegsbonus og deretter fartsvektet bonus. Generasjonsnummereringen beholdes for tidslinjen; dette er første generasjon i et nytt læringsløp, ikke videreførte vekter fra 1108. De gamle modellene og loggene beholdes. Optimizer og kjørehistorikk starter også på nytt.
+
+Samme oppsett beholdes: seks nett, ti treningsbiler, femten passive, 100 forsøk per nett, eksisterende evaluering, tolags laser, krasjstraff og forbikjøringsbonus. Fremdriftsbonusen gjelder bare handlingene i egen ti-stegsperiode og vektes med fart: 0× ved minimum, 1× ved normalfart og 3× ved maksimum. Målet 1200 beholdes. Oppstarten er kontrollert: fresh_initialization og speed_weighted_progress er aktive, og startvektene er forskjellige fra den gamle modellen. [Resultatlogg](experiments/laser2-speedreward-fresh-generation-progress.md).
+
+
+### Videre trening til generasjon 1500 — fra 1121
+
+Prosjekteieren utvidet målet fra 1200 til **1500**. Serien `car-laser2-speedreward-1500` starter fra siste fullførte vinner **1120**, med identiske modellvekter kontrollert ved oppstart. Første nye generasjon er **1121**. Seks nett, 100 forsøk per nett, sensorer, belønning, evaluering og trafikk beholdes. Det er ingen ny nullstilling av modellvektene. Prosessbyttet erstatter påbegynt gammel generasjon; optimizer, kjørehistorikk og tilfeldig generator starter på nytt. Gamle modeller og logger beholdes. Den eksisterende planfilen `training-plan-1200.json` har nå target_generation=1500, slik at halvtimesvisningen følger den nye serien. [Resultatlogg](experiments/laser2-speedreward1500-generation-progress.md).
+
+
+### Endring 65: halv krasjstraff på de tre siste input–output-parene — fra 1133
+
+7. november 2026 ønsket prosjekteieren å øke den umiddelbare straffen til −25,
+med samme innbyrdes fordeling på resten. Total krasjstraff er fortsatt −50:
+−25 fordeles likt på de tre siste faktiske handlingene, inkludert krasjsteget
+(omtrent −8,33 hver). De resterende −25 følger de eksisterende avstandssonene:
+−12,5 jevnt innenfor to billengder og −12,5 jevnt fra to til tjue billengder.
+Dette er tre simuleringssteg, ikke tre sekunder eller tre utvalg fra historikken.
+Overlappende handlinger får bidrag fra begge fordelinger; ved kort historikk
+normaliseres pottene over tilgjengelige oppføringer, med bevart totalstraff.
+
+Den delte regelen gjelder veggkrasj og ordinære bilkollisjoner. Unntaket for
+bilen som blir tydelig påkjørt bakfra beholdes. Fartsvektet framdriftsbelønning,
+forbikjøringsbonus, seks nettverk på ti treningsbiler, femten passive biler og
+evalueringen er uendret. Innstillingene registrerer nå umiddelbar andel 0,5.
+
+Serien `car-laser2-recent3half-1500` er startet fra siste fullførte vinner **1132**,
+med identiske startvekter kontrollert direkte. Første nye generasjon er **1133**,
+målet er fortsatt 1500. Påbegynt gammel generasjon erstattes; gamle modeller og
+logger beholdes. Optimizer, kjørehistorikk og tilfeldig generator starter på
+nytt ved prosessbyttet.
+
+Validering: 13 relevante tester består, inkludert nøyaktig fordeling, overlapp,
+bevart totalstraff ved kort historikk, bakfrakollisjon og delte nettverk. Dette
+er kontroll av gjennomføringen, ikke dokumentasjon på bedre læring.
+[Resultatlogg](experiments/laser2-recent3half-generation-progress.md).
+
+
+### Endring 66: lær veien før trafikk — fra generasjon 1163
+
+Prosjekteieren mener forbikjøringsoppgaven kommer for tidlig, og ønsker først
+at modellen lærer å kjøre på veien. Serien `car-road-only-1500` starter fra
+siste fullførte vinner **1162**, med identiske startvekter kontrollert direkte.
+Første nye generasjon er **1163**, målet er fortsatt 1500. Ingen nullstilling
+av modellvektene; optimizer og kjørehistorikk starter på nytt ved prosessbyttet.
+Fullførte modeller fra trafikkfasen beholdes.
+
+Ny `--road-only`-modus gjør de ti treningsbilene uavhengige: de ser ikke
+hverandre i sensorene, og bil–bil-kollisjoner er deaktivert. Seks nettverk
+roteres fortsatt mellom bilplassene, med 100 forsøk per nett. De femten passive
+trafikkbilene fjernes, kjegler er fortsatt av, og forbikjøringsbonusen er null.
+Veggkontakt og veggstraffen beholdes: −25 på de tre siste faktiske handlingene
+og resterende −25 fordelt som før på avstandssonene. Sensorarkitekturen,
+styringen og den fartsvektede framdriftsbelønningen beholdes. Dette isolerer
+trafikkoppgaven; det er ikke samtidig en endring av fartsmålet.
+
+Evalueringen bruker fortsatt fem startroller per scenario, men prøver hver
+rolle alene, uten andre aktive biler. Både Python og Rust følger dette. Hver
+modell evalueres i 100 forsøk som før, pluss separate kontrollforsøk. Nye
+resultater må ikke omtales som forbedring under samme vanskelighetsgrad som
+trafikkfasen. Avspilling leser road_only fra modellens metadata; flere synlige
+biler i samme visning representerer uavhengige kjøringer i denne fasen.
+
+Validering: 15 relevante tester består, inkludert overlappende biler uten
+bilkontakt, bevart veggkontakt og numerisk samsvar mellom Python- og
+Rust-evaluering uten trafikk. En kort full prøvegenerasjon med seks nett og ti
+biler fullførte før omstarten. Dette dokumenterer kjøring av oppsettet, ikke
+at veiferdigheten allerede er lært.
+
+Trafikken skal inn igjen senere, etter vurdering av grunnferdigheten. Se på
+fullførte forsøk uten veggkrasj, steg og distanse før veggtreff på separate
+starttilstander og begge kjøreretninger. Ingen automatisk terskel eller
+tidspunkt for gjeninnføring av trafikk er bestemt.
+[Resultatlogg](experiments/road-only-generation-progress.md).
+
+
+### Endring 67: tilfeldig turlengde rundt siste fem generasjoner — fra 1189
+
+Prosjekteieren foreslår at hver ny biltur får en tilfeldig grense mellom 50 og
+150 % av gjennomsnittslengden i de fem siste generasjonene. Hensikten er flere
+treningsturer som avsluttes normalt med positivt utfall, i stedet for at nesten
+alle turer varer til krasj. Presisering fra kodegjennomgangen: framdrift betales
+allerede hvert tiende steg, ikke bare ved slutten av turen. Den eksisterende
+regelen belønner handlingene innen hver periode; krasj kan senere gi dem straff.
+
+Grunnlaget er her konkretisert som gjennomsnittet av vinnernes gjennomsnittlige
+distanse per ordinære testforsøk i de fem siste fullførte generasjonene. Det er
+distanse, ikke antall sekunder eller steg. Testene beholder den eksisterende
+grensen på 1000 steg, slik at stadig kortere treningsturer ikke i seg selv
+trekker grunnlaget ned. Referansen holdes fast gjennom én generasjon og
+oppdateres etter neste fullførte evaluering.
+
+Hver treningsstart trekker uavhengig en uniform faktor i [0,5, 1,5], med en egen
+reproduserbar tilfeldig generator. Distanse telles som oppsamlet positiv
+framdrift langs banen, samme mål som eksisterende rapporter. Turen avsluttes
+ved grensen, krasj eller den eksisterende sikkerhetsgrensen på 1000 steg.
+Grensen kan overskrides med ett bevegelsessteg. Et krasj i samme steg som
+grensen nås regnes fortsatt som krasj og straffes.
+
+Ved normal avslutning utbetales restbelønningen fra den siste, eventuelt korte
+ti-stegsperioden. Det gis ingen ny kunstig sluttbonus og ingen krasjstraff.
+Bilen får en ny tilfeldig start; historikken fra forrige tur tømmes, selv om
+continue_survivors ellers er aktivt. Hver forsøksrad lagrer distance_limit og
+end_reason. Hver generasjon logger de fem grunnlagstallene og valgt intervall.
+Modellmetadata beholder den oppdaterte distansehistorikken.
+
+Aktiv serie `car-road-distance-limits-1500` fortsetter fra **1188**, med identiske
+startvekter kontrollert; første nye generasjon er **1189**. Startreferansen fra
+1184–1188 er omtrent **171,07 banenheter**, med grenser omtrent **85,53–256,60**.
+Seks nett, ti uavhengige biler, 600 treningsforsøk per generasjon, ingen trafikk,
+veggstraff og fartsvektet framdriftsbelønning beholdes. Evaluering og kontrolltester
+får ingen tilfeldig distansegrense. Målet er fortsatt 1500. Fullførte modeller
+beholdes; optimizer og tilfeldig generator starter på nytt ved prosessbyttet.
+
+Validering: 16 relevante tester består, inkludert uavhengige reproduserbare
+grenser, nye starter, restutbetaling og krasjstraff. En full kort prøvegenerasjon
+med seks nett og to forsøk per nett fullførte: to av tolv forsøk nådde sin
+distansegrense uten krasj, begge med positiv belønning. Dette validerer mekanismen,
+men dokumenterer ikke bedre veifølging. Kortere treningsturer må vurderes separat
+fra resultatene på de uendrede lange testene.
+[Resultatlogg](experiments/road-distance-limits-generation-progress.md).
+
+
+<a id="endring-68"></a>
+
+### Endring 68: gjenopprettet sensorrespons — nytt grunt laser2-forsøk
+
+7. november 2026. Modell 1192 hadde nesten konstant styring: spenn **0,000184**
+over 120 faste sensorobservasjoner. **99,91 %** av aktiveringene i laget
+488→64 var mettede. Vektskalaen hadde vokst til omtrent sju ganger startskalaen,
+og gradienten tilbake til synslagene var svært liten. Hardkodet mutasjon med
+σ = 0,03 var stor sammenlignet med startskalaen 0,0453. Akkumulert mutasjon er
+hovedforklaringen som kode og målinger støtter. Adam og baseline ble dessuten
+laget på nytt hver generasjon, og beslutningsdelen hadde åtte skjulte lag.
+
+Nytt forsøk starter fra ferske vekter, med beslutningsdelen **488→64→32→2** og
+mutasjon av som standard. Baseline og begge Adam-optimalisatorene arves fra
+valgt forelder. Foreldretilstanden fryses ved utvalg, slik at senere kreditt
+fra eldre kjørehistorikk ikke endrer den. Faste observasjoner overvåker
+sensorrespons og metning. Hver vinner evalueres også på 100 faste starter i
+begge kjøreretninger, separat fra kandidatvalget.
+
+**Resultatbilde til og med ny generasjon 15:** styrespennet er **0,649653**,
+omtrent **3533 ganger større** enn i 1192. Metningen i 488→64 er **0 %** på
+observasjonssettet, og RMS-gradienten tilbake til synslagene er omtrent
+**1474 ganger større**. Dette viser gjenopprettet respons og gradientflyt;
+kjøreferdighet vurderes separat.
+
+På identiske 100 kjøreforsøk øker kjørelengden fra **163,99** for gammel 1192
+til **443,89** for ny 15: **+170,7 %**. Fra ny generasjon 3, starten av den
+lengre treningen, er økningen **405,2 %**, og belønningen går fra **−37,94**
+til **+16,55** per forsøk. Alle modellene krasjer fortsatt i 100/100 forsøk;
+det avgjørende her er progresjon i kjørelengde og belønning før krasj.
+
+Kortprøven 1–3 brukte ti forsøk per kandidat. Videre trening 4–103 bruker
+100 forsøk per kandidat. Adam og baseline ble initialisert på nytt én gang
+ved prosessbyttet og videreføres deretter mellom generasjoner. Den nye serien
+har egne generasjonsnumre; den må ikke tegnes som en fortsettelse ved 1193 i
+den gamle seriens kurve. De gamle treningsprosessene ble beholdt.
+
+Flere tiltak ble gjort samlet, så bidraget fra hvert tiltak er ikke isolert.
+Fartsutgangen ligger fortsatt nær full gass. Resultatet gjelder én seed og
+ett fast evalueringssett, med tilbakeslag mellom generasjonene.
+**159 V2-tester bestod** ved implementering.
+
+[Full diagnose, tiltak og målt forbedring](experiments/laser2-sensor-collapse-fix-20261107.md).
+[Løpende progresjon](experiments/laser2-shallow-continue-generation-progress.md).
+
+
+<a id="endring-69"></a>
+
+### Endring 69: vertikalt veikantsøk ved endret helning — fra ny generasjon 30
+
+7. november 2026. Prosjekteieren oppdaget at modellen mister veikanten i
+nedoverbakken. Kontroll viser at bil og sensorer allerede følger lokal helning.
+Flat vei og konstant ±19 % helning gir identiske avstander og 58 kanttreff.
+Problemet er skiftende helning: ved et kontrollpunkt hadde nedre sjikt
+26 sidetreff, men **0 av 27** kanttreff innenfor ±30° foran bilen. Stråler som
+gikk ned i veibanen ble heller ikke stanset av asfalt i den gamle modellen.
+
+Nedre sjikt får et idealisert vertikalt søk på **±12°** når den opprinnelige
+retningen ikke gir et synlig kanttreff. Strålene er fortsatt rette. Veibanens
+trekantflater blokkerer både søket og de vanlige strålene. Skjulte kanter
+registreres ikke gjennom bakken, og et veibanetreff rapporteres fremfor
+falskt fri sikt. Øvre sjikt får siktkontroll, men ikke vertikalt ekstrasøk.
+
+I kontrollpunktet på −19 % helning øker kanttreff foran bilen fra **0/27 til
+24/27**. En retning endres fra ingen treff innen 540 til et kanttreff på
+**93,83**. Eksisterende treff beholdes, og kontrollene på jevn helning er
+uendrede. Alle **165 V2-tester** består, inkludert nye tester for asfaltens
+blokkering og samsvar mellom Python- og Rust-evaluering. En kort full
+prøvegenerasjon med de nye sensorene fullførte før omstarten.
+
+Ny protokoll er `laser2_distance_closing_echo_fan_v2`, aktivert med
+`--laser-vertical-fan 12`. Inngangsantall 366 og alle innlærte vekter beholdes.
+Gamle modeller uten innstillingen bruker fortsatt de gamle sensorene.
+Ny serie `car-laser2-vertical-fan-figure-eight-103` videreføres fra siste ferdige
+generasjon **29**, med første nye generasjon **30**. Identiske startvekter er
+kontrollert. Adam og baseline starter på nytt én gang ved prosessbyttet og
+videreføres deretter mellom generasjoner. Belønningshorisont, fartsvekting,
+krasjstraff og bane er uendret. Sensorberegningen koster mer tid.
+
+Samme modell fra generasjon 29 er også sammenlignet med gamle og nye sensorer
+på identiske 100 starter, før videre læring: kjørelengden øker fra **484,56 til
+588,60**, altså **21,5 %**, og belønningen fra **+21,54 til +38,28** per forsøk.
+Dette viser bedre sikt og umiddelbar kjøregevinst for dette sjekkpunktet,
+men dokumenterer ikke læringsprogresjon etter omstarten. Den nye serien får
+en egen startmåling og progresjonslogg på faste starter.
+[Diagnose, løsning og råmålinger](experiments/laser2-vertical-fan-20261107.md).
+
+
+<a id="endring-70"></a>
+
+### Endring 70: seks treningsbaner med høyder og flere veidekker — fra 31
+
+Prosjekteieren ønsker 5–6 baner med mer variasjon og flere høydenivåer.
+Fire nye baner er lagt til: kupert svingbane, hårnåler med høydevariasjon,
+broløkker med dekker på 0/80 og en kryssing med dekker på 0/80/160. Sammen
+med treningsbanen og åttetallet gir dette seks ulike oppgaver. Den gamle
+åttetallsgeometrien er uendret.
+
+Alle seks banene brukes i hver generasjon med de samme kandidatene.
+600 treningsforsøk fordeles over banene, med 16–17 forsøk per kandidat per
+bane og roterende rekkefølge og restfordeling. Hver bane veksler kjøreretning
+mellom generasjonene. Adam, baseline og vekter beholdes gjennom banebyttene.
+Kjørehistorikk og biltilstander starter på nytt ved overgang til en annen bane.
+
+Kandidatvalget bruker 120 tester, med 20 per bane og lik fordeling i begge
+retninger. Et separat fast sett på 120 kontrollforsøk måler kjørelengde og
+belønning per bane. Dermed kan eventuell tilbakegang på én bane ses selv om
+samlet resultat øker. Metning og sensorrespons måles på 20 faste observasjoner
+fra hver bane. Oppsettet måler robusthet på de seks trente banene; det er ikke
+alene dokumentasjon på generalisering til nye baner.
+
+Geometrikontroller bekrefter lukkede løkker, stigning under 20 % og over
+36 banenheters høydeklaring der ikke-lokale veistrekninger overlapper i
+grunnplanet. Rust-geometrien skiller de tre sentrale veidekkene.
+**173 V2-tester består.** En kort prøve over to hele generasjoner og alle
+seks baner fullførte, med Adam-teller **6 → 12**. Automatisk banevalg i
+avspilling er kontrollert på tredekkbanen. Dette validerer oppsettet,
+men dokumenterer foreløpig ikke bedre læringsprogresjon på seks baner.
+
+Ny serie `car-laser2-six-track-103` er startet fra ferdig generasjon **30**,
+med første nye generasjon **31**. De samme modellvektene videreføres.
+Adam og baseline må starte på nytt én gang ved prosessbyttet, og beholdes
+deretter gjennom baner og generasjoner. Forrige kjøring er stoppet og
+ferdige resultater beholdes. Sensorvifte, arkitektur og belønningsoppsett
+er uendret.
+[Baneoversikt og treningsoppsett](experiments/six-track-training.md).
+[Løpende progresjon per bane](experiments/six-track-generation-progress.md).
+
+
+<a id="endring-71"></a>
+
+### Endring 71: gjenta innkjøringer før tidligere veggkrasj
+
+Veggkrasj oppretter nå et lagret par: treffstedet i veggen og bilens
+posisjon, høyde, retning og fart ti fysiske billengder tidligere langs
+kjørebanen. Omtrent 10 % av nye treningsoppdrag starter fra slike punkter;
+resten bruker tilfeldige starter. Hvert punkt brukes til maksimalt 20
+fullførte forsøk. Pågående forsøk reserverer kvote, og gjentatte krasj på
+samme sted nullstiller ikke telleren. Banegeometri og kjøreretning holdes
+adskilt. Punkter og tellere lagres mellom generasjoner og prosessbytter.
+
+Alle seks banene har fått minst to ekte punkter i hver retning gjennom
+egne oppdagelsesturer med modellen fra generasjon 31, uten vektoppdatering.
+Kartet viser veggkrasj med kryss, øvingsstart med ring og antall forsøk av 20.
+De faste kontrolltestene bruker fortsatt sine egne starter.
+
+En kortprøve på en separat database fullførte og telte 12 lagrede starter,
+to per bane, uten etterlatte reservasjoner. Alle **186 V2-tester består**.
+Dette viser at systemet fungerer; bedre læringsprogresjon er foreløpig
+ikke målt. Videre trening bruker samme belønning, sensorer og arkitektur.
+Overlevende biler får også en ny start etter avsluttet oppdrag, slik at
+starttrekningen gjelder etter både krasj og turer som når steggrensen.
+[Oppsett, kontroller og oppstart](experiments/crash-practice-spawns.md).
+
+
+## 2026-11-08 – brukerdefinert firebaneprofil
+
+Lagt til `--defined-training`: rette laserlag som tipper med karosseriet,
+uendret lastet nettverk, fire baner med roterende rekkefølge og faste startfelt.
+Åpne bro-/svingbaner avsluttes med +50 og ingen kollisjonsstraff ved mål.
+Python, Rust og begge renderere støtter åpne baner; tidligere baner beholdes
+for gamle modeller. Egne tester dekker laserhelning, åpne ender, startfelt
+og lik målbelønning i Python/Rust i begge retninger.
+
+
+Verifisering: 69 Python-tester og fire Rust-renderertester bestod. En
+sammenligning av 160 laserskann på de fire banene ga identisk serialisert
+resultat før/etter avvisning av umulige veikanttreff. Skannetiden gikk fra
+0,230 s til 0,025 s på lokal maskin (omtrent 9× for selve skanningen;
+ikke et mål på total generasjonstid). Kjøringen fortsetter fra lagret
+generasjon 49 i `.ai-service/car-laser2-defined-four-103`, med trafikk aktiv,
+100 forsøk per nettverk fordelt på fire baner og åtte evalueringsscenarier.

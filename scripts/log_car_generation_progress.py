@@ -28,6 +28,7 @@ def progress_rows(events):
         score=evaluation['score'];collisions=evaluation['collisions']
         holdout=event.get('holdout',[])
         parent=event['evaluations'][0] if 'evaluations' in event else evaluation
+        fixed=event.get('fixed_evaluation')
         parent_mean=parent['distance']/parent['attempts'] if parent['attempts'] else 0.
         result.append(dict(generation=event['generation'],winner=winner,test_score=score,score_vs_parent=score-parent['score'],distance_vs_parent=mean-parent_mean,collision_reduction_vs_parent=parent['collisions']-collisions,
             score_change=score-previous['test_score'] if previous else 0.,
@@ -39,7 +40,9 @@ def progress_rows(events):
             overtakes=evaluation.get('overtakes'),parent_overtakes=parent.get('overtakes'),attempts=attempts,completed_without_collision=attempts-collisions,
             holdout_score=sum(h['score'] for h in holdout) if holdout else None,
             holdout_collisions=sum(h['collisions'] for h in holdout) if holdout else None,
-            elapsed_seconds=event.get('elapsed_seconds',0.)))
+            elapsed_seconds=event.get('elapsed_seconds',0.),
+            fixed_mean_distance=fixed['distance']/fixed['attempts'] if fixed else None,
+            fixed_mean_reward=fixed['score']/fixed['attempts'] if fixed else None))
     return result
 
 
@@ -107,6 +110,39 @@ def publish(run,output):
         text += ['', ('Nye vekter ved starten av dette forsøket. ' if settings.get('fresh_initialization') else 'Vektene er videreført fra forrige forsøk. ')+'Tre lokale nabolag per sektor, fem skjulte beslutningslag og styring/samlet fart. Den tidligere modellen er arkivert; generasjonsnummeret følger prosjektets tidslinje, ikke antall generasjoner trent med denne arkitekturen.', '']
     if settings.get('background_models'):
         text += ['', f"{settings['car_count']} biler: fem treningsplasser og {len(settings['background_models'])} faste trafikkmodeller. Belønning: {settings['reward_mode']}.", '']
+    fixed=[event for event in events if event.get('fixed_evaluation')]
+    if fixed:
+        text += ['', '## Progresjon på faste starter — ikke brukt til utvelgelse', '',
+                 'Alle modellene testes på identiske starter i begge kjøreretninger. Følg kjørelengde og belønning sammen; krasjandelen alene avgjør ikke om modellen gjør framgang.', '',
+                 '| Gen. | Kjørelengde/test | Belønning/test | Δ distanse fra start |',
+                 '| ---: | ---: | ---: | ---: |']
+        baseline=fixed[0]['fixed_evaluation']
+        initial_distance=baseline['distance']/baseline['attempts']
+        for event in fixed:
+            evaluation=event['fixed_evaluation'];count=evaluation['attempts']
+            distance=evaluation['distance']/count
+            generation=settings['generation_offset'] if event['generation']==0 else event['generation']
+            text.append(f"| {generation} | {distance:.2f} | {evaluation['score']/count:.2f} | {distance-initial_distance:+.2f} |")
+    if settings.get('laser_vertical_fan_degrees'):
+        text[0]='# Vertikalt veikantsøk — progresjon på åttetallsbanen'
+        text[2:2]=[f"Nedre sensorsjikt søker ±{settings['laser_vertical_fan_degrees']:g}° vertikalt når vanlig retning ikke gir kanttreff. Veibanen blokkerer strålene. Modellvektene er videreført fra generasjon {settings['initial_generation']}; sensorprotokollen er endret.", '']
+    if settings.get('tracks'):
+        text[0]='# Flere treningsbaner — progresjon per bane'
+        text[2:2]=['Alle banene brukes i hver generasjon. Treningsrekkefølgen roteres. Kandidatvalget bruker like mange tester per bane og kjøreretning. Faste kontrollstarter er separate fra kandidatvalget.', '']
+        text += ['', '## Faste kontrollstarter per bane', '',
+                 '| Gen. | Bane | Tester | Kjørelengde/test | Belønning/test |',
+                 '| ---: | --- | ---: | ---: | ---: |']
+        track_rows=[]
+        for event in fixed:
+            generation=settings['generation_offset'] if event['generation']==0 else event['generation']
+            for name,result in event['fixed_evaluation'].get('by_track',{}).items():
+                count=result['attempts'];distance=result['distance']/count;reward=result['score']/count
+                text.append(f"| {generation} | {name} | {count} | {distance:.2f} | {reward:.2f} |")
+                track_rows.append(dict(generation=generation,track=name,attempts=count,mean_distance=distance,mean_reward=reward))
+        if track_rows:
+            buffer=io.StringIO();writer=csv.DictWriter(buffer,fieldnames=list(track_rows[0]))
+            writer.writeheader();writer.writerows(track_rows)
+            atomic_write(output.with_suffix('.tracks.csv'),buffer.getvalue())
     atomic_write(output.with_suffix('.md'),'\n'.join(text))
     return len(rows)
 

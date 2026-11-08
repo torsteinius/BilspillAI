@@ -338,12 +338,13 @@ export class Renderer {
      * @param {HTMLCanvasElement} canvas
      * @param {Float32Array} coordinates
      * @param {number} half_width
+     * @param {boolean | null} [closed]
      * @returns {Promise<Renderer>}
      */
-    static create(canvas, coordinates, half_width) {
+    static create(canvas, coordinates, half_width, closed) {
         const ptr0 = passArrayF32ToWasm0(coordinates, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.renderer_create(canvas, ptr0, len0, half_width);
+        const ret = wasm.renderer_create(canvas, ptr0, len0, half_width, isLikeNone(closed) ? 0xFFFFFF : closed ? 1 : 0);
         return ret;
     }
     /**

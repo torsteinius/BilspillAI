@@ -491,6 +491,62 @@
       "series": "laser2",
       "first_generation": 1029,
       "chart_label": "1/3 på siste 3 handlinger; 2/3 tidligere historikk"
+    },
+    {
+      "id": "E62",
+      "title": "Fremdrift belønner bare siste ti faktiske handlinger",
+      "log_anchor": "endring-62",
+      "series": "laser2",
+      "first_generation": 1109,
+      "chart_label": "Fremdrift: kun egen 10-stegsperiode"
+    },
+    {
+      "id": "E63",
+      "title": "Fremdrift ganger fart: 0× ved minimum, 1× normal, 3× maks",
+      "log_anchor": "endring-63",
+      "series": "laser2",
+      "first_generation": 1109,
+      "chart_label": "Fartsvektet fremdrift 0×–1×–3×"
+    },
+    {
+      "id": "E64",
+      "title": "Nullstilling: tilfeldige vekter med ny hastighetsbonus",
+      "log_anchor": "endring-64",
+      "series": "laser2",
+      "first_generation": 1109,
+      "chart_label": "NYE VEKTER + fartsvektet 10-stegsbonus"
+    },
+    {
+      "id": "E68",
+      "title": "Sensorrespons gjenopprettet: nytt grunt laser2-nett uten mutasjon",
+      "log_anchor": "endring-68",
+      "series": "laser2_shallow",
+      "first_generation": 1,
+      "chart_label": "NY SERIE: ferske vekter, 64→32, mutasjon av, behold Adam/baseline"
+    },
+    {
+      "id": "E69",
+      "title": "Vertikalt veikantsøk og ugjennomsiktig veibane",
+      "log_anchor": "endring-69",
+      "series": "laser2_vertical_fan",
+      "first_generation": 30,
+      "chart_label": "±12° vertikalt veikantsøk; asfalt blokkerer stråler"
+    },
+    {
+      "id": "E70",
+      "title": "Seks baner i hver generasjon med kontrollresultater per bane",
+      "log_anchor": "endring-70",
+      "series": "laser2_six_track",
+      "first_generation": 31,
+      "chart_label": "Seks baner; to og tre nivåer; faste tester per bane"
+    },
+    {
+      "id": "E71",
+      "title": "Øvingsstarter ti billengder før veggkrasj",
+      "log_anchor": "endring-71",
+      "series": "laser2_crash_practice",
+      "first_generation": 33,
+      "chart_label": "10 % lagrede innkjøringer; maksimalt 20 forsøk per punkt"
     }
   ]
 }

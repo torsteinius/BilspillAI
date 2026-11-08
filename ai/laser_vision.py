@@ -1,14 +1,15 @@
-"""Two sensor heights, three local 2-D layers and eight decision layers."""
+"""Two sensor heights, three local 2-D layers and two decision layers."""
 from .local_vision import LocalVisionNetwork
 from .network import NeuralNetwork
 
 RAYS=61
-ARCHITECTURE=(366,488,488,488,64,64,48,32,24,16,8,4,2)
+LEGACY_ARCHITECTURE=(366,488,488,488,64,64,48,32,24,16,8,4,2)
+ARCHITECTURE=(366,488,488,488,64,32,2)
 MODEL_TYPE='two_height_laser_local_v1'
 
 class LaserVisionNetwork(LocalVisionNetwork):
     def __init__(self,architecture=ARCHITECTURE,*,seed=None):
-        if tuple(architecture[:-1])!=ARCHITECTURE[:-1] or architecture[-1] not in (1,2):
+        if tuple(architecture[:-1]) not in (ARCHITECTURE[:-1],LEGACY_ARCHITECTURE[:-1]) or architecture[-1] not in (1,2):
             raise ValueError('Expected two-height 61-ray architecture')
         NeuralNetwork.__init__(self,architecture,seed=seed)
         self.sectors=RAYS;self.links=[]

@@ -258,6 +258,29 @@ stråler er cyan, øvre fiolette. Passive biler beholder gamle modeller og
 sektorsensorer. Videoen over viser fortsatt modellen **før** dette skiftet.
 [Observasjoner, hypoteser og neste steg](docs/UTVIKLINGSLOGG_BIL.md#endring-55).
 
+Nye `--fresh-laser2`-forsøk bruker nå beslutningsdelen **488→64→32→2**,
+mutasjon er avslått som standard, og Adam og baseline arves fra vinneren mellom
+generasjoner. Et fast sett med sensorobservasjoner brukes til å logge
+styrerespons og metning. [Diagnose, løsning og målt forbedring](docs/experiments/laser2-sensor-collapse-fix-20261107.md)
+viser at ny generasjon 15 kjører **170,7 % lengre** enn gammel generasjon 1192
+på de samme 100 startene. Sensorresponsen er gjenopprettet, og kjørelengde og
+belønning viser progresjon selv om alle testforsøk fortsatt ender med krasj.
+
+[Sensorretting ved endret helning](docs/experiments/laser2-vertical-fan-20261107.md):
+nedre sjikt søker nå vertikalt etter veikanten når vanlig retning ikke gir
+kanttreff, og veibanen blokkerer strålene. I den målte blindsonen øker sikten
+fra **0 til 24 av 27 retninger foran bilen**. Ny trening videreføres fra
+generasjon 29 med de samme modellvektene.
+
+[Trening på seks baner](docs/experiments/six-track-training.md) er startet
+fra generasjon 30: treningsbanen, åttetallet, kupert svingbane, hårnålsbane,
+broløkker og en kryssing med tre separate veidekker. Alle seks brukes i hver
+generasjon, og faste kontrollstarter viser progresjon per bane.
+
+[Øvingsstarter før veggkrasj](docs/experiments/crash-practice-spawns.md):
+omtrent 10 % av treningsstartene gjentar en innkjøring fra ti billengder før
+et lagret krasj. Hvert punkt brukes til maksimalt 20 fullførte forsøk.
+
 ## Labyrintforsøk i aksjon
 
 [![Modellen prøver tilfeldige labyrinter med sensorer og lært hukommelse](docs/media/maze-preview.gif)](docs/media/maze-attempts.mp4)
@@ -374,3 +397,36 @@ Fra **generasjon 1019** evalueres kandidatene etter **100 forsøk per nett**,
 [Avklaringen og overgangen](docs/UTVIKLINGSLOGG_BIL.md#endring-59).
 
 Fra generasjon **1029** går en tredel av krasjstraffen til de tre siste faktiske handlingene; resten følger samme avstandsfordeling som før. Vektene er videreført. [Metode og begrunnelse](docs/UTVIKLINGSLOGG_BIL.md#endring-60).
+
+Fra generasjon **1109** fordeles fremdriftsbelønningen bare på handlingene i hver ti-stegsperiode, mens krasjhistorikken beholdes. [Begrunnelse og metode](docs/UTVIKLINGSLOGG_BIL.md#endring-62).
+
+Presisering før generasjon 1109 fullførte: fremdriftsbonusen vektes per handling med fart, fra **0× ved minste fart via 1× ved normalfart til 3× ved maks**, lineært mellom punktene. [Detaljer](docs/UTVIKLINGSLOGG_BIL.md#endring-63).
+
+**Ny start fra generasjon 1109:** Treningsnettene har nye tilfeldige vekter for å lære med hastighetsbonusen fra starten. Gamle modeller er bevart. [Historikk](docs/UTVIKLINGSLOGG_BIL.md#endring-64).
+
+Treningsmålet er utvidet til **generasjon 1500**, med videreførte vekter fra 1120 og samme oppsett.
+
+
+### Fire brukerdefinerte treningsbaner (8. november 2026)
+
+`python -m games.car.hybrid --initial-model <modell> --output <ny-mappe> --defined-training`
+beholder arkitektur og vekter fra modellen. Profilen bruker to rette laserlag
+(0,5 og 3 høydeenheter), uten vertikal vifte. Begge lag roterer med bilens
+helning, målt over karosseriets 12 enheter; samme beregning brukes i Python,
+Rust-evalueringen og visningen.
+
+Banerekkefølgen roteres mellom `bridge_straight`, `tight_turns`, `figure_eight`
+og `training` (den eksisterende lange ovalbanen med bølger). De to første
+har åpne ender, faste startfelt og +50 ved mål uten kollisjonsstraff.
+Svingbanen gjentar den skarpeste sammenhengende buen fra 8-tallsbanen,
+vekselvis speilet. Brobanen har tre 40 enheter høye opp-/nedkjøringer.
+Ingen tilfeldige startsteder, lagrede kollisjonsspawn eller avstandspensum
+brukes i profilen. Begge kjøreretninger trenes. Vanlig omstart etter avsluttet
+forsøk skjer i startfeltet.
+
+Antall treningsforsøk deles mellom de fire banene, ikke firedobles.
+Åpne baner får minst `ceil(banelengde / 3 * 1.3)` tidssteg for å gjøre mål
+oppnåelig; lukkede baner bruker `--steps`. Standard evaluering i profilen
+er åtte scenarier totalt, ett per bane og retning. Eksisterende belønnings-
+og læringsinnstillinger kan videreføres. Trafikk er aktiv med mindre
+`--road-only` velges eksplisitt. Generasjonstid må måles i den faktiske kjøringen.

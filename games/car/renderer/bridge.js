@@ -16,7 +16,7 @@ window.carGpu={
   try{
    if(!navigator.gpu)throw Error('WebGPU er ikke tilgjengelig');
    await init();
-   renderer=await Renderer.create(gpuCanvas,new Float32Array(track.points.flat()),track.width/2);
+   renderer=await Renderer.create(gpuCanvas,new Float32Array(track.points.flat()),track.width/2,track.closed!==false);
    renderer.set_cones(new Float32Array((track.cones||[]).flatMap(c=>[c.x,c.y,c.z,c.radius])));
    this.ready=true;gpuCanvas.hidden=false;cpuCanvas.hidden=true;
    status.textContent='Rust + WebGPU · GPU-rendering aktiv';
@@ -26,7 +26,7 @@ window.carGpu={
  render(state,selected,chase){
   if(!renderer||failed)return false;
   try{
-   const packed=new Float32Array(state.cars.flatMap((c,i)=>[c.x,c.y,c.z||0,c.heading,c.pitch||0,c.crashed?1:0,...(state.cars.length>5?(i<(state.training_cars||5)?[53/255,239/255,143/255]:[135/255,147/255,161/255]):colors[i%colors.length])]));
+   const packed=new Float32Array(state.cars.flatMap((c,i)=>[c.x,c.y,c.z||0,c.heading,c.pitch||0,c.crashed||c.waiting?1:0,...(state.cars.length>5?(i<(state.training_cars||5)?[53/255,239/255,143/255]:[135/255,147/255,161/255]):colors[i%colors.length])]));
    renderer.render(packed,selected,chase);
    return true;
   }catch(error){this.ready=false;fallback(error);return false;}

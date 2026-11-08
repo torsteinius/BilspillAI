@@ -27,6 +27,7 @@ WEIGHT_COUNT = network.weight_count
 COLLISION_PENALTY = 50.
 MAX_BRAKE = .5
 STEERING_BOOST = 0.
+ROAD_ONLY = False
 MODEL = Path(__file__).parent / 'models' / 'model_radar_9_8_8_1.json'
 
 
@@ -41,6 +42,16 @@ REPLAY_SCENARIO = None
 REPLAY_BACKGROUND = []
 DIRECTIONAL_COLLISIONS = False
 PROGRESS_ONLY_REWARD = 0.
+SPEED_WEIGHTED_PROGRESS = False
+LASER_VERTICAL_FAN_DEGREES = 0.
+
+
+def progress_speed_multiplier(car):
+    ratio=car.get('speed',3*car.get('speed_factor',1.))/(3*car.get('speed_factor',1.))
+    minimum=1.-MAX_BRAKE
+    if ratio<=1.:return max(0.,(ratio-minimum)/(1.-minimum))
+    return min(3.,1.+4.*(ratio-1.))
+
 RADAR_MODE = 'legacy'
 RADAR_SCALE = 1.
 SPEED_FACTORS = (.8, .9, 1., 1.1, 1.2)
@@ -60,7 +71,7 @@ def configure_track(name='s_curve', steps=None, *, cones=True, cone_count=None):
         TRACK.cones.clear()
     clearance, progress = TRACK.clearance, TRACK.progress
     PERIMETER, PATH, HALF_WIDTH = TRACK.perimeter, TRACK.path, TRACK.half_width
-    SIMULATION_STEPS = steps or (max(650, math.ceil(PERIMETER / 3 * 1.5)) if name in ('figure_eight', 'training') else 650)
+    SIMULATION_STEPS = steps or (max(650, math.ceil(PERIMETER / 3 * 1.5)) if name not in ('s_curve','oval') else 650)
     cars = initial()
     status.update(track=name, simulation_steps=SIMULATION_STEPS)
 
@@ -84,7 +95,8 @@ def configure_traffic(mode):
 
 
 def others(car, traffic):
-    return [c for c in ([traffic] if isinstance(traffic, dict) else traffic) if c is not car]
+    if ROAD_ONLY:return []
+    return [c for c in ([traffic] if isinstance(traffic, dict) else traffic) if c is not car and not c.get('finished',False)]
 
 
 def same_level(a, b):
@@ -273,7 +285,7 @@ def model_observations(model,car,other):
     mode=model.metadata.get('radar_mode',RADAR_MODE)
     if mode=='laser2':
         from .laser_radar import inputs
-        return inputs(sys.modules[__name__],car,other)
+        return inputs(sys.modules[__name__],car,other,model.metadata.get('laser_vertical_fan_degrees',0.))
     if mode.startswith('sectors'):
         from .sector_radar import inputs
         return inputs(sys.modules[__name__],car,other,mode)
@@ -413,13 +425,13 @@ def step(cars, weights, *, controls=None, events=None):
     controls = [(v,0.,0.) if isinstance(v,(float,int)) else tuple(v)+(0.,) if len(v)==2 else tuple(v) for v in controls]
     if len(controls) != len(cars) or any(len(v)!=3 or not all(math.isfinite(x) for x in v) or not -1<=v[0]<=1 or not all(0<=a<=1 for a in v[1:]) for v in controls):
         raise ValueError('Each car needs steering in [-1,1] and brake/throttle in [0,1]')
-    active = [not c['crashed'] for c in cars]
+    active = [not c['crashed'] and not c.get('finished',False) for c in cars]
     old = [(c['x'], c['y'], c.get('z', 0.)) for c in cars]
     old_headings=[c['heading'] for c in cars]
     reward = 0.
     reason = ''
     for idx, (c, (steer, brake, throttle)) in enumerate(zip(cars, controls)):
-        if c['crashed']:
+        if c['crashed'] or c.get('finished',False):
             continue
         before = progress(c['x'], c['y'], c.get('z', 0.))
         c['heading'] += .045 * (steer + STEERING_BOOST * steer**3)
@@ -430,6 +442,7 @@ def step(cars, weights, *, controls=None, events=None):
         c['z'] = TRACK.locate(c['x'], c['y'], c.get('z', 0.))[2]
         delta = ((progress(c['x'], c['y'], c['z']) - before + PERIMETER / 2) % PERIMETER - PERIMETER / 2) * c['direction']
         c['travel'] += delta
+        c['finished'] = TRACK.finished(c)
         gap = clearance(c['x'], c['y'], c['z']) - CAR_RADIUS
         reward -= .4 * max(0., (12 - gap) / 12) ** 2
         # Check the movement segment as well as its endpoint.
@@ -457,7 +470,7 @@ def step(cars, weights, *, controls=None, events=None):
                 reason = 'Kjeglekontakt'
                 if events is not None:
                     events.append((i, 'cone', cone.get('target_id')))
-    for i in range(len(cars)):
+    for i in range(0 if ROAD_ONLY else len(cars)):
         for j in range(i+1, len(cars)):
             if not (active[i] and active[j]):
                 continue
@@ -628,7 +641,7 @@ class Handler(BaseHTTPRequestHandler):
             data, kind = json.dumps(TRACK.payload()).encode(), 'application/json'
         elif self.path == '/api/state':
             with lock:
-                payload = dict(status, reason=reason, angles=ANGLES,
+                payload = dict(status, reason=reason, angles=ANGLES,laser_vertical_fan_degrees=LASER_VERTICAL_FAN_DEGREES,
                     cars=[dict(c, sensors=[] if RADAR_MODE in ('sectors15','sectors30','sectors30wide','sectors30echo','laser2') else sensors(c, cars), radar=radar(c, cars, replay_model(i).metadata.get("radar_mode",RADAR_MODE)),
                                pitch=TRACK.pitch(c['x'], c['y'], c.get('z', 0.), c['heading']),
                                lap=round(100*max(0,c['travel'])/PERIMETER,1)) for i,c in enumerate(cars)])
@@ -658,7 +671,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO, REPLAY_BACKGROUND, MAX_BRAKE, STEERING_BOOST
+    global network, best, ARCHITECTURE, WEIGHT_COUNT, MODEL, RADAR_MODE, REPLAY_SCENARIO, REPLAY_BACKGROUND, MAX_BRAKE, STEERING_BOOST, ROAD_ONLY, LASER_VERTICAL_FAN_DEGREES
     parser = argparse.ArgumentParser()
     parser.add_argument('--steering-boost',type=float,default=None,help='Cubic steering boost at full lock')
     parser.add_argument('--max-brake', type=float, default=None, help='Maximum fraction of base speed removed by full braking')
@@ -667,7 +680,7 @@ def main():
     parser.add_argument('--traffic', choices=('convoy', 'opposite'), default='convoy')
     parser.add_argument('--cone-count',type=int,choices=range(34),help='Evenly spaced cones (0–33)')
     parser.add_argument('--no-cones',action='store_true',help='Remove cones from sensors, physics and rendering')
-    parser.add_argument('--track', choices=Track.NAMES, default='s_curve')
+    parser.add_argument('--track', choices=Track.NAMES, default=None)
     parser.add_argument('--steps', type=int, help='Simulation steps per attempt')
     parser.add_argument('--backend', choices=('python', 'rust'), default='python')
     parser.add_argument('--port', type=int, default=8766)
@@ -678,6 +691,12 @@ def main():
     parser.add_argument('--model', type=Path, help='Separate checkpoint path for an experiment')
     parser.add_argument('--seed', type=int, help='Random seed for a new experiment')
     args = parser.parse_args()
+    if args.track is None:
+        args.track='s_curve'
+        if args.replay and args.model and args.model.exists():
+            try:args.track=json.loads(args.model.read_text()).get('track','s_curve')
+            except (OSError,ValueError) as error:parser.error(str(error))
+            if args.track not in Track.NAMES:parser.error('Saved model has an unknown track')
     if args.steering_boost is not None and (not math.isfinite(args.steering_boost) or args.steering_boost<0):
         parser.error('--steering-boost must be nonnegative and finite')
     STEERING_BOOST=args.steering_boost if args.steering_boost is not None else 0.
@@ -703,6 +722,8 @@ def main():
         resuming = args.replay or bool(args.fast_generations and MODEL.exists())
         if resuming:
             network = NeuralNetwork.load(MODEL)
+            ROAD_ONLY=network.metadata.get('experiment',{}).get('road_only',False)
+            LASER_VERTICAL_FAN_DEGREES=network.metadata.get('laser_vertical_fan_degrees',0.)
             if args.steering_boost is None:
                 STEERING_BOOST=network.metadata.get('experiment',{}).get('steering_boost',0.)
             if args.max_brake is None:

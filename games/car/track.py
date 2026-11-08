@@ -11,21 +11,23 @@ from functools import lru_cache
 class Track:
     """A closed road generated from named layouts or supplied xyz centre points."""
 
-    NAMES = ('s_curve', 'oval', 'figure_eight', 'training')
+    NAMES = ('s_curve', 'oval', 'figure_eight', 'training','rolling_hills',
+             'ridge_switchbacks','bridge_loops','triple_stack','bridge_straight','tight_turns')
 
-    def __init__(self, points, half_width=38., name='custom'):
+    def __init__(self, points, half_width=38., name='custom', closed=True):
         self.points = tuple(tuple(map(float, p)) if len(p) == 3 else
                             (float(p[0]), float(p[1]), 0.) for p in points)
         if len(self.points) < 3 or not math.isfinite(half_width) or half_width <= 0:
             raise ValueError('A road needs at least three points and a positive width')
         if any(len(p) != 3 or not all(map(math.isfinite, p)) for p in self.points):
             raise ValueError('Road coordinates must be finite xyz points')
+        self.closed = closed
         self.native = None
         self.cones = []
         self.name, self.half_width = name, float(half_width)
         self.segments, self.starts = [], []
         self.perimeter = 0.
-        for a, b in zip(self.points, self.points[1:] + self.points[:1]):
+        for a, b in zip(self.points, self.points[1:] + (self.points[:1] if self.closed else ())):
             dx, dy, dz = (b[i] - a[i] for i in range(3))
             square = dx*dx + dy*dy
             if square <= 1e-12:
@@ -41,6 +43,9 @@ class Track:
 
     @classmethod
     def generate(cls, name='s_curve'):
+        from .training_tracks import NEW_TRACKS,course_points,OPEN_TRACKS,defined_course
+        if name in OPEN_TRACKS:return cls(defined_course(name),name=name,closed=False)
+        if name in NEW_TRACKS:return cls(course_points(name),name=name)
         if name == 'training':
             points = []
             for side in (0, 1):
@@ -163,13 +168,20 @@ class Track:
 
     def pitch(self, x, y, z, heading):
         """Road inclination along the car's heading, also in reverse travel."""
-        s = self.locate(x, y, z)[3]
-        grade = s[7] * (s[2]*math.cos(heading) + s[3]*math.sin(heading)) / s[4]
-        return math.atan(grade)
+        # Tilt over the physical 12-unit body footprint as the nose enters a ramp.
+        dx,dy=6*math.cos(heading),6*math.sin(heading)
+        front=self.locate(x+dx,y+dy,z)[2]
+        rear=self.locate(x-dx,y-dy,z)[2]
+        return math.atan2(front-rear,12.)
+
+    def finished(self, car):
+        if self.closed:return False
+        along=self.progress(car['x'],car['y'],car.get('z',0.))
+        return along >= self.perimeter-1e-7 if car['direction']>0 else along <= 1e-7
 
     def pose(self, along, lateral=0.):
         """Position and heading at arc distance; lateral is positive to the left."""
-        along %= self.perimeter
+        along = along % self.perimeter if self.closed else max(0.,min(self.perimeter,along))
         s = self.segments[bisect.bisect_right(self.starts, along)-1]
         t, planar = (along-s[5])/s[8], math.sqrt(s[4])
         return dict(x=s[0]+t*s[2]-lateral*s[3]/planar,
@@ -178,12 +190,12 @@ class Track:
 
     @property
     def path(self):
-        return 'M' + ' L'.join(f'{x:.4f} {y:.4f}' for x,y,_ in self.points) + ' Z'
+        return 'M' + ' L'.join(f'{x:.4f} {y:.4f}' for x,y,_ in self.points) + (' Z' if self.closed else '')
 
     def payload(self):
         pad = self.half_width + 70
         xs, ys, _ = zip(*self.points)
-        return dict(name=self.name, path=self.path, width=2*self.half_width,
+        return dict(name=self.name, closed=self.closed, path=self.path, width=2*self.half_width,
                     points=self.points, cones=self.cones, perimeter=self.perimeter,
                     view_box=[min(xs)-pad, min(ys)-pad,
                               max(xs)-min(xs)+2*pad, max(ys)-min(ys)+2*pad])

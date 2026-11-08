@@ -30,18 +30,11 @@ def sector_edges(mode):
 
 
 def road_edges(track):
-    # The native radar filters segments and objects by height (14 world units).
-    # Sampled segments retain their midpoint height, including on ramps.
-    boundaries=[[],[]];points=track.points
-    for i,p in enumerate(points):
-        before=points[i-1];after=points[(i+1)%len(points)]
-        dx,dy=p[0]-before[0],p[1]-before[1];d=math.hypot(dx,dy);n1=(-dy/d,dx/d)
-        dx,dy=after[0]-p[0],after[1]-p[1];d=math.hypot(dx,dy);n2=(-dy/d,dx/d)
-        denominator=1+n1[0]*n2[0]+n1[1]*n2[1]
-        if denominator<.1:raise ValueError('Track corner too sharp for sector boundary')
-        nx,ny=(n1[0]+n2[0])/denominator,(n1[1]+n2[1])/denominator
-        for side,sign in zip(boundaries,(-1,1)):side.append((p[0]+sign*track.half_width*nx,p[1]+sign*track.half_width*ny,p[2]))
-    return [(a[0],a[1],b[0],b[1],(a[2]+b[2])/2) for side in boundaries for a,b in zip(side,side[1:]+side[:1])]
+    from .laser_radar import boundaries
+    return [(a[0],a[1],b[0],b[1],(a[2]+b[2])/2)
+            for side in boundaries(track)
+            for a,b in zip(side,side[1:]+(side[:1] if track.closed else []))]
+
 
 def scan(world,car,cars,mode=None):
     global _CACHE
