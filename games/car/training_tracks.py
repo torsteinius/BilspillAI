@@ -61,11 +61,21 @@ def course_points(name):
 
 
 # The user-defined curriculum; legacy courses remain loadable for old runs.
-DEFINED_TRACKS=('bridge_straight','tight_turns','figure_eight','training')
-OPEN_TRACKS=DEFINED_TRACKS[:2]
+DEFINED_TRACKS=('bridge_straight','tight_turns','tight_turns_mirrored','normal_turns','figure_eight','training')
+OPEN_TRACKS=('bridge_straight','tight_turns','tight_turns_mirrored','normal_turns')
 
 
 def defined_course(name):
+    if name=='tight_turns_mirrored':
+        return [(x,-y,z) for x,y,z in defined_course('tight_turns')]
+    if name=='normal_turns':
+        # Three broad S-bends, with a full starting grid on each straight end.
+        points=[]
+        for i in range(1135):
+            x=3.*i
+            u=max(0.,min(2700.,x-350.))
+            points.append((x,90*(1-math.cos(math.tau*u/900.)),0.))
+        return points
     if name=='bridge_straight':
         # Same 40-unit deck and smooth ramp profile as the figure-eight bridge.
         points=[]

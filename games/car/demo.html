@@ -76,7 +76,7 @@ async function update(){
    if(s.cars[selected]?.waiting){const next=s.cars.findIndex(c=>!c.waiting&&!c.crashed);if(next>=0)$('driver').value=String(next);}
    [...$('driver').options].forEach((option,i)=>option.disabled=!!s.cars[i]?.waiting);
   }
-  drawCockpit();updateMapView();$('architecture').textContent=s.architecture.join(' → ');$('sensorLabel').textContent=s.radar_mode==='laser2'?`${s.laser_vertical_fan_degrees?'61 veikantsøk + 61 laserstråler':'2 × 61 laserstråler'} · 220°${s.laser_vertical_fan_degrees?` · nedre sjikt søker ±${s.laser_vertical_fan_degrees}° vertikalt`:''} · avstand, relativ fart og ekko · cyan: nedre / fiolett: øvre · grå: passiv sektorradar`:s.radar_mode?.startsWith('sectors')?`${s.radar_mode==='sectors30echo'?30:s.architecture[0]/2} radarsektorer · ${['sectors30wide','sectors30echo'].includes(s.radar_mode)?220:180}° · avstand og tilnærmingsfart${s.radar_mode==='sectors30echo'?' · ekkostyrke':''}`:'sju sensorstråler og radar';
+  drawCockpit();updateMapView();$('architecture').textContent=s.architecture.join(' → ');$('sensorLabel').textContent=s.radar_mode==='turn_curved'?'Svingfølere: 7 rette + 6 bøyde':s.radar_mode==='turn_echo'?'Ekko: 10 stråler · opptil 5 refleksjoner · 70 % videre':s.radar_mode==='laser2'?`${s.laser_vertical_fan_degrees?'61 veikantsøk + 61 laserstråler':'2 × 61 laserstråler'} · 220°${s.laser_vertical_fan_degrees?` · nedre sjikt søker ±${s.laser_vertical_fan_degrees}° vertikalt`:''} · avstand, relativ fart og ekko · cyan: nedre / fiolett: øvre · grå: passiv sektorradar`:s.radar_mode?.startsWith('sectors')?`${s.radar_mode==='sectors30echo'?30:s.architecture[0]/2} radarsektorer · ${['sectors30wide','sectors30echo'].includes(s.radar_mode)?220:180}° · avstand og tilnærmingsfart${s.radar_mode==='sectors30echo'?' · ekkostyrke':''}`:'sju sensorstråler og radar';
   $('connection').textContent=s.fast?'Trener raskt · rolig avspilling':'Python tilkoblet';$('speed').disabled=!!s.live_training;$('gen').textContent=s.generation+' / '+s.generations;
   $('score').textContent=s.best_score ?? '—';$('candidate').textContent=s.phase==='training'?'Viser generasjon '+(s.display_generation ?? '—')+', kandidat '+(s.display_candidate ?? '—')+' · Trener kandidat '+s.candidate+' / '+s.population:s.phase==='validation'?'Kontrollerer andre startplasseringer':'Avspilling av beste nettverk';$('attempt').textContent='Steg '+s.step+' / '+(s.simulation_steps||650)+' · Poeng: '+s.current_score+' · Omstarter: '+s.cars.map(c=>c.restarts).join(' / ');$('speed').value=String(s.speed);s.cars.slice(0,s.training_cars||5).forEach((c,i)=>{$('lap').children[i].textContent=carNames[i]+(c.waiting?' · venter':' '+Number(c.lap).toFixed(1)+' %');});
   if(s.live_training){
@@ -98,7 +98,15 @@ async function update(){
   }).join('');
   let rays='',radars='';s.cars.forEach((c,i)=>{
    const r=c.radar, color=r.detected?'#ff865f':carColors[i];
-   if(!c.crashed && r.shape==='laser2'){
+   if(!c.crashed && r.shape==='turn_paths'){
+    r.paths.forEach(path=>{
+     path.points.slice(1).forEach((p,j)=>{
+      const a=path.points[j],strength=path.echoes?.[j]?.strength??.65;
+      radars+=`<line x1="${a[0]}" y1="${a[1]}" x2="${p[0]}" y2="${p[1]}" stroke="#44d9ee" stroke-opacity="${strength}" stroke-width="1"/>`;
+     });
+    });
+   }
+   else if(!c.crashed && r.shape==='laser2'){
     r.rays.forEach(ray=>{
      const x=c.x+ray.forward*Math.cos(c.heading)-ray.lateral*Math.sin(c.heading),y=c.y+ray.forward*Math.sin(c.heading)+ray.lateral*Math.cos(c.heading),tint=ray.layer===0?'#44d9ee':'#d68cff';
      radars+=`<line x1="${c.x}" y1="${c.y}" x2="${x}" y2="${y}" stroke="${tint}" stroke-opacity="${ray.detected?.7:.25}" stroke-width="1" ${ray.layer===1?'stroke-dasharray="3 3"':''}/>`;
@@ -122,7 +130,8 @@ async function update(){
    $('car'+i).setAttribute('transform',`translate(${c.x} ${c.y}) rotate(${c.heading*180/Math.PI})`);
    rays+=c.sensors.map((d,k)=>`<line stroke="${carColors[i]}" x1="${c.x}" y1="${c.y}" x2="${c.x+Math.cos(c.heading+s.angles[k])*d}" y2="${c.y+Math.sin(c.heading+s.angles[k])*d}"/>`).join('');
   });$('rays').innerHTML=rays;$('radars').innerHTML=radars;
-  if(s.validation)$('validation').textContent='Kontroll med tre startplasseringer: '+s.validation.map(v=>Math.round(v[1]*100)+' % · '+(v[2]||'tidsgrense')).join(' | ');
+  if(s.turn_validation)$('validation').textContent=`Svingspesialist · separate testbaner: ${s.turn_validation.completed} av ${s.turn_validation.attempts} fullført.`;
+  else if(Array.isArray(s.validation)&&s.validation.length)$('validation').textContent='Kontroll med tre startplasseringer: '+s.validation.map(v=>Math.round(v[1]*100)+' % · '+(v[2]||'tidsgrense')).join(' | ');
  }catch(e){$('connection').textContent='Venter på Python …';}setTimeout(update,70);
 }$('speed').onchange=async e=>{try{const r=await fetch('/api/speed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({speed:Number(e.target.value)})});if(!r.ok)throw Error();$('speedError').textContent='';}catch{$('speedError').textContent='Kunne ikke endre hastigheten.'}};
 fetch('/api/track').then(r=>r.json()).then(t=>{
@@ -172,7 +181,7 @@ function drawCockpit(){
  const id=Number($('driver').value),car=cockpitState.cars[id];
  const chase=$('cameraMode').value==='chase';
  const radar=car.radar;
- $('radarInfo').textContent=radar.detected?`Radar · ${radar.kind==='wall'?'Veikant':radar.kind==='road'?'Veibane':radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · relativ fart ${(radar.relative_speed??0).toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
+ $('radarInfo').textContent=radar.shape==='turn_paths'?`Svingfølere · ${radar.paths.reduce((n,p)=>n+(p.echoes?.length??(p.detected?1:0)),0)} treff · rekkevidde opptil ${radar.range}`:radar.detected?`Radar · ${radar.kind==='wall'?'Veikant':radar.kind==='road'?'Veibane':radar.kind==='cone'?'Kjegle':'Bil'} · avstand ${radar.distance.toFixed(0)} · ${Math.abs(radar.lateral).toFixed(0)} til ${radar.lateral<0?'venstre':'høyre'}${radar.shape==='cone'?` · relativ fart ${(radar.relative_speed??0).toFixed(1)} · tilnærming ${radar.closing_speed.toFixed(1)} per steg`:''} · rekkevidde ${radar.range}`:`Radar · ingen treff · rekkevidde ${radar.range}`;
  $('elevationInfo').textContent=`Høyde ${Math.round(car.z||0)} · Stigning ${(100*Math.tan(car.pitch||0)).toFixed(1)} %`;
  if(window.carGpu?.ready&&window.carGpu.render(cockpitState,id,chase))return;
  const pitch=(car.pitch||0)+(chase?-.18:0),cp=Math.cos(pitch),sp=Math.sin(pitch);

@@ -237,3 +237,9 @@ fordelt på de siste 50 handlingene. Etter 100 forsøk testes hvert nettverk
 Nyeste ovenfra-opptak: [60 sekunder med 33 kjegler og 60° radar](../../docs/media/hybrid-33cones-60deg-overhead.mp4).
 Filmet 5. november med vinnervekter lagret ved hybridgenerasjon 8, før disse
 vektene ble videreført på den tettere banen. Opptaket viser også feil og omstarter.
+
+## Svingspesialister med bøyde følere og ekko
+
+To separate sensor- og modellvarianter er lagt til: `turn_curved` (sju rette og
+seks bøyde følere) og `turn_echo` (ti stråler med opptil fem refleksjoner).
+Se [oppsett, trening, begrensninger og resultater](../../docs/TURN_SPECIALISTS.md).

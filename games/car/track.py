@@ -12,7 +12,7 @@ class Track:
     """A closed road generated from named layouts or supplied xyz centre points."""
 
     NAMES = ('s_curve', 'oval', 'figure_eight', 'training','rolling_hills',
-             'ridge_switchbacks','bridge_loops','triple_stack','bridge_straight','tight_turns')
+             'ridge_switchbacks','bridge_loops','triple_stack','bridge_straight','tight_turns','tight_turns_mirrored','normal_turns')
 
     def __init__(self, points, half_width=38., name='custom', closed=True):
         self.points = tuple(tuple(map(float, p)) if len(p) == 3 else

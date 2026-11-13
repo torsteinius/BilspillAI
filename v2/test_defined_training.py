@@ -51,7 +51,7 @@ class DefinedTrainingTests(unittest.TestCase):
                 for expected,actual in zip(py['roles'],rust['roles']):
                     self.assertFalse(actual['collision'])
                     self.assertEqual(actual['steps'],1)
-                    self.assertAlmostEqual(actual['reward'],50.1)
+                    self.assertAlmostEqual(actual['reward'],50.15)
                     self.assertAlmostEqual(actual['reward'],expected['reward'])
 
     def test_standard_starts_repeat_and_stay_at_entrance(self):
@@ -81,3 +81,32 @@ class DefinedTrainingTests(unittest.TestCase):
             self.assertFalse(result['records'][0]['collision'])
             self.assertGreaterEqual(result['records'][0]['reward'],50.)
             self.assertFalse(any(car.get('finished',False) for car in cars))
+
+    def test_figure_eight_randomizes_starts_but_technique_tracks_do_not(self):
+        pool=TrackPool(DEFINED_TRACKS,20,17,standard_starts=True)
+        for name in DEFINED_TRACKS:
+            with pool.use(name),patch.object(app,'ROAD_ONLY',True):
+                scenario=pool.training_scenario(name,1,5)
+                first=scenario.initial();second=scenario.initial()
+                self.assertEqual(scenario.payload()['start_mode'],'random' if name=='figure_eight' else 'standard')
+                if name=='figure_eight':
+                    self.assertNotEqual(first,second)
+                    old=dict(first[0]);scenario.restart_car(first,0)
+                    self.assertNotEqual((old['x'],old['y']),(first[0]['x'],first[0]['y']))
+                else:self.assertEqual(first,second)
+        starts=pool.starts(2*len(DEFINED_TRACKS))
+        self.assertEqual(starts,pool.starts(2*len(DEFINED_TRACKS)))
+        self.assertNotEqual(starts['figure_eight'],pool.starts(2*len(DEFINED_TRACKS),holdout=True)['figure_eight'])
+
+    def test_straight_control_crosses_all_three_humps_both_directions(self):
+        pool=TrackPool(DEFINED_TRACKS,20,1)
+        with pool.use('bridge_straight'),patch.object(app,'ROAD_ONLY',True):
+            for direction in (1,-1):
+                pose=app.TRACK.pose(30 if direction==1 else app.PERIMETER-30)
+                pose['heading']+=math.pi if direction<0 else 0.
+                car=dict(pose,direction=direction,travel=0.,crashed=False,speed_factor=1.)
+                for _ in range(pool.step_limit('bridge_straight')):
+                    app.step([car],[],controls=[0.])
+                    if car['crashed'] or car.get('finished'):break
+                self.assertFalse(car['crashed'])
+                self.assertTrue(car.get('finished'))

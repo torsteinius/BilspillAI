@@ -107,5 +107,5 @@ class Scenario:
 
     def payload(self):
         # Screen y points down: positive signed area is clockwise on the map.
-        return dict(track=self.track_name,generation=self.generation,seed=self.seed,direction=self.direction,car_count=self.car_count,training_count=self.training_count,background_speed_scale=self.background_speed_scale,
+        return dict(start_mode='standard' if self.standard_starts else 'random',track=self.track_name,generation=self.generation,seed=self.seed,direction=self.direction,car_count=self.car_count,training_count=self.training_count,background_speed_scale=self.background_speed_scale,
                     direction_label=self.direction_label,cones=self.cones)

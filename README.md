@@ -420,9 +420,9 @@ og `training` (den eksisterende lange ovalbanen med bølger). De to første
 har åpne ender, faste startfelt og +50 ved mål uten kollisjonsstraff.
 Svingbanen gjentar den skarpeste sammenhengende buen fra 8-tallsbanen,
 vekselvis speilet. Brobanen har tre 40 enheter høye opp-/nedkjøringer.
-Ingen tilfeldige startsteder, lagrede kollisjonsspawn eller avstandspensum
-brukes i profilen. Begge kjøreretninger trenes. Vanlig omstart etter avsluttet
-forsøk skjer i startfeltet.
+8-tallsbanen bruker tilfeldige, kollisjonsfrie startsteder og omstarter.
+De øvrige tre banene bruker faste startfelt for teknikktrening. Ingen lagrede
+kollisjonsspawn eller avstandspensum brukes. Begge kjøreretninger trenes.
 
 Antall treningsforsøk deles mellom de fire banene, ikke firedobles.
 Åpne baner får minst `ceil(banelengde / 3 * 1.3)` tidssteg for å gjøre mål
@@ -430,3 +430,30 @@ oppnåelig; lukkede baner bruker `--steps`. Standard evaluering i profilen
 er åtte scenarier totalt, ett per bane og retning. Eksisterende belønnings-
 og læringsinnstillinger kan videreføres. Trafikk er aktiv med mindre
 `--road-only` velges eksplisitt. Generasjonstid må måles i den faktiske kjøringen.
+
+
+Trening, evaluering (Python/Rust) og avspilling krever minst **30 % av bilens
+standardhastighet som netto fremdrift langs banen**, målt over de siste 30
+simuleringsstegene. Første kontroll skjer etter 30 steg. Baklengs kjøring
+trekkes fra; sirkelkjøring teller ikke som fremdrift. Under grensen avsluttes
+forsøket med 50 i straff og `end_reason=low_progress`. Målpassering er fortsatt
+en vellykket avslutning. Grensen er inkluderende: akkurat 30 % godkjennes.
+
+
+Fremdriftsbonusen beregnes nå per 10-stegsintervall som
+`0,05 × avstand(start_xyz, slutt_xyz) × gjennomsnittlig hastighetsfaktor`.
+Hastighetsfaktoren beholder eksisterende skala (0 ved full brems, 1 ved
+standardfart, opptil 3 ved maksimal fart), men gjennomsnittet tas over
+intervallets faktiske steg. Netto fremdrift langs banen må være positiv;
+baklengskjøring gir ikke bonus. Avbrutte intervaller utbetales én gang ved
+forsøkets slutt. Rapportert distanse i denne treningsmodusen bruker også
+intervallenes endepunktsavstander, uten hastighetsvekting. En bue teller
+som avstanden tvers mellom endepunktene, ikke buelengden.
+
+
+Treningsrotasjonen er utvidet med `normal_turns` (tre moderate, flate S-svinger)
+og `tight_turns_mirrored` (en eksakt speiling av den krappe banen).
+De seks banene deler fortsatt samme antall treningsforsøk per nettverk.
+Standard evaluering er nå tolv scenarier: begge retninger på alle seks baner.
+Bare 8-tallet har tilfeldige startsteder; teknikkbanene har faste startfelt.
+Speilingen sikrer motsatt første sving også når begge banene kjøres baklengs.

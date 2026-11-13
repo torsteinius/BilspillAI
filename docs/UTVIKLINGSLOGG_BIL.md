@@ -1,6 +1,6 @@
 # Utviklingslogg: hvordan bilforsøket faktisk ble til
 
-Sist oppdatert 5. november 2026. Dette er en kronologisk logg over beslutninger,
+Sist oppdatert 11. november 2026. Dette er en kronologisk logg over beslutninger,
 endringer og resultater fra arbeidet med bilspillet. Første del er rekonstruert
 fra samtalen og eksisterende forsøksnotater; rekkefølgen er dokumentert, men vi
 har ikke satt oppdiktede klokkeslett på hvert forslag. Arbeidet startet
@@ -2385,3 +2385,118 @@ resultat før/etter avvisning av umulige veikanttreff. Skannetiden gikk fra
 ikke et mål på total generasjonstid). Kjøringen fortsetter fra lagret
 generasjon 49 i `.ai-service/car-laser2-defined-four-103`, med trafikk aktiv,
 100 forsøk per nettverk fordelt på fire baner og åtte evalueringsscenarier.
+
+
+### Ny start og tilfeldige startsteder i 8-tallet
+
+Etter brukerens ønske er forrige kjøring stoppet og innlærte vekter samt
+optimizertilstand forkastet i den nye kjøringen (tidligere modeller beholdes).
+`car-laser2-defined-four-reset-20261108` starter på generasjon 0 med
+`--fresh-laser2`, samme arkitektur og nye tilfeldige startvekter; heller ingen
+gammel trafikkmodell videreføres. 8-tallet bruker tilfeldige startsteder ved
+hver omstart. De tre teknikkbanene beholder faste startfelt. Startmodus lagres
+per scenario og benyttes også i avspilling.
+
+Humpbanen er `bridge_straight`: tre opp-/nedkjøringer, høyde 0–40, uten svinger.
+Kontrollkjøring med null styreutslag nådde mål begge veier på 1190 steg uten
+kollisjon. Laserskanningen viser reelle blindsoner mot den lave veikanten:
+ved eksempelposisjonen x=850 på nedkjøringen fikk nedre lag 0 av 61 kanttreff
+selv med riktig helning. Dette er geometrisk begrensning i rette stråler,
+ikke bevis på feil i bakkehelningen. Ingen vifte eller kunstige kanttreff er lagt til.
+
+
+### Gjeninnført krav om minst 30 % fremdrift
+
+Brukeren påpekte at minstekravet til fremdrift manglet. Dagens kode hadde
+ingen aktiv kontroll. Lagt til netto retningsbestemt banefremdrift over et
+rullerende vindu på 30 steg, minimum `0.30 * 3 * speed_factor` per steg.
+Under grensen avsluttes forsøket med 50 straff; treningsloggen merker årsaken
+`low_progress`. Samme regel brukes i fysisk simulering/avspilling og native
+evaluering. Normale kollisjoner og vellykket målpassering behandles først.
+
+58 tester bestod, inkludert lik behandling av sirkelkjøring i Python/Rust,
+grenseverdien 30 %, forskjellig standardfart, baklengs bevegelse og utløp av
+gammel fremdrift i målevinduet. Den faktiske dårlige modellen fra generasjon
+13 ble testet på alle fire banene: 40 av 40 forsøk slutt senest ved steg 30.
+Kjøringen restartes fra samme tilfeldige startvekter/seed som før nullstillingen,
+uten videreføring av sirkelmodellens vekter eller optimizerhistorikk.
+
+
+### Fremdrift fra endepunkter, multiplisert med hastighetsfaktor
+
+Etter brukerens presisering er summering av positive små fremskritt erstattet
+i aktiv fremdriftsbelønning med 3D-avstanden mellom start og slutt i hvert
+10-stegsintervall. Bonus = 0,05 × endepunktsavstand × gjennomsnittlig
+hastighetsfaktor. Den tidligere hastighetsfaktorskalaen er beholdt. Positiv
+netto banefremdrift er en retningskontroll, ikke selve avstandsmålet.
+Delintervaller ved avsluttet forsøk utbetales én gang. Trening og Python-/Rust-
+evaluering bruker samme formel, og distanserapporten bruker de uvektede
+endepunktsavstandene. 30 %-kravet og nettverksarkitekturen er uendret.
+Unntaket for påkjørsel bakfra er ikke endret i denne oppgaven.
+
+
+### Moderate svinger og speilet krapp svingbane
+
+Lagt til `normal_turns`, flat åpen bane med tre moderate S-svinger, og
+`tight_turns_mirrored`, eksakt speiling av den eksisterende krappe banen.
+Begge kjøreretninger beholdes; speiling snur første sving uansett startende.
+Seks baner deler 100 forsøk per nettverk. Evaluering økt fra 8 til 12 scenarier
+for lik representasjon per bane og retning. 20 tester bestod, inkludert
+kurvatur, startretninger, speiling, åpne mål og treningsbudsjett.
+Kjøringen videreføres fra siste ferdiglagrede modell uten nullstilling av vekter.
+
+
+## 11. november 2026 — To svingspesialister, læring fra hjelp og bevaring
+
+**Prosjekteierens idé:** Spesialiserte biler skal først lære sin egen ferdighet.
+Når hovedbilen krasjer eller setter seg fast, skal situasjonen spoles tilbake,
+og spesialistene prøves fra samme tilstand. Den som faktisk løser situasjonen
+bedre, kan gi hovedbilen et læringseksempel. Ved økt kompleksitet, som annen
+trafikk, må spesialistens resultat vurderes i den konkrete situasjonen;
+spesialisten er ikke automatisk en fasit. Denne mekanismen er ikke implementert
+som del av forsøket nedenfor.
+
+**Sensorforsøket:** To egne nettverk ble implementert. `turn_curved` har sju
+rette følere og seks følere med en innledende bue og deretter rett tangent;
+de ytterste tangentene peker bakover. Følerne stopper ved første veikant.
+`turn_echo` har ti stråler med opptil fem refleksjoner i veikantene, samlet
+rekkevidde 360 og signalstyrke ganget med 0,7 ved hvert treff. Refleksjonene
+vises i banekartet. Dette er idealiserte refleksjonsbaner, ikke en fysisk
+simulering av lydens retur til mottakeren.
+
+**Metodeavvik og avklaring i samtalen:** Codex brukte en lærer som kjente
+senterlinjen til å lage styrefasit, fulgt av korrigerte eksempler fra
+nettverkenes egne kjøreforsøk (DAgger). Dette var etterligningslæring og avvek
+fra prosjekteierens opprinnelige ønske om læring gjennom belønning og straff.
+Metodevalget burde vært forklart tydelig før treningen. Under kjøring får
+nettverkene bare følerverdier og egen fart, ingen senterlinjeinformasjon.
+Krasj og fremdrift ble målt ved evaluering og modellvalg; de ble ikke brukt
+som belønning eller straff i selve vekttilpasningen.
+
+**Resultat:** Begge fullførte 12/12 forsøk på treningsbanene og 12/12 på
+separate banevarianter uten krasj, mot 0/12 på testvariantene med utrente
+vekter. Treningen brukte `tight_turns` og `tight_turns_mirrored` i begge
+retninger. Testvariantene hadde endret svingradius og veibredde, men tilhørte
+samme svingfamilie. Dette gjelder flate baner ved redusert fart, uten trafikk.
+Sensorene oppdager foreløpig ikke andre biler eller kjegler. Resultatet viser
+at begge sensoroppsettene ga grunnlag for å lære denne oppgaven med hjelp;
+det dokumenterer ikke selvstendig forsterkningslæring eller generell mestring.
+43 målrettede tester bestod. Den fulle V2-samlingen hadde fortsatt én feilet
+assert og fem feil i eksisterende hybridtester; detaljene står i forsøksnotatet.
+
+**Prosjekteierens vurdering:** Forsøket er likevel interessant fordi læring fra
+en lærer ligner den planlagte hjelpen når hovedbilen står fast. Ekkovarianten
+vurderes som mest verdifull videre: refleksjonene kan følge veien rundt
+hjørner, mens de faste bøyde følerne slik de er nå ikke har samme egenskap.
+Prosjekteieren sammenlignet dette med en flaggermus. Dette er en prioritering
+for videre undersøkelser, ikke en dokumentert generell ytelsesfordel; begge
+oppnådde samme fullføringstall i dagens kontroll.
+
+**Beslutning:** Behold begge nettverkene uendret og avgjør videre arbeid senere.
+Valgte modeller og resultatrapporter er kopiert til
+[`preserved_2026-11-11`](../games/car/models/turn_specialists/preserved_2026-11-11/),
+med SHA-256-kontrollsummer i `manifest.json`. Ingen ny trening ble startet
+etter denne beslutningen. Fremtidige forsøk skal bruke en ny output-mappe,
+slik at de bevarte modellene ikke overskrives.
+
+[Detaljert notat, modellfiler og måleresultater](TURN_SPECIALISTS.md).

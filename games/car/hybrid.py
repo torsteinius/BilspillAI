@@ -11,6 +11,7 @@ import time
 
 from ai.network import NeuralNetwork
 from . import app
+from .progress_reward import begin_window,advance_window
 from .temporal import Adam, Experience, distribute_collision, forward_gradient
 
 NATIVE_EVALUATION = False
@@ -21,7 +22,7 @@ COLLISION_PENALTY = 50.
 INITIAL_EVALUATION_KEYS=('seed','steps','track','tracks','generation_offset','test_rounds',
     'fixed_evaluation_rounds','road_only','progress_only_reward','speed_weighted_progress',
     'car_collision_penalty','brake_max_reduction','steering_boost','laser_vertical_fan_degrees',
-    'observation_version','architecture','native_evaluation','defined_training','finish_reward','start_mode')
+    'observation_version','architecture','native_evaluation','defined_training','finish_reward','start_mode','min_progress_ratio','progress_window_steps','progress_measure','progress_speed_aggregation')
 
 
 def initial_evaluation_identity(actor,settings):
@@ -257,7 +258,7 @@ def evaluate_candidate(actor, traffic, steps, offset=0, initial_cars=None,overta
             for i,c in enumerate(cars):
                 if i!=role:c['crashed']=True
         reward=distance=0.
-        progress_pending=0.
+        progress_window=begin_window(cars[role])
         from .overtaking import OvertakeTracker
         tracker=OvertakeTracker() if overtake_reward else None
         passes=0
@@ -277,13 +278,13 @@ def evaluate_candidate(actor, traffic, steps, offset=0, initial_cars=None,overta
             collided=cars[role]['crashed']
             passed=tracker.update(cars)[role] if tracker else 0
             passes+=passed
-            progress_pending+=delta*(app.progress_speed_multiplier(cars[role]) if app.SPEED_WEIGHTED_PROGRESS else 1.)
-            if app.PROGRESS_ONLY_REWARD:
-                if (tick+1)%10==0 or collided or cars[role].get('finished',False) or tick+1==steps:
-                    reward+=app.PROGRESS_ONLY_REWARD*max(0.,progress_pending);progress_pending=0.
+            endpoint_distance,weighted_distance=advance_window(progress_window,cars[role],
+                app.progress_speed_multiplier(cars[role]) if app.SPEED_WEIGHTED_PROGRESS else 1.,
+                collided or cars[role].get('finished',False) or tick+1==steps)
+            if app.PROGRESS_ONLY_REWARD:reward+=app.PROGRESS_ONLY_REWARD*weighted_distance
             else:reward+=0. if pass_only else driving_reward(delta,collided)
             reward+=overtake_reward*passed
-            distance+=max(0.,delta)
+            distance+=endpoint_distance
             survived=tick+1
             if cars[role].get('finished',False) and not collided:
                 reward+=50.
@@ -324,7 +325,7 @@ def main():
     initial_tests.add_argument('--initial-evaluation-cache',type=Path,help='Reuse a verified initial evaluation with matching weights and protocol')
     parser.add_argument('--laser-vertical-fan',type=float,default=None,help='Lower laser vertical half-angle in degrees, 0 disables; up to 20')
     from .training_tracks import TRAINING_TRACKS,DEFINED_TRACKS
-    parser.add_argument('--defined-training',action='store_true',help='Four user-defined roads, straight lasers, standard starts and finish rewards')
+    parser.add_argument('--defined-training',action='store_true',help='User-defined technique roads and figure-eight, straight lasers and finish rewards')
     TRAINING_TRACKS=tuple(dict.fromkeys((*TRAINING_TRACKS,*DEFINED_TRACKS)))
     parser.add_argument('--track',choices=TRAINING_TRACKS,default='training',help='Road layout for both training and evaluation')
     parser.add_argument('--tracks',choices=TRAINING_TRACKS,nargs='+',help='Practice on every listed road each generation, with equal evaluation budgets')
@@ -379,7 +380,7 @@ def main():
         args.crash_spawn_share=0.;args.crash_spawn_db=None
         args.distance_history=None;args.laser_vertical_fan=0.
         args.continue_survivors=False
-        if args.test_rounds==20:args.test_rounds=8
+        if args.test_rounds==20:args.test_rounds=2*len(DEFINED_TRACKS)
     if not math.isfinite(args.crash_spawn_share) or not 0<=args.crash_spawn_share<=1:parser.error('--crash-spawn-share must be in [0,1]')
     if (args.crash_spawn_share or args.crash_spawn_db) and not args.tracks:parser.error('Saved crash starts require --tracks')
     if args.crash_spawn_db and not args.crash_spawn_share:parser.error('--crash-spawn-db requires a positive --crash-spawn-share')
@@ -503,7 +504,7 @@ def main():
     rng=random.Random(args.seed)
     test_rng=random.Random(args.seed+1)
     test_offsets=[test_rng.uniform(-12.,12.) for _ in range(args.test_rounds)]
-    settings=dict(laser_vertical_fan_degrees=app.LASER_VERTICAL_FAN_DEGREES,track=args.track,speed_weighted_progress=args.speed_weighted_progress,collision_recent_steps=3 if args.collision_credit=='split_distance20_recent3' else 0,collision_recent_share=.5 if args.collision_credit=='split_distance20_recent3' else 0,wall_immediate_steps=3 if args.wall_credit=='split_distance20_recent3' else 0,wall_immediate_share=.5 if args.wall_credit=='split_distance20_recent3' else 0,balanced_sharing=args.balanced_sharing,max_concurrent_drives_per_network=math.ceil(args.training_cars/args.learners) if args.balanced_sharing else None,progress_only_reward=args.progress_only_reward,collision_credit_zones='half_uniform_0_2_half_uniform_2_20_car_lengths' if args.collision_credit in ('split_distance20','split_distance20_recent3') else None,progress_credit='uniform_actual_actions_in_payout_window' if args.progress_only_reward else 'current_record',progress_interval_steps=10,wall_recent_distance=4*app.CAR_RADIUS if args.wall_credit in ('split_distance20','split_distance20_recent3') else None,wall_recent_share=.5 if args.wall_credit in ('split_distance20','split_distance20_recent3') else None,wall_history_distance=40*app.CAR_RADIUS if args.wall_credit in ('linear_distance20','split_distance20','split_distance20_recent3') else None,directional_collisions=args.directional_collisions,rear_collision_penalty=0. if args.directional_collisions else args.car_collision_penalty,steering_boost=args.steering_boost,steering_curve='0.045*(u+boost*u^3)',adaptation_generations=args.adaptation_generations,parent_eligible_from=args.generation_offset+args.adaptation_generations+1 if not args.trained_only else None,batch_size=args.batch_size,batch_backend=args.batch_backend,continue_survivors=args.continue_survivors,evaluation_car_count=5+len(args.background_model),native_evaluation=args.rust_evaluation,random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake or args.fresh_sectors or args.fresh_sectors30 or args.fresh_laser2,action_outputs=parent.architecture[-1],throttle_max_increase=.5 if parent.architecture[-1]==3 else 0.,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,brake_max_reduction=args.max_brake if parent.architecture[-1]>=2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=parent.architecture[0],radar_angles=angle_inputs,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
+    settings=dict(progress_measure='forward_xyz_endpoint_distance_10_steps',progress_speed_aggregation='arithmetic_mean_per_window',min_progress_ratio=.3,progress_window_steps=30,low_progress_penalty=50.,laser_vertical_fan_degrees=app.LASER_VERTICAL_FAN_DEGREES,track=args.track,speed_weighted_progress=args.speed_weighted_progress,collision_recent_steps=3 if args.collision_credit=='split_distance20_recent3' else 0,collision_recent_share=.5 if args.collision_credit=='split_distance20_recent3' else 0,wall_immediate_steps=3 if args.wall_credit=='split_distance20_recent3' else 0,wall_immediate_share=.5 if args.wall_credit=='split_distance20_recent3' else 0,balanced_sharing=args.balanced_sharing,max_concurrent_drives_per_network=math.ceil(args.training_cars/args.learners) if args.balanced_sharing else None,progress_only_reward=args.progress_only_reward,collision_credit_zones='half_uniform_0_2_half_uniform_2_20_car_lengths' if args.collision_credit in ('split_distance20','split_distance20_recent3') else None,progress_credit=('endpoint_reward_proportional_to_speed_factors' if args.speed_weighted_progress else 'uniform_actual_actions_in_payout_window') if args.progress_only_reward else 'current_record',progress_interval_steps=10,wall_recent_distance=4*app.CAR_RADIUS if args.wall_credit in ('split_distance20','split_distance20_recent3') else None,wall_recent_share=.5 if args.wall_credit in ('split_distance20','split_distance20_recent3') else None,wall_history_distance=40*app.CAR_RADIUS if args.wall_credit in ('linear_distance20','split_distance20','split_distance20_recent3') else None,directional_collisions=args.directional_collisions,rear_collision_penalty=0. if args.directional_collisions else args.car_collision_penalty,steering_boost=args.steering_boost,steering_curve='0.045*(u+boost*u^3)',adaptation_generations=args.adaptation_generations,parent_eligible_from=args.generation_offset+args.adaptation_generations+1 if not args.trained_only else None,batch_size=args.batch_size,batch_backend=args.batch_backend,continue_survivors=args.continue_survivors,evaluation_car_count=5+len(args.background_model),native_evaluation=args.rust_evaluation,random_scenarios=args.random_scenarios,engine='rust_gradients_radar_collisions_v1',traffic_model=str(args.traffic_model) if args.traffic_model else None,rotating_networks=args.rotate,trained_candidates_only=args.trained_only,architecture=list(parent.architecture),hidden_layers=list(parent.architecture[1:-1]),weight_count=parent.weight_count,radar_speed_reference='ego_longitudinal_and_radial_relative_velocity',fresh_initialization=args.fresh_brake or args.fresh_sectors or args.fresh_sectors30 or args.fresh_laser2,action_outputs=parent.architecture[-1],throttle_max_increase=.5 if parent.architecture[-1]==3 else 0.,overtake_reward=args.overtake_reward,overtake_credit=args.overtake_credit,brake_max_reduction=args.max_brake if parent.architecture[-1]>=2 else 0.,training_continuation='survivors_keep_pose_and_history_v2',delayed_credit='current_policy_gradient_with_importance_ratio_capped_at_2',radar_targets=4,network_inputs=parent.architecture[0],radar_angles=angle_inputs,radar_angle_degrees=math.degrees(2*app.CONE_HALF_ANGLE),cone_count=len(app.TRACK.cones),generation_offset=args.generation_offset,test_rounds=args.test_rounds,test_offsets=test_offsets,generations=args.generations,rounds=args.rounds,steps=args.steps,seed=args.seed,
                   learners=args.learners,training_attempts_per_generation=args.learners*args.rounds,history=512 if args.wall_credit in ('linear_distance20','split_distance20','split_distance20_recent3') else 50,history_stride=args.history_stride,history_reward='sum_between_samples',history_boundary='new_sample_on_new_session',credit=args.collision_credit,wall_credit=args.wall_credit,safe_reward=SAFE_REWARD,
                   progress_reward=PROGRESS_REWARD,collision_penalty=COLLISION_PENALTY,car_collision_penalty=args.car_collision_penalty,
                   exploration_sigma=.15,learning_rate=.0003,mutation_sigma=args.mutation_sigma,
@@ -532,8 +533,8 @@ def main():
         traffic=add_echo_input(traffic)
     if not laser_inputs and (((traffic.architecture[1:-1] != parent.architecture[1:-1] or traffic.architecture[0] not in (23,parent.architecture[0])) or traffic.architecture[-1] not in (2,parent.architecture[-1])) or traffic.metadata.get("observation_version") not in ("seven_rays_four_relative_targets_v6",parent.metadata.get("observation_version"))):
         parser.error("Traffic model must share hidden architecture and observations; legacy two-output traffic is allowed")
-    if laser_inputs and traffic.metadata.get('radar_mode') not in ('sectors30wide','sectors30echo'):
-        parser.error('Laser experiment requires a frozen old 30-wide-sector traffic model')
+    if laser_inputs and traffic.metadata.get('radar_mode') not in ('sectors30wide','sectors30echo','laser2'):
+        parser.error('Laser experiment requires a frozen laser2 or 30-wide-sector traffic model')
     traffic.save(args.output/"traffic-reference.json")
     background=[];background_paths=[]
     for i,path in enumerate(args.background_model):
@@ -562,7 +563,7 @@ def main():
     if args.tracks:
         from .multi_track import TrackPool
         pool=TrackPool(args.tracks,args.steps,args.seed,crash_spawns=crash_bank,crash_spawn_share=args.crash_spawn_share,standard_starts=args.defined_training)
-        settings.update(defined_training=args.defined_training,finish_reward=50.,start_mode='standard' if args.defined_training else 'random',tracks=list(args.tracks),track_schedule='all_tracks_each_generation_rotating_order',
+        settings.update(defined_training=args.defined_training,finish_reward=50.,start_mode='random_figure_eight_standard_technique' if args.defined_training else 'random',start_modes={name:'standard' if pool.uses_standard_starts(name) else 'random' for name in pool.names},tracks=list(args.tracks),track_schedule='all_tracks_each_generation_rotating_order',
                         evaluation_balance='equal_attempts_per_track_and_direction')
     scenario=None
     test_starts=holdout_starts=None

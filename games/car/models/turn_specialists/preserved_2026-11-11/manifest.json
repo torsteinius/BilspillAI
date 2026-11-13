@@ -1,0 +1,10 @@
+{
+  "preserved_date": "2026-11-11",
+  "purpose": "Beholdte etterligningsmodeller før eventuell videre trening; ekkovarianten prioriteres for vurdering.",
+  "sha256": {
+    "turn_curved.json": "6f2cdd0f88bdf7136dfc1171cb7de4862a4b699ba18deac27812807031f56494",
+    "turn_echo.json": "17f7bf00bc40100f8d4fd8b1c13ac99273cc639eabf18e512f3bf86433bd0b99",
+    "turn_curved_report.json": "8fb7f584f5b901fecd610ac4b60a9e28eb808bc4b6f195454d86d0b6e179f3fa",
+    "turn_echo_report.json": "60061e374b695be0bad5341620f8ef7b360a2cd3506f6dc7040897a72e2c759a"
+  }
+}

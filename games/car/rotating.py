@@ -10,6 +10,7 @@ import random
 from . import app
 from .temporal import Adam, forward_gradient, forward_latent
 from .hybrid import driving_reward, features, clone_network
+from .progress_reward import begin_window,advance_window
 from ai.network import NeuralNetwork
 
 
@@ -187,14 +188,6 @@ def credit_progress_window(session, bonus):
     session.pop('progress_values',None)
 
 
-def progress_payout(session,delta,terminal=False):
-    session['progress_pending']+=delta;session['progress_ticks']+=1
-    if session['progress_ticks']<10 and not terminal:return 0.
-    reward=app.PROGRESS_ONLY_REWARD*max(0.,session['progress_pending'])
-    session['progress_pending']=0.;session['progress_ticks']=0
-    return reward
-
-
 def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,history_stride=1,credit_mode='uniform50',scenario=None,wall_credit_mode=None,overtake_reward=0.,overtake_credit='latest',background_models=(),pass_only=False,car_collision_penalty=50.,batch_size=0,batch_backend="rust",continue_survivors=False,balanced_sharing=False,distance_reference=None,policies=None,on_frame=None):
     """Complete `attempts` drives per policy; supplied policies retain learning state."""
     if type(history_stride) is not int or history_stride < 1:
@@ -242,7 +235,7 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
             p=policies[owner];p.started+=1;p.car_counts[i]+=1
             peak_active[owner]=max(peak_active[owner],active_counts[owner]+1)
             assigned=True
-            sessions[i]=dict(owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.,progress_pending=0.,progress_ticks=0,progress_records=[],overtakes=0,distance_limit=limit_rng.uniform(.5,1.5)*distance_reference if distance_reference is not None else None,start_pose={k:car[k] for k in ('x','y','heading','direction') if k in car})
+            sessions[i]=dict(progress_window=begin_window(car) if app.PROGRESS_ONLY_REWARD else None,owner=owner,snapshot=clone_network(p.actor),steps=0,distance=0.,reward=0.,progress_ticks=0,progress_records=[],overtakes=0,distance_limit=limit_rng.uniform(.5,1.5)*distance_reference if distance_reference is not None else None,start_pose={k:car[k] for k in ('x','y','heading','direction') if k in car})
             if practice:
                 sessions[i].update(trail=PoseTrail(20*app.CAR_RADIUS),spawn_source=car.get('spawn_source','random'),practice_point_id=car.get('practice_point_id'))
                 sessions[i]['start_pose']['z']=car.get('z',0.)
@@ -304,9 +297,12 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
             if spatial_history:car['_credit_distance']=car.get('_credit_distance',0.)+math.dist(before_positions[i],(car['x'],car['y'],car.get('z',0.)))
             reward=0. if pass_only else driving_reward(delta,car['crashed'])
             if app.PROGRESS_ONLY_REWARD:
-                weighted_delta=delta*(app.progress_speed_multiplier(car) if app.SPEED_WEIGHTED_PROGRESS else 1.)
-                if app.SPEED_WEIGHTED_PROGRESS:session.setdefault('progress_values',[]).append(weighted_delta)
-                reward=progress_payout(session,weighted_delta,car['crashed'] or session['steps']+1>=steps or distance_reached or car.get('finished',False))
+                factor=app.progress_speed_multiplier(car) if app.SPEED_WEIGHTED_PROGRESS else 1.
+                if app.SPEED_WEIGHTED_PROGRESS:session.setdefault('progress_values',[]).append(factor)
+                endpoint_distance,weighted_distance=advance_window(session['progress_window'],car,factor,
+                    car['crashed'] or session['steps']+1>=steps or distance_reached or car.get('finished',False))
+                reward=app.PROGRESS_ONLY_REWARD*weighted_distance
+                session['progress_ticks']=session['progress_window']['ticks']
             if car.get('finished',False) and not car['crashed']:reward+=50.
             bonus=overtake_reward*passed[i]
             reward_overtake(histories[i],bonus,overtake_credit)
@@ -315,7 +311,7 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
                 if session['progress_ticks']==0:credit_progress_window(session,reward)
             else:histories[i][-1].reward+=reward
             histories[i][-1].span_steps+=1
-            session['reward']+=reward+bonus;session['distance']+=max(0.,delta);session['steps']+=1
+            session['reward']+=reward+bonus;session['distance']+=endpoint_distance if app.PROGRESS_ONLY_REWARD else max(0.,delta);session['steps']+=1
             if car['crashed'] or car.get('finished',False) or session['steps']>=steps or distance_reached:
                 owner=session['owner'];p=policies[owner]
                 practice_result=None;new_point=None
@@ -329,7 +325,7 @@ def train_generation(actors,steps,attempts,cars,histories,seed,on_attempt=None,h
                 p.update();p.completed+=1
                 row=dict(network=owner,car=i,overtakes=session['overtakes'],attempt=p.completed,steps=session['steps'],
                          collision=car['crashed'],collision_kinds=sorted({kind for index,kind,_ in events if index==i}),distance=session['distance'],
-                         reward=session['reward']-(penalty if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'],distance_limit=session['distance_limit'],end_reason='collision' if car['crashed'] else 'finish' if car.get('finished',False) else 'distance_limit' if distance_reached else 'step_limit')
+                         reward=session['reward']-(penalty if car['crashed'] else 0.),tick=tick,start_pose=session['start_pose'],distance_limit=session['distance_limit'],end_reason=car.get('end_reason','collision') if car['crashed'] else 'finish' if car.get('finished',False) else 'distance_limit' if distance_reached else 'step_limit')
                 if practice:row.update(spawn_source=session['spawn_source'],practice_point_id=session['practice_point_id'],practice_test=practice_result,new_crash_point_id=new_point)
                 records.append(row)
                 if on_attempt:on_attempt(row)

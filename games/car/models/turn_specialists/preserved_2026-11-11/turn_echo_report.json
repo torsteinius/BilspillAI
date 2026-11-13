@@ -1,0 +1,481 @@
+{
+  "mode": "turn_echo",
+  "seed": 20261111,
+  "training": {
+    "completed": 12,
+    "attempts": 12,
+    "mean_progress": 0.9999999999999991,
+    "rows": [
+      {
+        "track": "tight_turns",
+        "direction": -1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 4265,
+        "progress": 0.9999999999999999,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns",
+        "direction": -1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 5321,
+        "progress": 0.9999999999999969,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns",
+        "direction": -1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3561,
+        "progress": 0.999999999999999,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns",
+        "direction": 1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 4265,
+        "progress": 0.9999999999999997,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns",
+        "direction": 1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 5318,
+        "progress": 0.9999999999999997,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns",
+        "direction": 1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3564,
+        "progress": 0.9999999999999998,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns_mirrored",
+        "direction": -1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 4265,
+        "progress": 0.9999999999999967,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns_mirrored",
+        "direction": -1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 5321,
+        "progress": 0.9999999999999982,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns_mirrored",
+        "direction": -1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3561,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns_mirrored",
+        "direction": 1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 4264,
+        "progress": 0.9999999999999998,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns_mirrored",
+        "direction": 1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 5318,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "tight_turns_mirrored",
+        "direction": 1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3562,
+        "progress": 1.0,
+        "penalty": 0.0
+      }
+    ]
+  },
+  "holdout": {
+    "completed": 12,
+    "attempts": 12,
+    "mean_progress": 0.9999999999999994,
+    "rows": [
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": -1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 3857,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": -1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 4814,
+        "progress": 0.9999999999999974,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": -1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3223,
+        "progress": 0.9999999999999989,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": 1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 3858,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": 1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 4813,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": 1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3222,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": -1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 4673,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": -1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 5821,
+        "progress": 0.9999999999999974,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": -1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3909,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": 1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": true,
+        "crashed": false,
+        "steps": 4680,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": 1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": true,
+        "crashed": false,
+        "steps": 5825,
+        "progress": 1.0,
+        "penalty": 0.0
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": 1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": true,
+        "crashed": false,
+        "steps": 3910,
+        "progress": 0.9999999999999982,
+        "penalty": 0.0
+      }
+    ]
+  },
+  "untrained_holdout": {
+    "completed": 0,
+    "attempts": 12,
+    "mean_progress": 0.011273131087843497,
+    "rows": [
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": -1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": false,
+        "crashed": true,
+        "steps": 39,
+        "progress": 0.009812666057971008,
+        "penalty": -52.186579339124464
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": -1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": false,
+        "crashed": true,
+        "steps": 60,
+        "progress": 0.011956834123420836,
+        "penalty": -52.61345478216995
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": -1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": false,
+        "crashed": true,
+        "steps": 22,
+        "progress": 0.006659145880476438,
+        "penalty": -51.83604288937954
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": 1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": false,
+        "crashed": true,
+        "steps": 44,
+        "progress": 0.010843093425739893,
+        "penalty": -52.25630405461847
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": 1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": false,
+        "crashed": true,
+        "steps": 45,
+        "progress": 0.008982769588254011,
+        "penalty": -52.67028652682722
+      },
+      {
+        "track": "holdout_turns_0.9_34.0",
+        "direction": 1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": false,
+        "crashed": true,
+        "steps": 42,
+        "progress": 0.012325588981570204,
+        "penalty": -51.98590137822627
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": -1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": false,
+        "crashed": true,
+        "steps": 52,
+        "progress": 0.011511615655203214,
+        "penalty": -52.15849113548847
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": -1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": false,
+        "crashed": true,
+        "steps": 78,
+        "progress": 0.01328798253854359,
+        "penalty": -52.234213075509885
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": -1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": false,
+        "crashed": true,
+        "steps": 34,
+        "progress": 0.009287380454940687,
+        "penalty": -52.05129533521
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": 1,
+        "lateral": 0.0,
+        "angle": 0.0,
+        "speed_factor": 1.0,
+        "finished": false,
+        "crashed": true,
+        "steps": 65,
+        "progress": 0.013734100845923773,
+        "penalty": -53.255454077381515
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": 1,
+        "lateral": -8.0,
+        "angle": 0.12,
+        "speed_factor": 0.8,
+        "finished": false,
+        "crashed": true,
+        "steps": 70,
+        "progress": 0.011858697364844814,
+        "penalty": -53.79821434919297
+      },
+      {
+        "track": "holdout_turns_1.1_42.0",
+        "direction": 1,
+        "lateral": 8.0,
+        "angle": -0.12,
+        "speed_factor": 1.2,
+        "finished": false,
+        "crashed": true,
+        "steps": 59,
+        "progress": 0.015017698137233488,
+        "penalty": -52.828192698299155
+      }
+    ]
+  },
+  "history": [
+    {
+      "round": 1,
+      "loss": 0.008991038438842577,
+      "completed": 1,
+      "attempts": 12,
+      "mean_progress": 0.4365531830714706,
+      "samples": 6000
+    },
+    {
+      "round": 2,
+      "loss": 0.00326062985515459,
+      "completed": 12,
+      "attempts": 12,
+      "mean_progress": 0.9999999999999991,
+      "samples": 15717
+    }
+  ],
+  "selection": "training completion and progress only; holdout never used for selection",
+  "limitations": [
+    "Flat road-edge reflections only; no floor echoes, traffic or hill training.",
+    "Echo returns are idealized reflection paths, not acoustic return-to-receiver simulation."
+  ],
+  "selected_round": 2
+}

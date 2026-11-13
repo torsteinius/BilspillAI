@@ -42,6 +42,9 @@ class TrackPool:
             track.cones=[]
             if crash_spawns:crash_spawns.register_track(track)
 
+    def uses_standard_starts(self,name):
+        return self.standard_starts and name != 'figure_eight'
+
     def step_limit(self,name):
         track=self.tracks[name]
         # Enough time to reach the finish at ordinary speed, without a return lap.
@@ -72,7 +75,7 @@ class TrackPool:
             with self.use(name):
                 result[name]=[]
                 for direction in (1,2):
-                    scenario=Scenario(self.seed+900001+index*7919,generation*2+direction,no_cones=True,standard_starts=self.standard_starts)
+                    scenario=Scenario(self.seed+900001+index*7919,generation*2+direction,no_cones=True,standard_starts=self.uses_standard_starts(name))
                     result[name].extend(scenario.evaluation_starts(count,holdout=holdout))
         return result
 
@@ -80,7 +83,7 @@ class TrackPool:
         index=self.names.index(name)
         scenario=Scenario(self.seed+index*7919,2*generation+(generation+index)%2,
                         car_count=car_count,no_cones=True,training_count=car_count,
-                        crash_spawns=self.crash_spawns,crash_spawn_share=self.crash_spawn_share,standard_starts=self.standard_starts)
+                        crash_spawns=self.crash_spawns,crash_spawn_share=self.crash_spawn_share,standard_starts=self.uses_standard_starts(name))
         scenario.training_generation=generation
         return scenario
 

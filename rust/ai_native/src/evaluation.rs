@@ -73,8 +73,9 @@ impl SectorEvaluation {
   let mut pairs=vec![Pair::default();n*n];
   for i in 0..n {for j in 0..n {pairs[i*n+j].travel=(cars[i].travel,cars[j].travel);}}
   passes(&cars,&mut self.road,self.perimeter,self.range,&mut pairs);
+  let mut progress_windows=vec![std::collections::VecDeque::<f64>::new();n];
   let mut finished=vec![false;n];
-  let mut reward=0.;let mut distance=0.;let mut count=0;let mut survived=0;let mut progress_pending=0.;
+  let mut reward=0.;let mut distance=0.;let mut count=0;let mut survived=0;let mut progress_start=cars[role].point();let mut progress_travel=cars[role].travel;let mut progress_factors=0.;let mut progress_ticks=0;
   for tick in 0..steps {
    let mut controls=vec![(0.,0.,0.);n];
    for i in 0..n {
@@ -99,6 +100,7 @@ impl SectorEvaluation {
    let old:Vec<_>=cars.iter().map(|c|c.point()).collect();let active:Vec<_>=cars.iter().enumerate().map(|(i,c)|!c.dead&&!finished[i]).collect();
    let old_headings:Vec<_>=cars.iter().map(|c|c.h).collect();
    let before=cars[role].travel;let mut car_hit=vec![false;n];
+   let old_travel:Vec<_>=cars.iter().map(|c|c.travel).collect();
    for i in 0..n {
     let c=&mut cars[i];if c.dead||finished[i]{continue;}
     let along=self.road.progress(c.x,c.y,c.z);let (steer,brake,throttle)=controls[i];
@@ -121,14 +123,30 @@ impl SectorEvaluation {
     }
    }}}
 
+   let mut low_progress=vec![false;n];
+   for i in 0..n {
+    if !active[i]||cars[i].dead||finished[i]{continue;}
+    let window=&mut progress_windows[i];window.push_back(cars[i].travel-old_travel[i]);
+    if window.len()>30{window.pop_front();}
+    if window.len()==30&&window.iter().sum::<f64>()+1e-9<0.30*3.*cars[i].factor*30. {
+     low_progress[i]=true;cars[i].dead=true;
+    }
+   }
    let passed=passes(&cars,&mut self.road,self.perimeter,self.range,&mut pairs)[role];count+=passed;reward+=pass_reward*passed as f64;
-   let delta=cars[role].travel-before;distance+=delta.max(0.);survived=tick+1;
+   let _delta=cars[role].travel-before;survived=tick+1;
    let ratio=cars[role].speed/(3.*cars[role].factor);
    let multiplier=if !self.speed_weighted_progress{1.}else if ratio<=1.{((ratio-(1.-self.brake))/self.brake).max(0.)}else{(1.+4.*(ratio-1.)).min(3.)};
-   progress_pending+=delta*multiplier;
-   if (tick+1)%10==0||cars[role].dead||finished[role]||tick+1==steps{reward+=self.progress_reward*progress_pending.max(0.);progress_pending=0.;}
+   progress_factors+=multiplier;progress_ticks+=1;
+   if progress_ticks==10||cars[role].dead||finished[role]||tick+1==steps {
+    let end=cars[role].point();
+    let displacement=if cars[role].travel>progress_travel+1e-9 {
+     ((end.0-progress_start.0).powi(2)+(end.1-progress_start.1).powi(2)+(end.2-progress_start.2).powi(2)).sqrt()
+    }else{0.};
+    distance+=displacement;reward+=self.progress_reward*displacement*progress_factors/(progress_ticks as f64);
+    progress_start=end;progress_travel=cars[role].travel;progress_factors=0.;progress_ticks=0;
+   }
    if finished[role]&&!cars[role].dead {reward+=50.;break;}
-   if cars[role].dead {reward-=if car_hit[role]{car_penalty.max(if wall_hit[role]{50.}else{0.})}else if !self.directional_collisions||wall_hit[role]{50.}else{0.};break;}
+   if cars[role].dead {reward-=if low_progress[role]{50.}else if car_hit[role]{car_penalty.max(if wall_hit[role]{50.}else{0.})}else if !self.directional_collisions||wall_hit[role]{50.}else{0.};break;}
   }
   Ok((reward,distance,count,survived,cars[role].dead))
  }

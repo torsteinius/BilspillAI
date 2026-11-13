@@ -1,7 +1,7 @@
 import unittest,math
 from collections import deque
 from games.car import app,hybrid
-from games.car.rotating import Record,wall_distance_weights,credit_history,progress_payout,reward_progress,split_wall_distance_weights
+from games.car.rotating import Record,wall_distance_weights,credit_history,reward_progress,split_wall_distance_weights
 from ai.laser_vision import LaserVisionNetwork
 from ai.local_vision import LocalVisionNetwork,ECHO
 from games.car.native_evaluation import evaluate
@@ -57,16 +57,20 @@ class RewardTests(unittest.TestCase):
         self.assertEqual(app.collision_cost([(0,'car_rear',1),(0,'wall',None)],0),50)
         self.assertEqual(app.collision_cost([(0,'car',1)],0),50)
     def test_progress_every_ten_and_tail(self):
-        old=app.PROGRESS_ONLY_REWARD;app.PROGRESS_ONLY_REWARD=.05
-        try:
-            s=dict(progress_pending=0.,progress_ticks=0)
-            self.assertEqual([progress_payout(s,2.) for _ in range(9)],[0.]*9)
-            self.assertAlmostEqual(progress_payout(s,2.),1.)
-            self.assertEqual(progress_payout(s,-2.),0.)
-            self.assertEqual(progress_payout(s,2.,True),0.)
-            self.assertAlmostEqual(progress_payout(s,3.,True),.15)
-            self.assertEqual(progress_payout(s,0.,True),0.)
-        finally:app.PROGRESS_ONLY_REWARD=old
+        from games.car.progress_reward import begin_window,advance_window
+        car=dict(x=0.,y=0.,z=0.,travel=0.)
+        window=begin_window(car)
+        for i in range(1,10):
+            car.update(x=2.*i,travel=2.*i)
+            self.assertEqual(advance_window(window,car),(0.,0.))
+        car.update(x=20.,travel=20.)
+        self.assertEqual(advance_window(window,car),(20.,20.))
+        car.update(x=18.,travel=18.)
+        self.assertEqual(advance_window(window,car),(0.,0.))
+        car.update(x=20.,travel=20.)
+        self.assertEqual(advance_window(window,car,terminal=True),(0.,0.))
+        car.update(x=23.,travel=23.)
+        self.assertEqual(advance_window(window,car,terminal=True),(3.,3.))
     def test_progress_spreads_over_all_retained_records(self):
         h=[Record(0,[],(),(),0.) for _ in range(100)]
         reward_progress(h,1.);reward_progress(h,2.)
