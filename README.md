@@ -283,7 +283,7 @@ et lagret krasj. Hvert punkt brukes til maksimalt 20 fullførte forsøk.
 
 ### Ekko-bilen — spesialbil for krappe svinger
 
-[![Ekko-bilen kjører med ti stråler og refleksjoner fra veikantene](docs/media/turn-echo-drive.png)](docs/media/turn-echo-drive.mp4)
+[![Ekko-bilen kjører med ti stråler og refleksjoner fra veikantene](docs/media/turn-echo-drive-preview.gif)](docs/media/turn-echo-drive.mp4)
 
 [Se videoen · ca. 49 sekunder, MP4](docs/media/turn-echo-drive.mp4).
 Opptak fra **11. november 2026** med den bevarte `turn_echo`-modellen på
