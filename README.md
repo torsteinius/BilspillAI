@@ -281,6 +281,22 @@ generasjon, og faste kontrollstarter viser progresjon per bane.
 omtrent 10 % av treningsstartene gjentar en innkjøring fra ti billengder før
 et lagret krasj. Hvert punkt brukes til maksimalt 20 fullførte forsøk.
 
+### Ekko-bilen — spesialbil for krappe svinger
+
+[![Ekko-bilen kjører med ti stråler og refleksjoner fra veikantene](docs/media/turn-echo-drive.png)](docs/media/turn-echo-drive.mp4)
+
+[Se videoen · ca. 49 sekunder, MP4](docs/media/turn-echo-drive.mp4).
+Opptak fra **11. november 2026** med den bevarte `turn_echo`-modellen på
+`tight_turns`: én spesialbil laget for å håndtere krappe svinger, uten trafikk.
+Nettverket styrer og bremser med ti
+ekkostråler som kan reflekteres opptil fem ganger i veikantene. Bilen når
+enden etter **4 265 simuleringssteg uten krasj**.
+
+Videoen viser faktisk kjøring med lagrede vekter, med tre simuleringssteg
+per bilde ved 30 bilder per sekund. Dette er én demonstrasjon;
+[metode, separate testresultater og opptaksdetaljer](docs/TURN_SPECIALISTS.md)
+er dokumentert for seg.
+
 ## Labyrintforsøk i aksjon
 
 [![Modellen prøver tilfeldige labyrinter med sensorer og lært hukommelse](docs/media/maze-preview.gif)](docs/media/maze-attempts.mp4)
